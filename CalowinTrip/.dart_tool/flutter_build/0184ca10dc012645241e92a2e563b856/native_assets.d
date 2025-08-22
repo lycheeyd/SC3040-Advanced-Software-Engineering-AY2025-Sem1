@@ -1,0 +1,1 @@
+ C:\\Users\\junji\\Downloads\\CalowinMap\\CalowinTrip\\.dart_tool\\flutter_build\\0184ca10dc012645241e92a2e563b856\\native_assets.yaml: 
