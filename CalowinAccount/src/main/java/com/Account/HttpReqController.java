@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.Account.Entities.ProfileEntity;
 import com.Account.Managers.AccountManagementService;
@@ -32,6 +33,12 @@ import com.DataTransferObject.ViewProfileResponseDTO;
 @RestController
 @RequestMapping("/account")
 public class HttpReqController {
+
+    protected final RestTemplate restTemplate;
+
+    protected HttpReqController(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     @Autowired
     private AccountManagementService accountManagementService;

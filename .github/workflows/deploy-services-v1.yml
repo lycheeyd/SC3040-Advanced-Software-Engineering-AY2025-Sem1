@@ -1,9 +1,6 @@
-name: Deploy Calowin Services to Hugging Face
+name: (Old) Deploy Calowin Services to Hugging Face
 
 on:
-#  push:
-#    branches:
-#      - main
   
   workflow_dispatch:
 
@@ -44,8 +41,11 @@ jobs:
 
           if [ ${#changed_services[@]} -eq 0 ]; then
             echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
+            echo "No services changed"
           else
-            echo "matrix={\"include\":[$(IFS=, ; echo "${changed_services[*]}")]}" >> $GITHUB_OUTPUT
+            matrix_json="{\"include\":[$(IFS=, ; echo "${changed_services[*]}")]}"
+            echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
+            echo "Changed services: $matrix_json"
           fi
 
   deploy:
@@ -61,14 +61,14 @@ jobs:
           lfs: true
 
       - name: Set up JDK
-        if: ${{ matrix.changed_src == 'true' }}
+        if: ${{ matrix.changed_src }}
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
       - name: Build JAR
-        if: ${{ matrix.changed_src == 'true' }}
+        if: ${{ matrix.changed_src }}
         run: |
           cd ${{ matrix.service }}
           mvn clean package -DskipTests
@@ -76,7 +76,7 @@ jobs:
           ls -lh target/
           cd ..
 
-      - name: Prepare upload folder
+      - name: Prepare Upload Folder and Push to HuggingFace
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
@@ -85,24 +85,19 @@ jobs:
 
           cd hf_upload/${{ matrix.service }}
           git checkout main || git checkout -b main
-          cd ../..
 
-          cp ${{ matrix.service }}/target/*-SNAPSHOT.jar hf_upload/${{ matrix.service }}/
-          cp ${{ matrix.service }}/Dockerfile hf_upload/${{ matrix.service }}/ || true
-          cp ${{ matrix.service }}/README.md hf_upload/${{ matrix.service }}/ || true
-#          cp ../../${{ matrix.service }}/target/*-SNAPSHOT.jar .
-#          cp ../../${{ matrix.service }}/Dockerfile . || true
-#          cp ../../${{ matrix.service }}/README.md . || true
+          cp ../../${{ matrix.service }}/target/*-SNAPSHOT.jar .
+          cp ../../${{ matrix.service }}/Dockerfile . || true
+          cp ../../${{ matrix.service }}/README.md . || true
 
-      - name: Push to Hugging Face
-        run: |
-          cd hf_upload/${{ matrix.service }}
           git config user.name "CI Bot"
           git config user.email "ci-bot@github.com"
+
           git add -A
+
           if ! git diff --cached --quiet; then
             git commit -m "Deploy ${{ matrix.service }} build"
-            git push origin main
+            git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/${{ matrix.service }} main
           else
             echo "No changes to commit for ${{ matrix.service }}"
           fi
