@@ -24,11 +24,15 @@ jobs:
         id: filter
         run: |
           echo "Detecting changed services..."
-          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | cut -d/ -f1 | sort -u)
+
+          SERVICE_DIRS=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+
+          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
 
           SERVICES=()
-          for dir in $CHANGED; do
-            if [ -d "$dir/src" ] || [ -f "$dir/Dockerfile" ] || [ -f "$dir/README.md" ]; then
+
+          for dir in "${SERVICE_DIRS[@]}"; do
+            if echo "$CHANGED" | grep -Eq "^$dir/(src/|pom.xml|Dockerfile|README.md)"; then
               SERVICES+=("\"$dir\"")
             fi
           done
@@ -56,7 +60,7 @@ jobs:
           SERVICE_DIR=${{ matrix.service }}
           echo "Checking changes in $SERVICE_DIR"
 
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^$SERVICE_DIR/src/"; then
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -qE "^$SERVICE_DIR/(src/|pom.xml)"; then
             echo "src_changed=true" >> $GITHUB_ENV
             echo "Source code changed in $SERVICE_DIR"
           else
@@ -86,12 +90,12 @@ jobs:
           name: ${{ matrix.service }}-jar
           path: ${{ matrix.service }}/target/*-SNAPSHOT.jar
 
-      - name: Update LAST_RUN_ID respository variable
+      - name: Update LAST_BUILD_ID respository variable
         if: env.src_changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          VAR_NAME="LAST_RUN_ID_${{ matrix.service }}"
+          VAR_NAME="LAST_BUILD_ID_${{ matrix.service }}"
           gh variable set "$VAR_NAME" --repo "${{ github.repository }}" --body "${{ github.run_id }}"
           echo "Updated repository variable $VAR_NAME = ${{ github.run_id }}"
 
@@ -113,7 +117,7 @@ jobs:
         id: detect
         run: |
           SERVICE_DIR=${{ matrix.service }}
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^$SERVICE_DIR/src/"; then
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -qE "^$SERVICE_DIR/(src/|pom.xml)"; then
             echo "src_changed=true" >> $GITHUB_ENV
             echo "Source code changed in $SERVICE_DIR"
           else
@@ -135,12 +139,12 @@ jobs:
           GITHUB_REPO="${{ github.repository }}"
 
           if [ "$src_changed" == "true" ]; then
-            GITHUB_RUN_ID="${{ github.run_id }}"
+            GITHUB_BUILD_ID="${{ github.run_id }}"
           else
-            GITHUB_RUN_ID="$(gh variable get "LAST_RUN_ID_$SERVICE_DIR" --repo $GITHUB_REPO --json value -q ".value")"
+            GITHUB_BUILD_ID="$(gh variable get "LAST_BUILD_ID_$SERVICE_DIR" --repo $GITHUB_REPO --json value -q ".value")"
           fi
 
-          echo "Using GITHUB_RUN_ID: $GITHUB_RUN_ID"
+          echo "Using GITHUB_BUILD_ID: $GITHUB_BUILD_ID"
 
           git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR hf_upload/$SERVICE_DIR
 
@@ -152,12 +156,12 @@ jobs:
 
           cat <<EOF > build-vars.env
           SERVICE_NAME=$SERVICE_DIR
-          GITHUB_RUN_ID=$GITHUB_RUN_ID
+          GITHUB_BUILD_ID=$GITHUB_BUILD_ID
           GITHUB_REPO=$GITHUB_REPO
           EOF
 
-          git config user.name "CI Bot"
-          git config user.email "ci-bot@github.com"
+          git config user.name "CI/CD Pipeline"
+          git config user.email "cicd-pipeline@github.com"
 
           git add -A
 

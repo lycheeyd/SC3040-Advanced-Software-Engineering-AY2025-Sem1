@@ -78,7 +78,7 @@ class _SignupPage2State extends State<SignupPage2> {
       final String encryptedPassword = AES_Encryptor.encrypt(widget.password);
       final String encryptedConfirmPassword = AES_Encryptor.encrypt(widget.confirmPassword);
 
-      final String url = "http://172.21.146.188:8080/central/account/signup";
+      final String url = "Https://sc3040G5-calowin-unified.hf.space/central/account/signup";
 
       try {
         final response = await http.post(
