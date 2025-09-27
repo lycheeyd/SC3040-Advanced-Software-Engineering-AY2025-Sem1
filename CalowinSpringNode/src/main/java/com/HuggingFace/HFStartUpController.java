@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Controller
 public class HFStartupController extends HttpReqController {
 
-    public HFStartUpController(RestTemplate restTemplate) {
+    public HFStartupController(RestTemplate restTemplate) {
         super(restTemplate);
     }
 
