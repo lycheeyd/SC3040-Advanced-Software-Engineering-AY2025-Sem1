@@ -72,8 +72,7 @@ jobs:
         run: |
           cd ${{ matrix.service }}
           mvn clean package -DskipTests
-#          cd ..
-
+          cd ..
       - name: Prepare upload folder
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
