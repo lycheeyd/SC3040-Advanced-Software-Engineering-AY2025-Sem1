@@ -8,17 +8,51 @@ on:
   workflow_dispatch:
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect changed services
+        id: set-matrix
+        run: |
+          services=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+          changed_services=()
+
+          for s in "${services[@]}"; do
+            changed_src=false
+            changed_other=false
+
+            if git rev-parse HEAD^ >/dev/null 2>&1; then
+              if ! git diff --quiet HEAD^ HEAD -- "$s/src/"; then
+                changed_src=true
+              fi
+              if ! git diff --quiet HEAD^ HEAD -- "$s/Dockerfile" "$s/README.md"; then
+                changed_other=true
+              fi
+            else
+              changed_src=true
+              changed_other=true
+            fi
+
+            if [ "$changed_src" = true ] || [ "$changed_other" = true ]; then
+              changed_services+=("{\"service\":\"$s\",\"changed_src\":$changed_src,\"changed_other\":$changed_other}")
+            fi
+          done
+
+          if [ ${#changed_services[@]} -eq 0 ]; then
+            echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
+          else
+            echo "matrix={\"include\":[$(IFS=, ; echo "${changed_services[*]}")]}" >> $GITHUB_OUTPUT
+
+
   deploy:
+    needs: detect-changes
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        service: 
-          - CalowinAccount
-          - CalowinFriends
-          - CalowinNotification
-          - CalowinSpringNode
-          - CalowinTrip
-          - CalowinWellnessZone
+      matrix: ${{fromJson(needs.detect-changes.outputs.matrix)}}
 
     steps:
       - uses: actions/checkout@v4
@@ -27,49 +61,49 @@ jobs:
           lfs: true
 
       - name: Set up JDK
+        if: ${{ matrix.changed_src == 'true' }}
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Detect changes
-        id: check
-        run: |
-          if git rev-parse HEAD^ >/dev/null 2>&1; then
-            if ! git diff --quiet HEAD^ HEAD -- ${{ matrix.service }}/; then
-              echo "changed=true" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "Initial commit, treat as changed"
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build service
-        if: steps.check.outputs.changed == 'true'
+      - name: Build JAR
+        if: ${{ matrix.changed_src == 'true' }}
         run: |
           cd ${{ matrix.service }}
           mvn clean package -DskipTests
           cd ..
 
       - name: Prepare upload folder
-        if: steps.check.outputs.changed == 'true'
-        run: |
-          mkdir -p hf_upload/${{ matrix.service }}
-          cp ${{ matrix.service }}/target/*.jar hf_upload/${{ matrix.service }}/
-          cp ${{ matrix.service }}/Dockerfile hf_upload/${{ matrix.service }}/ || true
-          cp ${{ matrix.service }}/README.md hf_upload/${{ matrix.service }}/ || true
-
-      - name: Push to Hugging Face
-        if: steps.check.outputs.changed == 'true'
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
         run: |
+#          mkdir -p hf_upload/${{ matrix.service }}
+          git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/${{ matrix.service }} hf_upload/${{ matrix.service }}
+
           cd hf_upload/${{ matrix.service }}
-          git init
-          git remote add origin https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/${{ matrix.service }}
+          git checkout main || git checkout -b main
+
+#          cp ${{ matrix.service }}/target/*-SNAPSHOT.jar hf_upload/${{ matrix.service }}/
+#          cp ${{ matrix.service }}/Dockerfile hf_upload/${{ matrix.service }}/ || true
+#          cp ${{ matrix.service }}/README.md hf_upload/${{ matrix.service }}/ || true
+
+           cp ../../${{ matrix.service }}/target/*-SNAPSHOT.jar .
+           cp ../../${{ matrix.service }}/Dockerfile . || true
+           cp ../../${{ matrix.service }}/README.md . || true
+
+      - name: Push to Hugging Face
+        run: |
+#          cd hf_upload/${{ matrix.service }}
+#          git init
+#          git remote add origin https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/${{ matrix.service }}
           git config user.name "CI Bot"
           git config user.email "ci-bot@github.com"
-          git add .
-          git commit -m "Deploy ${{ matrix.service }} build"
-          git push -u origin main --force
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Deploy ${{ matrix.service }} build"
+            git push origin main
+          else
+            echo "No changes to commit for ${{ matrix.service }}"
+          fi
