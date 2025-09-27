@@ -1,52 +1,27 @@
-name: Build & Deploy Microservices
+name: Deploy Calowin Services to Hugging Face
 
 on:
   push:
     branches:
       - main
-
+  
   workflow_dispatch:
 
 jobs:
-  detect:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.detect.outputs.matrix }}
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Detect changed services
-        id: detect
-        run: |
-          changed=$(git diff --name-only HEAD^ HEAD | cut -d/ -f1 | sort -u)
-
-          services=()
-          for folder in $changed; do
-            case "$folder" in
-              CalowinAccount|CalowinFriends|CalowinNotification|CalowinSpringNode|CalowinTrip|CalowinWellnessZone)
-                services+=("\"$folder\"")
-                ;;
-            esac
-          done
-
-          if [ ${#services[@]} -eq 0 ]; then
-            echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
-          else
-            echo "matrix={\"include\":[${services[*]}]}" >> $GITHUB_OUTPUT
-          fi
-
-  build-deploy:
-    needs: detect
-    if: needs.detect.outputs.matrix != '{"include":[]}'
+  deploy:
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
-      max-parallel: 6
+      matrix:
+        service: 
+          - CalowinAccount
+          - CalowinFriends
+          - CalowinNotification
+          - CalowinSpringNode
+          - CalowinTrip
+          - CalowinWellnessZone
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
@@ -54,48 +29,47 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
+          java-version: '21'
+          distribution: 'temurin'
 
-      - name: Build service JAR
-        working-directory: ${{ matrix.include }}
+      - name: Detect changes
+        id: check
         run: |
-          if [ -f "pom.xml" ]; then
-            mvn -B clean package -DskipTests
-            JAR_FILE=$(ls target/*.jar | head -n 1)
-          elif [ -f "build.gradle" ]; then
-            ./gradlew build -x test
-            JAR_FILE=$(ls build/libs/*.jar | head -n 1)
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            if ! git diff --quiet HEAD^ HEAD -- ${{ matrix.service }}/; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "No build file found in ${{ matrix.include }}"
-            exit 1
+            echo "Initial commit, treat as changed"
+            echo "changed=true" >> $GITHUB_OUTPUT
           fi
-          echo "JAR_PATH=$JAR_FILE" >> $GITHUB_ENV
 
-      - name: Deploy to Hugging Face
-        env:
-          HF_TOKEN: sc3040G5:${{ secrets.HF_TOKEN }}
+      - name: Build service
+        if: steps.check.outputs.changed == 'true'
         run: |
-          folder="${{ matrix.include }}"
+          cd ${{ matrix.service }}
+          mvn clean package -DskipTests
+          cd ..
 
-          case "$folder" in
-            service1) repo="sc3040G5/CalowinAccount" ;;
-            service2) repo="sc3040G5/CalowinFriends" ;;
-            service3) repo="sc3040G5/CalowinNotification" ;;
-            service4) repo="sc3040G5/CalowinSpringNode" ;;
-            service5) repo="sc3040G5/CalowinTrip" ;;
-            service6) repo="sc3040G5/CalowinWellnessZone" ;;
-            *) echo "Unknown service $folder" && exit 1 ;;
-          esac
+      - name: Prepare upload folder
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          mkdir -p hf_upload/${{ matrix.service }}
+          cp ${{ matrix.service }}/target/*.jar hf_upload/${{ matrix.service }}/
+          cp ${{ matrix.service }}/Dockerfile hf_upload/${{ matrix.service }}/ || true
+          cp ${{ matrix.service }}/README.md hf_upload/${{ matrix.service }}/ || true
 
-          echo "Deploying $folder → $repo"
-
-          git clone https://$HF_TOKEN@huggingface.co/spaces/$repo /tmp/$folder
-          cp $JAR_PATH /tmp/$folder/
-
-          cd /tmp/$folder
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add -A
-          git commit -m "Update JAR from $folder ($GITHUB_SHA)" || echo "No changes to commit"
-          git push origin main
+      - name: Push to Hugging Face
+        if: steps.check.outputs.changed == 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+        run: |
+          cd hf_upload/${{ matrix.service }}
+          git init
+          git remote add origin https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/${{ matrix.service }}
+          git config user.name "CI Bot"
+          git config user.email "ci-bot@github.com"
+          git add .
+          git commit -m "Deploy ${{ matrix.service }} build"
+          git push -u origin main --force
