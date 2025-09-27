@@ -46,7 +46,7 @@ jobs:
             echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
           else
             echo "matrix={\"include\":[$(IFS=, ; echo "${changed_services[*]}")]}" >> $GITHUB_OUTPUT
-
+          fi
 
   deploy:
     needs: detect-changes
