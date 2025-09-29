@@ -93,7 +93,7 @@ jobs:
           git add -A
           if ! git diff --cached --quiet; then
             git commit -m "Deploy ${{ matrix.service }} build"
-            git push origin main
+            git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/${{ matrix.service }} main
           else
             echo "No changes to commit for ${{ matrix.service }}"
           fi
