@@ -284,7 +284,7 @@ public class HFStartupController extends HttpReqController {
                         <span class="method">GET</span>
                         <span class="url">/health</span>
                     </div>
-                    <p>Check the health status of the Calowin Backend API</p>
+                    <p>Check the health status meow of the Calowin Backend API</p>
                     <button class="test-btn" onclick="testHealth()">Test Health Check</button>
                     <div id="health-response" class="response" style="display: none;"></div>
                 </div>
