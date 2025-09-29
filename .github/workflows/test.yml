@@ -52,14 +52,14 @@ jobs:
           lfs: true
 
       - name: Set up JDK
-        if: ${{ matrix.changed_src == 'true' }}
+        if: ${{ matrix.changed_src }}
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
       - name: Build JAR
-        if: ${{ matrix.changed_src == 'true' }}
+        if: ${{ matrix.changed_src }}
         run: |
           cd ${{ matrix.service }}
           mvn clean package -DskipTests
