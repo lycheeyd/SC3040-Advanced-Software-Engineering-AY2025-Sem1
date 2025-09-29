@@ -140,8 +140,6 @@ jobs:
             GITHUB_RUN_ID="$(gh actions variable list --repo "${GITHUB_REPO}" | grep "LAST_RUN_ID_${SERVICE_DIR}" | awk '{print $2}')"
           fi
 
-          echo "$(gh actions variable list --repo "${GITHUB_REPO}"
-          echo "${GITHUB_RUN_ID}"
           echo "Using GITHUB_RUN_ID: $GITHUB_RUN_ID"
 
           git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR hf_upload/$SERVICE_DIR
