@@ -103,9 +103,19 @@ jobs:
                 value: runId
               });
               console.log(`Updated repository variable ${varName} = ${runId}`);
-            } catch (e) {
-              console.error(e);
-              throw e;
+            } catch (err) {
+              if (err.status === 404) {
+                await github.request('POST /repos/{owner}/{repo}/actions/variables', {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: varName,
+                  value: process.env.GITHUB_RUN_ID,
+                  visibility: 'private'
+                });
+                console.log(`Created variable ${varName}`);
+              } else {
+                throw err;
+              }
             }
 
   deploy:
