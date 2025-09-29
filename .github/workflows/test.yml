@@ -18,7 +18,7 @@ jobs:
       - name: Detect changed services
         id: set-matrix
         run: |
-          services=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+          services=("CalowinSpringNode")
           changed_services=()
 
           for s in "${services[@]}"; do
