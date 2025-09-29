@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y wget unzip jq && rm -rf /var/lib/apt/li
 
 WORKDIR /app
 
+ENV GITHUB_TOKEN=$GITHUB_TOKEN
 COPY build-vars.env .
 
 RUN export $(grep -v '^#' build-vars.env | xargs) && \
@@ -19,6 +20,6 @@ RUN export $(grep -v '^#' build-vars.env | xargs) && \
     rm jar.zip artifacts.json && \
     ls -lh
 
-EXPOSE 8081
+EXPOSE 8080
 
 CMD ["sh", "-c", "exec java -jar /app/*.jar"]
