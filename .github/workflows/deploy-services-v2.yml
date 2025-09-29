@@ -146,11 +146,11 @@ jobs:
             echo "non_src_changed=false" >> $GITHUB_ENV
           fi
 
-      - name: Push non-src files to HF
-        if: env.non_src_changed == 'true'
+      - name: Push to HuggingFace
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           SERVICE_DIR=${{ matrix.service }}
           GITHUB_REPO="${{ github.repository }}"
@@ -161,8 +161,10 @@ jobs:
             GITHUB_RUN_ID=$(gh api repos/${{ github.repository }}/variables/LAST_RUN_ID_${SERVICE_DIR} \
                      -q '.value' \
                      -H "Accept: application/vnd.github+json" \
-                     -H "Authorization: token ${{ secrets.GH_TOKEN }}")
+                     -H "Authorization: token $GH_TOKEN")
           fi
+
+          echo "Using GITHUB_RUN_ID: $GITHUB_RUN_ID"
 
           git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR hf_upload/$SERVICE_DIR
 
@@ -186,25 +188,10 @@ jobs:
           git add -A
 
           if ! git diff --cached --quiet; then
-            git commit -m "Deploy non-src files update for $SERVICE_DIR"
+            git commit -m "Deployed updates for $SERVICE_DIR"
             git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR main
             echo "Pushed updates for $SERVICE_DIR"
           else
             echo "No changes to commit for $SERVICE_DIR"
           fi
-
-      - name: Trigger HF rebuild for JAR-only changes
-        if: env.src_changed == 'true' && env.non_src_changed == 'false'
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_USERNAME: ${{ secrets.HF_USERNAME }}
-        run: |
-          SERVICE_DIR=${{ matrix.service }}
-          echo "Triggering HF rebuild for JAR-only change..."
-          curl -X POST \
-               -H "Authorization: Bearer $HF_TOKEN" \
-               -H "Accept: application/json" \
-               -d "{\"build_args\":{\"SERVICE_NAME\":\"$SERVICE_DIR\",\"GITHUB_RUN_ID\":\"$GITHUB_RUN_ID\",\"GITHUB_REPO\":\"${{ github.repository }}\"}}" \
-               https://huggingface.co/api/spaces/$HF_USERNAME/$SERVICE_DIR/rebuild
-          echo "HF rebuild triggered for $SERVICE_DIR"
 
