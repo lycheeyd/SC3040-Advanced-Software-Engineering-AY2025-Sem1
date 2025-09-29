@@ -6,8 +6,8 @@ WORKDIR /app
 
 COPY build-vars.env .
 
-RUN --mount=type=secret,id=GH_PAT,mode=0444,required=true \
-    export GITHUB_TOKEN=$(cat /run/secrets/GH_PAT)
+RUN --mount=type=secret,id=GITHUB_TOKEN,mode=0444,required=true \
+    export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN)
 
 RUN export $(grep -v '^#' build-vars.env | xargs)
 
