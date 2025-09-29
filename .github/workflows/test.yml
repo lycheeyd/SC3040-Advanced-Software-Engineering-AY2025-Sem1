@@ -32,8 +32,11 @@ jobs:
 
           if [ ${#changed_services[@]} -eq 0 ]; then
             echo 'matrix={"include":[]}' >> $GITHUB_OUTPUT
+            echo "No services changed"
           else
-            echo "matrix={\"include\":[$(IFS=, ; echo "${changed_services[*]}")]}" >> $GITHUB_OUTPUT
+            matrix_json="{\"include\":[$(IFS=, ; echo "${changed_services[*]}")]}"
+            echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
+            echo "Changed services: $matrix_json"
           fi
 
   deploy:
