@@ -6,6 +6,10 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
@@ -18,7 +22,7 @@ jobs:
         id: filter
         run: |
           echo "Detecting changed services..."
-          CHANGED=$(git diff --name-only HEAD~1 HEAD | cut -d/ -f1 | sort -u)
+          CHANGED=$(git diff --name-only origin/main...HEAD | cut -d/ -f1 | sort -u)
 
           SERVICES=()
           for dir in $CHANGED; do
@@ -31,7 +35,7 @@ jobs:
           echo "services=$JSON" >> $GITHUB_OUTPUT
           echo "Changed services detected: $JSON"
 
-  deploy:
+  build-jar:
     needs: detect-changes
     if: needs.detect-changes.outputs.changed-services != '[]'
     runs-on: ubuntu-latest
@@ -42,8 +46,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Detect type of changes
-        id: detect
+      - name: Check if src changed
+        id: check
         run: |
           SERVICE_DIR=${{ matrix.service }}
           echo "Checking changes in $SERVICE_DIR"
@@ -55,33 +59,54 @@ jobs:
             echo "src_changed=false" >> $GITHUB_ENV
           fi
 
-          if git diff --name-only HEAD~1 HEAD | grep -E "^$SERVICE_DIR/(Dockerfile|README.md)"; then
-            echo "non_src_changed=true" >> $GITHUB_ENV
-            echo "Non-source files changed in $SERVICE_DIR"
-          else
-            echo "non_src_changed=false" >> $GITHUB_ENV
-          fi
-
-      - name: Set up JDK and Build JAR
+      - name: Set up JDK
         if: env.src_changed == 'true'
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
+
+      - name: Build JAR
+        if: env.src_changed == 'true'
         run: |
-          SERVICE_DIR=${{ matrix.service }}
-          cd $SERVICE_DIR
+          cd ${{ matrix.service }}
           mvn clean package -DskipTests
           echo "Contents of target folder:"
           ls -lh target/
+          echo "Built $(ls target/*-SNAPSHOT.jar)"
 
-          JAR_FILE=$(ls target/*-SNAPSHOT.jar)
-          echo "Built $JAR_FILE"
+      - name: Upload built JAR
+        if: env.src_changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-jar
+          path: ${{ matrix.service }}/target/*-SNAPSHOT.jar
 
-          # Upload as artifact for HF to download
-          echo "Uploading artifact..."
-          gh run upload-artifact --name "${SERVICE_DIR}-jar" "$JAR_FILE"
-          echo "Uploaded $JAR_FILE as artifact ${SERVICE_DIR}-jar"
+  deploy:
+    needs: [detect-changes, build-jar]
+    if: needs.detect-changes.outputs.changed-services != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.changed-services) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect type of changes
+        id: detect
+        run: |
+          SERVICE_DIR=${{ matrix.service }}
+          if git diff --name-only HEAD~1 HEAD | grep -q "^$SERVICE_DIR/src/"; then
+            echo "src_changed=true" >> $GITHUB_ENV
+            echo "Source code changed in $SERVICE_DIR"
+          else
+            echo "src_changed=false" >> $GITHUB_ENV
+          fi
+          if git diff --name-only HEAD~1 HEAD | grep -E "^$SERVICE_DIR/(Dockerfile|README.md)"; then
+            echo "non_src_changed=true" >> $GITHUB_ENV
+          else
+            echo "non_src_changed=false" >> $GITHUB_ENV
+          fi
 
       - name: Push non-src files to HF
         if: env.non_src_changed == 'true'
@@ -90,6 +115,9 @@ jobs:
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
         run: |
           SERVICE_DIR=${{ matrix.service }}
+          GITHUB_REPO="${{ github.repository }}"
+          GITHUB_RUN_ID="${{ github.run_id }}"
+
           git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR hf_upload/$SERVICE_DIR
 
           cd hf_upload/$SERVICE_DIR
@@ -97,6 +125,15 @@ jobs:
 
           cp ../../$SERVICE_DIR/Dockerfile . || true
           cp ../../$SERVICE_DIR/README.md . || true
+
+          cat <<EOF > .huggingface.yaml
+          build:
+            args:
+              SERVICE_NAME: "$SERVICE_DIR"
+              GITHUB_RUN_ID: "$GITHUB_RUN_ID"
+              GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+              GITHUB_REPO: "$GITHUB_REPO"
+          EOF
 
           git config user.name "CI Bot"
           git config user.email "ci-bot@github.com"
@@ -106,7 +143,7 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "Deploy non-src files update for $SERVICE_DIR"
             git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR main
-            echo "Non-src files pushed"
+            echo "Pushed updates for $SERVICE_DIR"
           else
             echo "No changes to commit for $SERVICE_DIR"
           fi
@@ -118,7 +155,7 @@ jobs:
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
         run: |
           SERVICE_DIR=${{ matrix.service }}
-          echo "Triggering HF rebuild for $SERVICE_DIR (JAR-only change)..."
+          echo "Triggering HF rebuild for JAR-only change..."
           curl -X POST \
                -H "Authorization: Bearer $HF_TOKEN" \
                -H "Accept: application/json" \
