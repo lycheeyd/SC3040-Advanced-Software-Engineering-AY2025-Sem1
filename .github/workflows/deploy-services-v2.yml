@@ -9,7 +9,6 @@ on:
 permissions:
   contents: read
   actions: read
-  workflows: write
 
 jobs:
   detect-changes:
