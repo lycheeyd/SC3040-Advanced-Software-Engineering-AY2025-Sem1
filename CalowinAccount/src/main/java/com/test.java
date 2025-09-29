@@ -14,11 +14,12 @@ import com.Account.Services.OTPService;
 import com.Database.CalowinDB.CalowinDBProperties;
 import com.Database.CalowinSecureDB.CalowinSecureDBProperties;
 
-@SpringBootApplication (scanBasePackages = {"com.Account", "com.DataTransferObject", "com.Database"})
-@EnableConfigurationProperties({EmailServiceProperties.class, CalowinSecureDBProperties.class, CalowinDBProperties.class})
+@SpringBootApplication(scanBasePackages = { "com.Account", "com.DataTransferObject", "com.Database" })
+@EnableConfigurationProperties({ EmailServiceProperties.class, CalowinSecureDBProperties.class,
+        CalowinDBProperties.class })
 public class test {
 
-    public static void main(String[] args) {
+    public static void main2(String[] args) {
         // Start the Spring Boot application and get the application context
         ApplicationContext context = SpringApplication.run(test.class, args);
 
@@ -27,7 +28,7 @@ public class test {
         EmailService emailService = context.getBean(EmailService.class);
 
         // Test sending an email
-        String recipient = "calowinsc2006@gmail.com";  // Replace with the actual recipient's email
+        String recipient = "calowinsc2006@gmail.com"; // Replace with the actual recipient's email
         String subject = "Test Email";
         String messageBody = "This is a test email from the EmailService.";
 

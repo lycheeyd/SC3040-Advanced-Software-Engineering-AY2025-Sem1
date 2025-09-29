@@ -1,5 +1,5 @@
 ---
-title: SpringNode
+title: CalowinSpringNode
 emoji: 💻
 colorFrom: purple
 colorTo: pink
