@@ -93,6 +93,7 @@ jobs:
         run: |
           VAR_NAME="LAST_RUN_ID_${{ matrix.service }}"
           gh variable set "$VAR_NAME" --repo "${{ github.repository }}" --body "${{ github.run_id }}"
+          echo "Updated repository variable $VAR_NAME = ${{ github.run_id }}"
 
 
 
@@ -149,12 +150,10 @@ jobs:
           cp ../../$SERVICE_DIR/Dockerfile . || true
           cp ../../$SERVICE_DIR/README.md . || true
 
-          cat <<EOF > .huggingface.yaml
-          build:
-            args:
-              SERVICE_NAME: "$SERVICE_DIR"
-              GITHUB_RUN_ID: "$GITHUB_RUN_ID"
-              GITHUB_REPO: "$GITHUB_REPO"
+          cat <<EOF > build-vars.env
+          SERVICE_NAME=$SERVICE_DIR
+          GITHUB_RUN_ID=$GITHUB_RUN_ID
+          GITHUB_REPO=$GITHUB_REPO
           EOF
 
           git config user.name "CI Bot"

@@ -4,12 +4,10 @@ RUN apt-get update && apt-get install -y wget unzip jq && rm -rf /var/lib/apt/li
 
 WORKDIR /app
 
-ARG SERVICE_NAME
-ARG GITHUB_RUN_ID
-ARG GITHUB_TOKEN
-ARG GITHUB_REPO
+COPY build-vars.env .
 
-RUN echo "Fetching artifact for service: ${SERVICE_NAME} from run: ${GITHUB_RUN_ID}" && \
+RUN export $(grep -v '^#' build-vars.env | xargs) && \
+    echo "Fetching artifact for service: ${SERVICE_NAME} from run: ${GITHUB_RUN_ID}" && \
     wget --header="Authorization: token ${GITHUB_TOKEN}" \
          "https://api.github.com/repos/${GITHUB_REPO}/actions/runs/${GITHUB_RUN_ID}/artifacts" \
          -O artifacts.json && \
