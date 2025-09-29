@@ -22,7 +22,7 @@ jobs:
         id: filter
         run: |
           echo "Detecting changed services..."
-          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | cut -d/ -f1 | sort -u)
+          CHANGED=$(git diff --name-only HEAD~1 HEAD | cut -d/ -f1 | sort -u)
 
           SERVICES=()
           for dir in $CHANGED; do
@@ -52,7 +52,7 @@ jobs:
           SERVICE_DIR=${{ matrix.service }}
           echo "Checking changes in $SERVICE_DIR"
 
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^$SERVICE_DIR/src/"; then
+          if git diff --name-only HEAD~1 HEAD | grep -q "^$SERVICE_DIR/src/"; then
             echo "src_changed=true" >> $GITHUB_ENV
             echo "Source code changed in $SERVICE_DIR"
           else
@@ -96,13 +96,13 @@ jobs:
         id: detect
         run: |
           SERVICE_DIR=${{ matrix.service }}
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^$SERVICE_DIR/src/"; then
+          if git diff --name-only HEAD~1 HEAD | grep -q "^$SERVICE_DIR/src/"; then
             echo "src_changed=true" >> $GITHUB_ENV
             echo "Source code changed in $SERVICE_DIR"
           else
             echo "src_changed=false" >> $GITHUB_ENV
           fi
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E "^$SERVICE_DIR/(Dockerfile|README.md)"; then
+          if git diff --name-only HEAD~1 HEAD | grep -E "^$SERVICE_DIR/(Dockerfile|README.md)"; then
             echo "non_src_changed=true" >> $GITHUB_ENV
           else
             echo "non_src_changed=false" >> $GITHUB_ENV
