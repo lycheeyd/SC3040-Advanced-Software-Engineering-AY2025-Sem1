@@ -1,9 +1,9 @@
 name: Deploy Calowin Services to Hugging Face
 
 on:
-#  push:
-#    branches:
-#      - main
+  push:
+    branches:
+      - main
   
   workflow_dispatch:
 
@@ -22,20 +22,8 @@ jobs:
           changed_services=()
 
           for s in "${services[@]}"; do
-            changed_src=false
-            changed_other=false
-
-            if git rev-parse HEAD^ >/dev/null 2>&1; then
-              if ! git diff --quiet HEAD^ HEAD -- "$s/src/"; then
-                changed_src=true
-              fi
-              if ! git diff --quiet HEAD^ HEAD -- "$s/Dockerfile" "$s/README.md"; then
-                changed_other=true
-              fi
-            else
-              changed_src=true
-              changed_other=true
-            fi
+            changed_src=true
+            changed_other=true
 
             if [ "$changed_src" = true ] || [ "$changed_other" = true ]; then
               changed_services+=("{\"service\":\"$s\",\"changed_src\":$changed_src,\"changed_other\":$changed_other}")
