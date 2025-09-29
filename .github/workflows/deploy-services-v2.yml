@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   actions: read
+  workflows: write
 
 jobs:
   detect-changes:
@@ -86,6 +87,28 @@ jobs:
           name: ${{ matrix.service }}-jar
           path: ${{ matrix.service }}/target/*-SNAPSHOT.jar
 
+      - name: Update last JAR run ID repository variable
+        if: env.src_changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const service = "${{ matrix.service }}";
+            const runId = process.env.GITHUB_RUN_ID;
+            const varName = `LAST_RUN_ID_${service}`;
+            try {
+              await github.actions.createOrUpdateRepoVariable({
+                repository_id: context.repo.repo,
+                name: varName,
+                value: runId,
+                visibility: 'private'
+              });
+              console.log(`Updated repository variable ${varName} = ${runId}`);
+            } catch (e) {
+              console.error(e);
+              throw e;
+            }
+
   deploy:
     needs: [detect-changes, build-jar]
     if: needs.detect-changes.outputs.changed-services != '[]'
@@ -122,7 +145,15 @@ jobs:
         run: |
           SERVICE_DIR=${{ matrix.service }}
           GITHUB_REPO="${{ github.repository }}"
-          GITHUB_RUN_ID="${{ github.run_id }}"
+
+          if [ "$src_changed" == "true" ]; then
+            GITHUB_RUN_ID="${{ github.run_id }}"
+          else
+            GITHUB_RUN_ID=$(gh api repos/${{ github.repository }}/variables/LAST_RUN_ID_${SERVICE_DIR} \
+                     -q '.value' \
+                     -H "Accept: application/vnd.github+json" \
+                     -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}
+          fi
 
           git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR hf_upload/$SERVICE_DIR
 
@@ -164,6 +195,7 @@ jobs:
           curl -X POST \
                -H "Authorization: Bearer $HF_TOKEN" \
                -H "Accept: application/json" \
+               -d "{\"build_args\":{\"SERVICE_NAME\":\"$SERVICE_DIR\",\"GITHUB_RUN_ID\":\"$RUN_ID\",\"GITHUB_REPO\":\"${{ github.repository }}\"}}" \
                https://huggingface.co/api/spaces/$HF_USERNAME/$SERVICE_DIR/rebuild
           echo "HF rebuild triggered for $SERVICE_DIR"
 
