@@ -76,14 +76,10 @@ jobs:
 
           cd hf_upload/${{ matrix.service }}
           git checkout main || git checkout -b main
-          cd ../..
 
-          cp ${{ matrix.service }}/target/*-SNAPSHOT.jar hf_upload/${{ matrix.service }}/
-          cp ${{ matrix.service }}/Dockerfile hf_upload/${{ matrix.service }}/ || true
-          cp ${{ matrix.service }}/README.md hf_upload/${{ matrix.service }}/ || true
-#          cp ../../${{ matrix.service }}/target/*-SNAPSHOT.jar .
-#          cp ../../${{ matrix.service }}/Dockerfile . || true
-#          cp ../../${{ matrix.service }}/README.md . || true
+          cp ../../${{ matrix.service }}/target/*-SNAPSHOT.jar .
+          cp ../../${{ matrix.service }}/Dockerfile . || true
+          cp ../../${{ matrix.service }}/README.md . || true
 
           git config user.name "CI Bot"
           git config user.email "ci-bot@github.com"
