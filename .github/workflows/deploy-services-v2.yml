@@ -86,37 +86,15 @@ jobs:
           name: ${{ matrix.service }}-jar
           path: ${{ matrix.service }}/target/*-SNAPSHOT.jar
 
-      - name: Update last JAR run ID repository variable
+      - name: Update LAST_RUN_ID respository variable
         if: env.src_changed == 'true'
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GH_TOKEN }}
-          script: |
-            const service = "${{ matrix.service }}";
-            const runId = process.env.GITHUB_RUN_ID;
-            const varName = `LAST_RUN_ID_${service}`;
-            try {
-              await github.request('PUT /repos/{owner}/{repo}/actions/variables/{name}', {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: varName,
-                value: runId
-              });
-              console.log(`Updated repository variable ${varName} = ${runId}`);
-            } catch (err) {
-              if (err.status === 404) {
-                await github.request('POST /repos/{owner}/{repo}/actions/variables', {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  name: varName,
-                  value: process.env.GITHUB_RUN_ID,
-                  visibility: 'private'
-                });
-                console.log(`Created variable ${varName}`);
-              } else {
-                throw err;
-              }
-            }
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          VAR_NAME="LAST_RUN_ID_${{ matrix.service }}"
+          gh variable set "$VAR_NAME" --repo "${{ github.repository }}" --body "${{ github.run_id }}"
+
+
 
   deploy:
     needs: [detect-changes, build-jar]
@@ -158,10 +136,7 @@ jobs:
           if [ "$src_changed" == "true" ]; then
             GITHUB_RUN_ID="${{ github.run_id }}"
           else
-            GITHUB_RUN_ID=$(gh api repos/${{ github.repository }}/variables/LAST_RUN_ID_${SERVICE_DIR} \
-                     -q '.value' \
-                     -H "Accept: application/vnd.github+json" \
-                     -H "Authorization: token $GH_TOKEN")
+            GITHUB_RUN_ID=$(gh actions variable list --repo "${GITHUB_REPO}" | grep "LAST_RUN_ID_${SERVICE_DIR}" | awk '{print $2}')
           fi
 
           echo "Using GITHUB_RUN_ID: $GITHUB_RUN_ID"
