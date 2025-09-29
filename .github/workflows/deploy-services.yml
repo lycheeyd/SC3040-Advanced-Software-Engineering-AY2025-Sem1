@@ -72,6 +72,8 @@ jobs:
         run: |
           cd ${{ matrix.service }}
           mvn clean package -DskipTests
+          echo "Contents of target folder:"
+          ls -lh target/
           cd ..
 
       - name: Prepare upload folder
