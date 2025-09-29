@@ -137,7 +137,7 @@ jobs:
           if [ "$src_changed" == "true" ]; then
             GITHUB_RUN_ID="${{ github.run_id }}"
           else
-            GITHUB_RUN_ID="$(gh variable list --repo "${GITHUB_REPO}" | grep "LAST_RUN_ID_${SERVICE_DIR}" | awk '{print $2}')"
+            GITHUB_RUN_ID="${{ vars.LAST_RUN_ID_${SERVICE_DIR^^} }}"
           fi
 
           echo "Using GITHUB_RUN_ID: $GITHUB_RUN_ID"
