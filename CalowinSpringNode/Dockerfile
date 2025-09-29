@@ -19,6 +19,6 @@ RUN export $(grep -v '^#' build-vars.env | xargs) && \
     rm jar.zip artifacts.json && \
     ls -lh
 
-EXPOSE 8080
+EXPOSE 8081
 
 CMD ["sh", "-c", "exec java -jar /app/*.jar"]
