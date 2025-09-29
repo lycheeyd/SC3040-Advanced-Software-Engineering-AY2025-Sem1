@@ -7,11 +7,9 @@ WORKDIR /app
 COPY build-vars.env .
 
 RUN --mount=type=secret,id=GITHUB_TOKEN,mode=0444,required=true \
-    export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN)
-
-RUN export $(grep -v '^#' build-vars.env | xargs)
-
-RUN echo "Fetching artifact for service: ${SERVICE_NAME} from run: ${GITHUB_RUN_ID}" && \
+    export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
+    export $(grep -v '^#' build-vars.env | xargs) && \
+    echo "Fetching artifact for service: ${SERVICE_NAME} from run: ${GITHUB_RUN_ID}" && \
     wget --header="Authorization: token ${GITHUB_TOKEN}" \
          "https://api.github.com/repos/${GITHUB_REPO}/actions/runs/${GITHUB_RUN_ID}/artifacts" \
          -O artifacts.json && \
