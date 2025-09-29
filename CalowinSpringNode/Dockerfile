@@ -7,7 +7,7 @@ WORKDIR /app
 ARG SERVICE_NAME
 ARG GITHUB_RUN_ID
 ARG GITHUB_TOKEN
-ARG GITHUB_REPO="<your-org>/<your-repo>"
+ARG GITHUB_REPO
 
 RUN echo "Fetching artifact for service: ${SERVICE_NAME} from run: ${GITHUB_RUN_ID}" && \
     wget --header="Authorization: token ${GITHUB_TOKEN}" \
