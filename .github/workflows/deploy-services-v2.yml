@@ -137,7 +137,6 @@ jobs:
             args:
               SERVICE_NAME: "$SERVICE_DIR"
               GITHUB_RUN_ID: "$GITHUB_RUN_ID"
-              GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
               GITHUB_REPO: "$GITHUB_REPO"
           EOF
 

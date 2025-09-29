@@ -276,6 +276,20 @@ public class HFStartupController extends HttpReqController {
                 </div>
             </div>
 
+            <!-- Idk what Section -->
+            <div class="api-section">
+                <h2>🏥 Click for fun</h2>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <span class="url">/health</span>
+                    </div>
+                    <p>Check the health status of the Calowin Backend API</p>
+                    <button class="test-btn" onclick="testHealth()">Test Health Check</button>
+                    <div id="health-response" class="response" style="display: none;"></div>
+                </div>
+            </div>
+
             <!-- Trip Methods Section -->
             <div class="api-section">
                 <h2>🚶 Trip Methods</h2>
