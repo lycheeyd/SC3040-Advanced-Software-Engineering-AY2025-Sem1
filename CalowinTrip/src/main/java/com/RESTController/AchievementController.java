@@ -1,7 +1,7 @@
 package com.RESTController;
 
 
-import com.DataTransferObject.AchievementResponse;
+import com.DataTransferObject.AchievementResponseDTO;
 import com.Services.AchievementService;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +21,7 @@ public class AchievementController {
     }
 
     @GetMapping("/progress")
-    public AchievementResponse getAchievementProgress(@RequestParam String userId) {
+    public AchievementResponseDTO getAchievementProgress(@RequestParam String userId) {
         return achievementService.getAchievementProgress(userId);
     }
 }

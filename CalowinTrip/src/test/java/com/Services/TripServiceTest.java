@@ -1,7 +1,7 @@
 package com.Services;
 
-import com.DataTransferObject.TripMetricsRequest;
-import com.DataTransferObject.TripStartRequest;
+import com.DataTransferObject.TripMetricsRequestDTO;
+import com.DataTransferObject.TripStartRequestDTO;
 import com.Entity.CurrentLocationEntity;
 import com.Entity.LocationEntity;
 import com.Entity.TravelMethod;
@@ -41,8 +41,8 @@ class TripServiceTest {
     @InjectMocks
     private TripService tripService;
 
-    private TripStartRequest tripStartRequest;
-    private TripMetricsRequest tripMetricsRequest;
+    private TripStartRequestDTO tripStartRequest;
+    private TripMetricsRequestDTO tripMetricsRequest;
 
     @BeforeEach
     void setUp() {
@@ -51,13 +51,13 @@ class TripServiceTest {
         CurrentLocationEntity start = new CurrentLocationEntity("Start Point", 1.3521, 103.8198);
         LocationEntity end = new LocationEntity("End Point", 1.2869, 103.8544);
 
-        tripStartRequest = new TripStartRequest();
+        tripStartRequest = new TripStartRequestDTO();
         tripStartRequest.setUserId("user123");
         tripStartRequest.setTravelMethod(TravelMethod.WALK);
         tripStartRequest.setCurrentLocation(start);
         tripStartRequest.setDestination(end);
 
-        tripMetricsRequest = new TripMetricsRequest();
+        tripMetricsRequest = new TripMetricsRequestDTO();
         tripMetricsRequest.setUserId("user123");
         tripMetricsRequest.setTravelMethod(TravelMethod.CYCLE);
         tripMetricsRequest.setCurrentLocation(start);

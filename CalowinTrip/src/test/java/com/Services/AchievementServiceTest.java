@@ -2,7 +2,7 @@ package com.Services;
 
 
 
-import com.DataTransferObject.AchievementResponse;
+import com.DataTransferObject.AchievementResponseDTO;
 import com.Entity.AchievementEntity;
 import com.repository.AchievementRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -101,7 +101,7 @@ class AchievementServiceTest {
         when(achievementRepository.fetchAchievementForUser(userId)).thenReturn(Optional.of(existingAchievement));
 
         // Act
-        AchievementResponse response = achievementService.getAchievementProgress(userId);
+        AchievementResponseDTO response = achievementService.getAchievementProgress(userId);
 
         // Assert
         assertThat(response).isNotNull();
