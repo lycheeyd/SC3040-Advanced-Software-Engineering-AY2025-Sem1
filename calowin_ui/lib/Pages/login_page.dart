@@ -1,5 +1,3 @@
-
-
 import 'package:calowin/Pages/sign_up/signup_page.dart';
 import 'package:calowin/common/ActionType.dart';
 import 'package:calowin/common/colors_and_fonts.dart';
@@ -13,7 +11,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:calowin/common/AES_Encryptor.dart';
 import 'package:provider/provider.dart';
-
 
 class Loginpage extends StatefulWidget {
   const Loginpage({super.key});
@@ -36,7 +33,6 @@ class _LoginpageState extends State<Loginpage> {
     profile = Provider.of<UserProfile>(context);
   }
 
-
   Future<void> _handleLogin() async {
     setState(() {
       _wrongPassword = false;
@@ -57,7 +53,8 @@ class _LoginpageState extends State<Loginpage> {
 
     final String encryptedPassword = AES_Encryptor.encrypt(password);
 
-    final String url = "http://172.21.146.188:8080/central/account/login";
+    final String url =
+        "https://sc3040G5-CalowinSpringNode.hf.space/central/account/login";
 
     try {
       final response = await http.post(
@@ -75,20 +72,21 @@ class _LoginpageState extends State<Loginpage> {
         profile.copyProfile(loginResponse);
         profile.updateProfile();
         //print(loginResponse.getEmail());
-        if(mounted)
-        {
+        if (mounted) {
           Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PageNavigator(profile: profile),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return child; // No custom transition
-            },
-            settings: const RouteSettings(arguments: 'disableSwipe'),
-          ),
-        );
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  PageNavigator(profile: profile),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return child; // No custom transition
+              },
+              settings: const RouteSettings(arguments: 'disableSwipe'),
+            ),
+          );
+        } else {
+          print("Login response is null");
         }
-        else{ print("Login response is null");}
       } else {
         _showErrorDialog(responseMessage);
         setState(() {
@@ -96,23 +94,22 @@ class _LoginpageState extends State<Loginpage> {
           _invalidEmail = false;
           _inputPassword.clear();
           _inputEmail.clear();
-          }
-        );
+        });
       }
     } catch (e) {
       _showErrorDialog("Network error: ${e.toString()}");
     }
   }
 
-  Future<void> _handleForgetPW(String emailText) async{
-
+  Future<void> _handleForgetPW(String emailText) async {
     final email = emailText.trim();
-  
+
     if (email.isEmpty || !email.contains('@')) {
       Align(
         alignment: Alignment.centerLeft,
         child: Padding(
-          padding: const EdgeInsets.only(left: 20.0), // Adjust padding as needed
+          padding:
+              const EdgeInsets.only(left: 20.0), // Adjust padding as needed
           child: Text(
             "Invalid email format.",
             style: GoogleFonts.roboto(
@@ -130,7 +127,8 @@ class _LoginpageState extends State<Loginpage> {
       final response = await http.post(
         Uri.parse('http://172.21.146.188:8080/central/account/send-otp'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'type': ActionType.FORGOT_PASSWORD.value}),
+        body: jsonEncode(
+            {'email': email, 'type': ActionType.FORGOT_PASSWORD.value}),
       );
 
       final responseMessage = response.body;
@@ -168,7 +166,8 @@ class _LoginpageState extends State<Loginpage> {
 
   Future<void> _handlePwdSending(String email, String otpCode) async {
     //verifying otp and send email
-    final String url = "http://172.21.146.188:8080/central/account/forgot-password";
+    final String url =
+        "http://172.21.146.188:8080/central/account/forgot-password";
 
     try {
       final response = await http.post(
@@ -182,7 +181,6 @@ class _LoginpageState extends State<Loginpage> {
       if (response.statusCode == 200) {
         // Navigate to the next page
         _showSuccessDialog(responseMessage);
-
       } else {
         _showErrorDialog(responseMessage);
       }
@@ -376,7 +374,7 @@ class _LoginpageState extends State<Loginpage> {
                             width: 272,
                             height: 45,
                             child: ElevatedButton(
-                                onPressed: ()=>_handleLogin(),
+                                onPressed: () => _handleLogin(),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:
                                       const Color.fromARGB(255, 48, 93, 48),
