@@ -1,0 +1,80 @@
+name: Deploy Microservices (Initial Commit)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  detect-initial:
+    runs-on: ubuntu-latest
+
+    if: github.event.head_commit.parents == []   # only run if initial commit
+
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Detect service folders
+        id: set-matrix
+        run: |
+          # List all top-level directories
+          all=$(ls -d */ | cut -f1 -d'/')
+
+          # Filter only known services
+          services=()
+          for folder in $all; do
+            case "$folder" in
+              CalowinAccount|CalowinFriends|CalowinNotification|CalowinSpringNode|CalowinTrip|CalowinWellnessZone)
+                services+=("\"$folder\"")
+                ;;
+            esac
+          done
+
+          echo "matrix={\"include\":[${services[*]}]}" >> $GITHUB_OUTPUT
+
+  deploy-initial:
+    needs: detect-initial
+    if: needs.detect-initial.outputs.matrix != '{"include":[]}'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix: ${{ fromJson(needs.detect-initial.outputs.matrix) }}
+      max-parallel: 6
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Deploy service
+        env:
+          HF_TOKEN: sc3040G5:${{ secrets.HF_TOKEN }}
+        run: |
+          folder="${{ matrix.include }}"
+
+          case "$folder" in
+            service1) repo="sc3040G5/CalowinAccount" ;;
+            service2) repo="sc3040G5/CalowinFriends" ;;
+            service3) repo="sc3040G5/CalowinNotification" ;;
+            service4) repo="sc3040G5/CalowinSpringNode" ;;
+            service5) repo="sc3040G5/CalowinTrip" ;;
+            service6) repo="sc3040G5/CalowinWellnessZone" ;;
+            *) echo "Unknown service $folder" && exit 1 ;;
+          esac
+
+          echo "Deploying $folder → $repo"
+
+          git clone https://$HF_TOKEN@huggingface.co/spaces/$repo /tmp/$folder
+          rsync -av --delete $folder/ /tmp/$folder/
+
+          cd /tmp/$folder
+
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add -A
+          git commit -m "Initial deploy ($GITHUB_SHA)" || echo "No changes to commit"
+          git push -u origin main

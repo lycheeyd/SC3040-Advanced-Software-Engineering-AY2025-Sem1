@@ -64,7 +64,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.main</mainClass>  <!-- Main class to run -->
+                            <mainClass>com.CalowinSpringNode</mainClass>  <!-- Main class to run -->
                         </manifest>
                     </archive>
                     <descriptorRefs>

@@ -1,0 +1,75 @@
+name: Deploy Calowin Services to Hugging Face
+
+on:
+  push:
+    branches:
+      - main
+  
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: 
+          - CalowinAccount
+          - CalowinFriends
+          - CalowinNotification
+          - CalowinSpringNode
+          - CalowinTrip
+          - CalowinWellnessZone
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Detect changes
+        id: check
+        run: |
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            if ! git diff --quiet HEAD^ HEAD -- ${{ matrix.service }}/; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Initial commit, treat as changed"
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build service
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          cd ${{ matrix.service }}
+          mvn clean package -DskipTests
+          cd ..
+
+      - name: Prepare upload folder
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          mkdir -p hf_upload/${{ matrix.service }}
+          cp ${{ matrix.service }}/target/*.jar hf_upload/${{ matrix.service }}/
+          cp ${{ matrix.service }}/Dockerfile hf_upload/${{ matrix.service }}/ || true
+          cp ${{ matrix.service }}/README.md hf_upload/${{ matrix.service }}/ || true
+
+      - name: Push to Hugging Face
+        if: steps.check.outputs.changed == 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+        run: |
+          cd hf_upload/${{ matrix.service }}
+          git init
+          git remote add origin https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/${{ matrix.service }}
+          git config user.name "CI Bot"
+          git config user.email "ci-bot@github.com"
+          git add .
+          git commit -m "Deploy ${{ matrix.service }} build"
+          git push -u origin main --force
