@@ -20,4 +20,4 @@ RUN --mount=type=secret,id=GITHUB_TOKEN \
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "exec java -Dcom.atomikos.icatch.log_base_dir=/tmp/atomikos-logs -jar /app/*.jar"]
+CMD ["sh", "-c", "exec java -Dcom.atomikos.icatch.log_base_dir=/tmp/atomikos-logs -jar /app/*.jar --server.port=8080"]
