@@ -156,8 +156,8 @@ jobs:
           GITHUB_REPO=$GITHUB_REPO
           EOF
 
-          git config user.name "CI Bot"
-          git config user.email "ci-bot@github.com"
+          git config user.name "CI/CD Pipeline"
+          git config user.email "cicd-pipeline@github.com"
 
           git add -A
 
