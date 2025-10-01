@@ -18,4 +18,6 @@ RUN --mount=type=secret,id=GITHUB_TOKEN \
     curl -L --header "Authorization: token $GITHUB_TOKEN" --remote-header-name --remote-name "$JAR_URL" && \
     unzip -o *.zip && rm *.zip && ls -lh
 
-CMD ["sh", "-c", "exec java -Dcom.atomikos.icatch.log_base_dir=/tmp/atomikos-logs -jar /app/*.jar --server.port=${PORT}"]
+EXPOSE 7860
+
+CMD ["sh", "-c", "exec java -Dcom.atomikos.icatch.log_base_dir=/tmp/atomikos-logs -jar /app/*.jar"]
