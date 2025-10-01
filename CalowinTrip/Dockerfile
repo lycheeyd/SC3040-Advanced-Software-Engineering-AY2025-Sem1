@@ -18,4 +18,4 @@ RUN --mount=type=secret,id=GITHUB_TOKEN \
     curl -L --header "Authorization: token $GITHUB_TOKEN" --remote-header-name --remote-name "$JAR_URL" && \
     unzip -o *.zip && rm *.zip && ls -lh
 
-CMD ["sh", "-c", "exec java -Dserver.port=$PORT -jar /app/*.jar"]
+CMD ["sh", "-c", "exec java -jar /app/*.jar"]
