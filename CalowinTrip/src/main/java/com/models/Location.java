@@ -1,11 +1,11 @@
-package com.example.CalowinTrip;
+package com.models;
 
-public class CurrentLocation {
+public class Location {
     private String name;
     private double latitude;
     private double longitude;
 
-    public CurrentLocation(String name, double latitude, double longitude) {
+    public Location(String name, double latitude, double longitude) {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;

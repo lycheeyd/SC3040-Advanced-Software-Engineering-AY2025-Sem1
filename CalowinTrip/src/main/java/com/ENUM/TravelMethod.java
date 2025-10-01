@@ -1,4 +1,4 @@
-package com.example.CalowinTrip;
+package com.ENUM;
 
 public enum TravelMethod {
     WALK,
