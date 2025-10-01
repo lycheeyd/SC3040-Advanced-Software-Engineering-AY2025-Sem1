@@ -1,4 +1,4 @@
-package com.WellnessZone;
+package com.model;
 
 import java.util.HashMap;
 import java.util.Map;

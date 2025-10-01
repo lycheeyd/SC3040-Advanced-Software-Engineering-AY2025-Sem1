@@ -1,38 +1,44 @@
-package com.WellnessZone;
+package com.service;
 
+import com.client.NParkApiClient;
+import com.model.NPark;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.springframework.stereotype.Service;
 
-public class NParkExtracter {
+import java.util.*;
+
+@Service
+public class ParkService {
+
     private Map<String, Double> userCoordinate = new HashMap<>();
     private List<NPark> parks = new ArrayList<>();
-    private NParkDataDownloader downloader = new NParkDataDownloader("d_77d7ec97be83d44f61b85454f844382f");
 
-    public NParkExtracter(double userLat, double userLong) throws Exception {
-        userCoordinate.put("Lat", userLat);
-        userCoordinate.put("Lon", userLong);
-        downloader.initiateDownload();
-        String responseData = downloader.getResponseData();
-        String errorMessage = downloader.getErrorMessage();
-        // System.out.println("Response Data: " + responseData);
+    private final NParkApiClient parkApiClient;
+
+    public ParkService(NParkApiClient parkApiClient) {
+        this.parkApiClient = parkApiClient;
+    }
+
+    public List<NPark> findNearbyParks(double userLat, double userLon) throws Exception {
+        parkApiClient.initiateDownload();
+        String responseData = parkApiClient.getResponseData();
+        String errorMessage = parkApiClient.getErrorMessage();
+
         if (errorMessage != null && !errorMessage.isEmpty()) {
             throw new Exception("Data download error: " + errorMessage);
         }
 
         if (responseData != null && !responseData.isEmpty()) {
-            extractParks(responseData);
+            userCoordinate.put("Lat", userLat);
+            userCoordinate.put("Lon", userLon);
+            return extractParks(responseData, userCoordinate);
         } else {
             throw new Exception("No response data received from downloader.");
         }
     }
 
-    private void extractParks(String jsonData) {
+    private List<NPark> extractParks(String jsonData, Map<String, Double> userCoordinate) {
         JSONObject jsonObject = new JSONObject(jsonData);
         JSONArray featuresArray = jsonObject.getJSONArray("features");
 
@@ -49,13 +55,15 @@ public class NParkExtracter {
             List<Map<String, Double>> coordinates = extractCoordinates(geometry);
 
             // Create a new NPark instance and add it to the list
-            NPark park = new NPark(coordinates, userCoordinate, name);
-            parks.add(park);
+            if (!coordinates.isEmpty()) {
+                NPark park = new NPark(coordinates, userCoordinate, name);
+                parks.add(park);
+            }
         }
+        return parks;
     }
 
     private String extractParkName(String description) {
-        // Extract the park or nature reserve name from the description
         int nameIndex = description.indexOf("<th>NAME</th> <td>") + "<th>NAME</th> <td>".length();
         int endIndex = description.indexOf("</td>", nameIndex);
         return description.substring(nameIndex, endIndex).trim();
@@ -67,34 +75,24 @@ public class NParkExtracter {
         JSONArray pointsArray = geometry.optJSONArray("coordinates");
 
         try {
-            if ("Polygon".equalsIgnoreCase(type)) {
-                // Extract from a single Polygon
-                if (pointsArray != null) {
-                    addCoordinatesFromPointsArray(pointsArray, coordinates);
+            if ("Polygon".equalsIgnoreCase(type) && pointsArray != null) {
+                addCoordinatesFromPointsArray(pointsArray, coordinates);
+            } else if ("MultiPolygon".equalsIgnoreCase(type) && pointsArray != null) {
+                for (int i = 0; i < pointsArray.length(); i++) {
+                    JSONArray polygonArray = pointsArray.getJSONArray(i);
+                    addCoordinatesFromPointsArray(polygonArray, coordinates);
                 }
-            } else if ("MultiPolygon".equalsIgnoreCase(type)) {
-                // Extract from multiple Polygons in a MultiPolygon
-                if (pointsArray != null) {
-                    for (int i = 0; i < pointsArray.length(); i++) {
-                        JSONArray polygonArray = pointsArray.getJSONArray(i);
-                        addCoordinatesFromPointsArray(polygonArray, coordinates);
-                    }
-                }
-            } else {
+            }else {
                 System.out.println("Unsupported geometry type: " + type);
             }
-        } catch (Exception e) {
+        }catch (Exception e){
             System.out.println("Error extracting coordinates: " + e.getMessage());
         }
-
         return coordinates;
     }
 
     private void addCoordinatesFromPointsArray(JSONArray pointsArray, List<Map<String, Double>> coordinates) {
-        if (pointsArray == null || pointsArray.length() == 0) {
-            System.out.println("No coordinates available.");
-            return;
-        }
+        if (pointsArray == null || pointsArray.length() == 0) return;
 
         // Assuming the Polygon structure has one or more rings, with the first ring
         // being the outer boundary
@@ -104,14 +102,9 @@ public class NParkExtracter {
                 for (int j = 0; j < ringArray.length(); j++) {
                     JSONArray pointArray = ringArray.optJSONArray(j);
                     if (pointArray != null && pointArray.length() >= 2) {
-                        double longitude = pointArray.optDouble(0);
-                        double latitude = pointArray.optDouble(1);
-
-                        // Create a map with "Lat" and "Lon" keys
                         Map<String, Double> coordinate = new HashMap<>();
-                        coordinate.put("Lat", latitude);
-                        coordinate.put("Lon", longitude);
-
+                        coordinate.put("Lat", pointArray.optDouble(1));
+                        coordinate.put("Lon", pointArray.optDouble(0));
                         coordinates.add(coordinate);
                     }
                 }
@@ -148,9 +141,4 @@ public class NParkExtracter {
         }
     }
 
-    // can uncomment this for testing
-    // public static void main(String[] args) {
-    // NParkExtracter retriever = new NParkExtracter(1.385170, 103.79615);
-    // retriever.printAllParks();
-    // }
 }
