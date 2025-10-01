@@ -1,4 +1,4 @@
-package com.example.CalowinTrip;
+package com.models;
 
 public class Achievement {
     private int totalCarbonSavedExp;

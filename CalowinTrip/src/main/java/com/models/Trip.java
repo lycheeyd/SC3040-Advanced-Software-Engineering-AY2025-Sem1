@@ -1,4 +1,6 @@
-package com.example.CalowinTrip;
+package com.models;
+
+import com.ENUM.TravelMethod;
 
 public class Trip {
     private String tripId;
