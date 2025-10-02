@@ -32,7 +32,7 @@ public class UserInfoService {
         }
 
         return userInfoRepository.searchByUserIdOrName(searchTerm).stream()
-                .filter(userInfoEntity -> !userInfoEntity.getUserId().equals(currentUserId)) // Exclude the current user
+                .filter(userInfo -> !userInfo.getUserId().equals(currentUserId)) // Exclude the current user
                 .collect(Collectors.toList());
     }
 

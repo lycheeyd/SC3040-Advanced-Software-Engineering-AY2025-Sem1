@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
  * These tests use Mockito to isolate the service from the repository layer.
  */
 @ExtendWith(MockitoExtension.class)
-class UserInfoEntityServiceTest {
+class UserInfoServiceTest {
 
     @Mock
     private UserInfoRepository userInfoRepository;
@@ -131,7 +131,7 @@ class UserInfoEntityServiceTest {
 
     @Nested
     @DisplayName("Tests for getUserInfoById method")
-    class GetUserInfoEntityByIdTests {
+    class GetUserInfoByIdTests {
 
         @Test
         @DisplayName("should return the UserInfo object when the user is found")
