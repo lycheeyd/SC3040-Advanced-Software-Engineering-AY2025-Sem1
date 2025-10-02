@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.Entity.TravelMethod;
-import com.DataTransferObject.TripMetricsRequest;
-import com.DataTransferObject.TripStartRequest;
-import com.Entity.Trip;
+import com.DataTransferObject.TripMetricsRequestDTO;
+import com.DataTransferObject.TripStartRequestDTO;
+import com.Entity.TripEntity;
 import com.Services.TripService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,12 +32,12 @@ public class TripController {
     }
 
     @PostMapping("/start")
-    public Trip startTrip(@RequestBody TripStartRequest tripStartRequest) {
+    public TripEntity startTrip(@RequestBody TripStartRequestDTO tripStartRequest) {
         return tripService.startTrip(tripStartRequest);
     }
 
     @PostMapping("/retrieve-metrics")
-    public Map<String, Object> retrieveMetrics(@RequestBody TripMetricsRequest tripMetricsRequest) {
+    public Map<String, Object> retrieveMetrics(@RequestBody TripMetricsRequestDTO tripMetricsRequest) {
         return tripService.calculateTripMetrics(tripMetricsRequest);
     }
 }
