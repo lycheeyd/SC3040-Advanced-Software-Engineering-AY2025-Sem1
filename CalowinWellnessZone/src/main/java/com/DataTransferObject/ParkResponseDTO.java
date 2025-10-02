@@ -1,13 +1,13 @@
-package com.dto;
+package com.DataTransferObject;
 
 import java.util.Map;
 
-public class ParkResponse {
+public class ParkResponseDTO {
     private String name;
     private double distance;
     private Map<String, Double> closestPoint;
 
-    public ParkResponse(String name, double distance, Map<String, Double> closestPoint) {
+    public ParkResponseDTO(String name, double distance, Map<String, Double> closestPoint) {
         this.name = name;
         this.distance = distance;
         this.closestPoint = closestPoint;

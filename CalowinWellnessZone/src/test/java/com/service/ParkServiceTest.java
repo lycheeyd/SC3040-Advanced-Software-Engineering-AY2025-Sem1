@@ -2,7 +2,7 @@ package com.service;
 
 import com.Services.NParkApiService;
 import com.Managers.ParkManager;
-import com.model.NPark;
+import com.Entity.NParkEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +42,7 @@ class ParkServiceTest {
         when(parkApiClient.getErrorMessage()).thenReturn(""); // No error
 
         // Act
-        List<NPark> parks = parkService.findNearbyParks(userLat, userLon);
+        List<NParkEntity> parks = parkService.findNearbyParks(userLat, userLon);
 
         // Assert
         assertThat(parks).isNotNull();

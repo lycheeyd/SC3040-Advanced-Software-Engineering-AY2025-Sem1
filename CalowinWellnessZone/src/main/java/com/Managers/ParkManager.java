@@ -1,7 +1,7 @@
 package com.Managers;
 
 import com.Services.NParkApiService;
-import com.model.NPark;
+import com.Entity.NParkEntity;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
@@ -13,12 +13,12 @@ import java.util.*;
 public class ParkManager {
 
     private Map<String, Double> userCoordinate = new HashMap<>();
-    private List<NPark> parks = new ArrayList<>();
+    private List<NParkEntity> parks = new ArrayList<>();
 
     @Autowired
     private NParkApiService parkApiService;
 
-    public List<NPark> findNearbyParks(double userLat, double userLon) throws Exception {
+    public List<NParkEntity> findNearbyParks(double userLat, double userLon) throws Exception {
         parkApiService.initiateDownload();
         String responseData = parkApiService.getResponseData();
         String errorMessage = parkApiService.getErrorMessage();
@@ -36,7 +36,7 @@ public class ParkManager {
         }
     }
 
-    private List<NPark> extractParks(String jsonData, Map<String, Double> userCoordinate) {
+    private List<NParkEntity> extractParks(String jsonData, Map<String, Double> userCoordinate) {
         JSONObject jsonObject = new JSONObject(jsonData);
         JSONArray featuresArray = jsonObject.getJSONArray("features");
 
@@ -54,7 +54,7 @@ public class ParkManager {
 
             // Create a new NPark instance and add it to the list
             if (!coordinates.isEmpty()) {
-                NPark park = new NPark(coordinates, userCoordinate, name);
+                NParkEntity park = new NParkEntity(coordinates, userCoordinate, name);
                 parks.add(park);
             }
         }
@@ -114,7 +114,7 @@ public class ParkManager {
         if (parks.isEmpty()) {
             System.out.println("No parks found.");
         } else
-            Collections.sort(parks, Comparator.comparingDouble(NPark::getDistance));
+            Collections.sort(parks, Comparator.comparingDouble(NParkEntity::getDistance));
     }
 
     // Additional methods to set user coordinates can be added here
@@ -123,7 +123,7 @@ public class ParkManager {
         userCoordinate.put("Lon", lon);
     }
 
-    public List<NPark> getParks() {
+    public List<NParkEntity> getParks() {
         return parks;
     }
 
@@ -132,7 +132,7 @@ public class ParkManager {
         if (parks.isEmpty()) {
             System.out.println("No parks found.");
         } else {
-            for (NPark park : parks) {
+            for (NParkEntity park : parks) {
                 System.out.println("Name: " + park.getName() + " Distance: " + park.getDistance() + " Closest Point: "
                         + park.getClosestPoint());
             }

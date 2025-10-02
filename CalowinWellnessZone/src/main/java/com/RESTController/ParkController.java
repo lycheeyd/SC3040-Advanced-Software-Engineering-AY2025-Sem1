@@ -1,7 +1,7 @@
-package com.controller;
+package com.RESTController;
 
-import com.dto.ParkResponse;
-import com.model.NPark;
+import com.DataTransferObject.ParkResponseDTO;
+import com.Entity.NParkEntity;
 import com.Managers.ParkManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +21,15 @@ public class ParkController {
     @GetMapping("/parks")
     public ResponseEntity<?> getNearbyParks(@RequestParam("lat") double userLat, @RequestParam("lon") double userLon) {
         try {
-            List<NPark> parks = parkManager.findNearbyParks(userLat, userLon);
+            List<NParkEntity> parks = parkManager.findNearbyParks(userLat, userLon);
 
             if (parks.isEmpty()) {
                 return new ResponseEntity<>("No parks found near the given coordinates.", HttpStatus.NOT_FOUND);
             }
 
             // Map the list of NPark domain objects to a list of ParkResponseDto objects
-            List<ParkResponse> formattedParks = parks.stream()
-                    .map(park -> new ParkResponse(park.getName(), park.getDistance(), park.getClosestPoint()))
+            List<ParkResponseDTO> formattedParks = parks.stream()
+                    .map(park -> new ParkResponseDTO(park.getName(), park.getDistance(), park.getClosestPoint()))
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(formattedParks);
