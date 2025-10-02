@@ -1,6 +1,6 @@
 package com.Services;
 
-import com.DataTransferObject.AchievementResponse;
+import com.DataTransferObject.AchievementResponseDTO;
 import com.Entity.AchievementEntity;
 import com.repository.AchievementRepository;
 import org.springframework.stereotype.Service;
@@ -22,11 +22,11 @@ public class AchievementService {
         achievementRepository.updateAchievement(userAchievement, userId);
     }
 
-    public AchievementResponse getAchievementProgress(String userId) {
+    public AchievementResponseDTO getAchievementProgress(String userId) {
         AchievementEntity userAchievement = achievementRepository.fetchAchievementForUser(userId)
                 .orElseThrow(() -> new RuntimeException("Achievement not found for user: " + userId));
 
-        return new AchievementResponse(
+        return new AchievementResponseDTO(
                 userAchievement.getTotalCarbonSavedExp(),
                 userAchievement.getTotalCalorieBurntExp(),
                 userAchievement.getCarbonSavedMedal(),
