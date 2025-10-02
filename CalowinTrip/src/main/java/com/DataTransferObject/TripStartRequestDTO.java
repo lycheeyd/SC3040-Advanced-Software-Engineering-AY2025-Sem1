@@ -4,7 +4,7 @@ import com.Entity.TravelMethod;
 import com.Entity.CurrentLocationEntity;
 import com.Entity.LocationEntity;
 
-public class TripStartRequest {
+public class TripStartRequestDTO {
     private CurrentLocationEntity currentLocation;
     private LocationEntity destination;
     private TravelMethod travelMethod;
