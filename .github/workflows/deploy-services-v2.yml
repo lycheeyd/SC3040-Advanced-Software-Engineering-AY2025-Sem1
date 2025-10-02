@@ -28,10 +28,11 @@ jobs:
           SERVICE_DIRS=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
 
           CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | cut -d/ -f1 | sort -u)
-
+          echo "Changed files: $CHANGED"
           SERVICES=()
+
           for dir in "${SERVICE_DIRS[@]}"; do
-            if echo "$CHANGED" | grep -qE "^$dir/src" || echo "$CHANGED" | grep -qE "^$dir/(pom.xml|Dockerfile|README.md)$"; then
+            if [ -d "$dir/src" ] || [ -f "$dir/Dockerfile" ] || [ -f "$dir/README.md" ] || [ -f "$dir/pom.xml" ]; then
               SERVICES+=("\"$dir\"")
             fi
           done
