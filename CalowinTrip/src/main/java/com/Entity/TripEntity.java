@@ -2,7 +2,7 @@ package com.Entity;
 
 public class TripEntity {
     private String tripId;
-    private CurrentLocationEntity currentLocationEntity;
+    private CurrentLocationEntity currentLocation;
     private LocationEntity destination;
     private double distance;
     private int caloriesBurnt;
@@ -10,9 +10,9 @@ public class TripEntity {
     private TravelMethod travelMethod;
     private String userId;
 
-    public TripEntity(String tripId, CurrentLocationEntity currentLocationEntity, LocationEntity destination, TravelMethod travelMethod, String userId) {
+    public TripEntity(String tripId, CurrentLocationEntity currentLocation, LocationEntity destination, TravelMethod travelMethod, String userId) {
         this.tripId = tripId;
-        this.currentLocationEntity = currentLocationEntity;
+        this.currentLocation = currentLocation;
         this.destination = destination;
         this.travelMethod = travelMethod;
         this.userId = userId;
@@ -22,8 +22,8 @@ public class TripEntity {
     public String getTripId() { return tripId; }
     public void setTripId(String tripId) { this.tripId = tripId; }
 
-    public CurrentLocationEntity getCurrentLocation() { return currentLocationEntity; }
-    public void setCurrentLocation(CurrentLocationEntity currentLocationEntity) { this.currentLocationEntity = currentLocationEntity; }
+    public CurrentLocationEntity getCurrentLocation() { return currentLocation; }
+    public void setCurrentLocation(CurrentLocationEntity currentLocation) { this.currentLocation = currentLocation; }
 
     public LocationEntity getDestination() { return destination; }
     public void setDestination(LocationEntity destination) { this.destination = destination; }

@@ -4,10 +4,10 @@ import com.Entity.CurrentLocationEntity;
 import com.Entity.LocationEntity;
 import com.Entity.TravelMethod;
 
-public class TripMetricsRequestDTO {
+public class TripMetricsRequest {
     private TravelMethod travelMethod;
     private LocationEntity destination;
-    private CurrentLocationEntity currentLocationEntity;
+    private CurrentLocationEntity currentLocation;
     private String userId;
 
     // Getters and Setters
@@ -15,8 +15,8 @@ public class TripMetricsRequestDTO {
     public void setTravelMethod(TravelMethod travelMethod) { this.travelMethod = travelMethod; }
     public LocationEntity getDestination() { return destination; }
     public void setDestination(LocationEntity destination) { this.destination = destination; }
-    public CurrentLocationEntity getCurrentLocation() { return currentLocationEntity; }
-    public void setCurrentLocation(CurrentLocationEntity currentLocationEntity) { this.currentLocationEntity = currentLocationEntity; }
+    public CurrentLocationEntity getCurrentLocation() { return currentLocation; }
+    public void setCurrentLocation(CurrentLocationEntity currentLocation) { this.currentLocation = currentLocation; }
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
 }
