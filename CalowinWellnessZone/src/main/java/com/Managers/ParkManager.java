@@ -16,7 +16,7 @@ public class ParkManager {
     private List<NPark> parks = new ArrayList<>();
 
     @Autowired
-    private final NParkApiService parkApiService;
+    private NParkApiService parkApiService;
 
     public List<NPark> findNearbyParks(double userLat, double userLon) throws Exception {
         parkApiService.initiateDownload();
