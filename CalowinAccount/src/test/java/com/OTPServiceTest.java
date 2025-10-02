@@ -2,7 +2,7 @@ package com;
 
 import com.Account.Entities.ActionType;
 import com.Account.Entities.OTPEntry;
-import com.Account.Services.EmailService;
+import com.Account.Services.EmailService.EmailFactory;
 import com.Account.Services.OTPService;
 import com.Database.CalowinSecureDB.OTPRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +26,7 @@ class OTPServiceTest {
     private OTPRepository otpRepository;
 
     @Mock
-    private EmailService emailService;
+    private EmailFactory emailService;
 
     @InjectMocks
     private OTPService otpService;
