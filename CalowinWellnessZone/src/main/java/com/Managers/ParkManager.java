@@ -1,6 +1,6 @@
-package com.service;
+package com.Managers;
 
-import com.client.NParkApiClient;
+import com.Services.NParkApiService;
 import com.model.NPark;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -9,18 +9,18 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class ParkService {
+public class ParkManager {
 
     private Map<String, Double> userCoordinate = new HashMap<>();
     private List<NPark> parks = new ArrayList<>();
 
     @Autowired
-    private final NParkApiClient parkApiClient;
+    private final NParkApiService parkApiService;
 
     public List<NPark> findNearbyParks(double userLat, double userLon) throws Exception {
-        parkApiClient.initiateDownload();
-        String responseData = parkApiClient.getResponseData();
-        String errorMessage = parkApiClient.getErrorMessage();
+        parkApiService.initiateDownload();
+        String responseData = parkApiService.getResponseData();
+        String errorMessage = parkApiService.getErrorMessage();
 
         if (errorMessage != null && !errorMessage.isEmpty()) {
             throw new Exception("Data download error: " + errorMessage);

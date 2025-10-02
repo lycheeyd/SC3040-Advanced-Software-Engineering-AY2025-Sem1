@@ -2,7 +2,7 @@ package com.controller;
 
 import com.dto.ParkResponse;
 import com.model.NPark;
-import com.service.ParkService;
+import com.Managers.ParkManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,12 +15,12 @@ import java.util.stream.Collectors;
 public class ParkController {
 
     @Autowired
-    private ParkService parkService;
+    private ParkManager parkManager;
 
     @GetMapping("/parks")
     public ResponseEntity<?> getNearbyParks(@RequestParam("lat") double userLat, @RequestParam("lon") double userLon) {
         try {
-            List<NPark> parks = parkService.findNearbyParks(userLat, userLon);
+            List<NPark> parks = parkManager.findNearbyParks(userLat, userLon);
 
             if (parks.isEmpty()) {
                 return new ResponseEntity<>("No parks found near the given coordinates.", HttpStatus.NOT_FOUND);
