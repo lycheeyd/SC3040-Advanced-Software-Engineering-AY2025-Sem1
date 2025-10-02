@@ -1,0 +1,87 @@
+name: Manual Full Deploy to Hugging Face
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ["CalowinAccount", "CalowinFriends", "CalowinNotification", "CalowinSpringNode", "CalowinTrip", "CalowinWellnessZone"]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build fresh JAR
+        run: |
+          cd ${{ matrix.service }}
+          mvn clean package -DskipTests
+          echo "Contents of target folder:"
+          ls -lh target/
+          echo "Built $(ls target/*-SNAPSHOT.jar)"
+
+      - name: Upload built JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-jar
+          path: ${{ matrix.service }}/target/*-SNAPSHOT.jar
+
+      - name: Update LAST_BUILD_ID repository variable
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          VAR_NAME="LAST_BUILD_ID_${{ matrix.service }}"
+          gh variable set "$VAR_NAME" --repo "${{ github.repository }}" --body "${{ github.run_id }}"
+          echo "Updated repository variable $VAR_NAME = ${{ github.run_id }}"
+
+      - name: Push to HuggingFace
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          SERVICE_DIR=${{ matrix.service }}
+          GITHUB_REPO="${{ github.repository }}"
+          GITHUB_BUILD_ID="${{ github.run_id }}"   # always use fresh run_id
+
+          echo "Using GITHUB_BUILD_ID: $GITHUB_BUILD_ID"
+
+          # Clone HF repo
+          git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR hf_upload/$SERVICE_DIR
+          cd hf_upload/$SERVICE_DIR
+          git checkout main || git checkout -b main
+
+          # Copy latest build & metadata
+          cp ../../$SERVICE_DIR/Dockerfile . || true
+          cp ../../$SERVICE_DIR/README.md . || true
+
+          cat <<EOF > build-vars.env
+          SERVICE_NAME=$SERVICE_DIR
+          GITHUB_BUILD_ID=$GITHUB_BUILD_ID
+          GITHUB_REPO=$GITHUB_REPO
+          EOF
+
+          git config user.name "CI/CD Pipeline"
+          git config user.email "cicd-pipeline@github.com"
+
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Fresh deploy for $SERVICE_DIR"
+            git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR main
+            echo "Pushed fresh deployment for $SERVICE_DIR"
+          else
+            echo "No changes to commit for $SERVICE_DIR"
+          fi
