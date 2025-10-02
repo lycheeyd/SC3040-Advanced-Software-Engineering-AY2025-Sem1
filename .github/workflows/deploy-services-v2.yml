@@ -31,7 +31,7 @@ jobs:
 
           SERVICES=()
           for dir in "${SERVICE_DIRS[@]}"; do
-            if echo "$CHANGED" | grep -qE "^$dir/(src/|Dockerfile|README.md|pom.xml)"; then
+            if echo "$CHANGED" | grep -qE "^$dir/src/" || echo "$CHANGED" | grep -qE "^$dir/(pom\.xml|Dockerfile|README\.md)$"; then
               SERVICES+=("\"$dir\"")
             fi
           done
