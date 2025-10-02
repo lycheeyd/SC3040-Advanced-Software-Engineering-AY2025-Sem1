@@ -1,20 +1,18 @@
-package com.models;
+package com.Entity;
 
-import com.ENUM.TravelMethod;
-
-public class Trip {
+public class TripEntity {
     private String tripId;
-    private CurrentLocation currentLocation;
-    private Location destination;
+    private CurrentLocationEntity currentLocationEntity;
+    private LocationEntity destination;
     private double distance;
     private int caloriesBurnt;
     private int carbonSaved;
     private TravelMethod travelMethod;
     private String userId;
 
-    public Trip(String tripId, CurrentLocation currentLocation, Location destination, TravelMethod travelMethod, String userId) {
+    public TripEntity(String tripId, CurrentLocationEntity currentLocationEntity, LocationEntity destination, TravelMethod travelMethod, String userId) {
         this.tripId = tripId;
-        this.currentLocation = currentLocation;
+        this.currentLocationEntity = currentLocationEntity;
         this.destination = destination;
         this.travelMethod = travelMethod;
         this.userId = userId;
@@ -24,11 +22,11 @@ public class Trip {
     public String getTripId() { return tripId; }
     public void setTripId(String tripId) { this.tripId = tripId; }
 
-    public CurrentLocation getCurrentLocation() { return currentLocation; }
-    public void setCurrentLocation(CurrentLocation currentLocation) { this.currentLocation = currentLocation; }
+    public CurrentLocationEntity getCurrentLocation() { return currentLocationEntity; }
+    public void setCurrentLocation(CurrentLocationEntity currentLocationEntity) { this.currentLocationEntity = currentLocationEntity; }
 
-    public Location getDestination() { return destination; }
-    public void setDestination(Location destination) { this.destination = destination; }
+    public LocationEntity getDestination() { return destination; }
+    public void setDestination(LocationEntity destination) { this.destination = destination; }
 
     public double getDistance() { return distance; }
     public void setDistance(double distance) { this.distance = distance; }

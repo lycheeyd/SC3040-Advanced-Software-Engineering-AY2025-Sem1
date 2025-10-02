@@ -1,8 +1,8 @@
 package com.Services;
 
 import com.Entity.TravelMethod;
-import com.DataTransferObject.TripMetricsRequest;
-import com.DataTransferObject.TripStartRequest;
+import com.DataTransferObject.TripMetricsRequestDTO;
+import com.DataTransferObject.TripStartRequestDTO;
 import com.Entity.*;
 import com.repository.TripRepository;
 import com.repository.UserRepository;
@@ -30,7 +30,7 @@ public class TripService {
         this.achievementService = achievementService;
     }
 
-    public Trip startTrip(TripStartRequest request) {
+    public TripEntity startTrip(TripStartRequestDTO request) {
         double distance = calculateDistance(request.getCurrentLocation(), request.getDestination());
         double weight = userRepository.getUserWeight(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User weight not found for userId: " + request.getUserId()));
@@ -38,7 +38,7 @@ public class TripService {
         int caloriesBurned = calculateCalories(request.getTravelMethod(), distance, weight);
         int carbonSaved = calculateCarbon(request.getTravelMethod(), distance);
 
-        Trip trip = new Trip(
+        TripEntity trip = new TripEntity(
                 generateUniqueTripId(),
                 request.getCurrentLocation(),
                 request.getDestination(),
@@ -57,7 +57,7 @@ public class TripService {
         return trip;
     }
 
-    public Map<String, Object> calculateTripMetrics(TripMetricsRequest request) {
+    public Map<String, Object> calculateTripMetrics(TripMetricsRequestDTO request) {
         double distance = calculateDistance(request.getCurrentLocation(), request.getDestination());
         double weight = userRepository.getUserWeight(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User weight not found for userId: " + request.getUserId()));
