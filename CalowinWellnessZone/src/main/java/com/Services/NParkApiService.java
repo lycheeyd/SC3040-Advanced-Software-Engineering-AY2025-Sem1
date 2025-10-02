@@ -15,7 +15,7 @@ public class NParkApiService {
     private String datasetId = ""; // d_77d7ec97be83d44f61b85454f844382f for this specific data
     private String initiateUrl = "";
 
-    public NParkApiService(String datasetId) {
+    public NParkApiService(@Value("${np.park.datasetId}") String datasetId) {
         this.datasetId = datasetId;
         this.initiateUrl = "https://api-open.data.gov.sg/v1/public/api/datasets/" + datasetId + "/initiate-download";
     }
