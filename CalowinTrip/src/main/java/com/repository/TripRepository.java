@@ -1,7 +1,7 @@
 package com.repository;
 
-import com.config.DatabaseConnection;
-import com.models.Trip;
+import com.Database.DatabaseConnection;
+import com.Entity.TripEntity;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Repository
 public class TripRepository {
 
-    public void insertTripIntoDatabase(Trip trip) {
+    public void insertTripIntoDatabase(TripEntity trip) {
         String insertSQL = "INSERT INTO trips (trip_id, start_location, start_longitude, "
                 + "start_latitude, end_location, end_latitude, "
                 + "end_longitude, distance, calories_burnt, carbon_saved, trip_time, travel_method, status, user_id) "

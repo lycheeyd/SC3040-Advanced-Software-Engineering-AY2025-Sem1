@@ -1,6 +1,6 @@
 package com.repository;
 
-import com.config.DatabaseConnection;
+import com.Database.DatabaseConnection;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;

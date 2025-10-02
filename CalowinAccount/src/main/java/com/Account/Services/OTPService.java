@@ -36,6 +36,7 @@ public class OTPService {
                         .ifPresent(existingOtp -> otpRepository.delete(existingOtp));
 
         // Save new OTP to database (CALOWIN_SECURE)
+        System.out.println(email, otpCode, expiresAt, type);
         OTPEntry otpEntity = new OTPEntry(email, otpCode, expiresAt, type);
         otpRepository.save(otpEntity);
 
