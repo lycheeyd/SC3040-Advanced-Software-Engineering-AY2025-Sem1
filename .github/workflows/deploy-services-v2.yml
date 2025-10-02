@@ -46,6 +46,7 @@ jobs:
     if: needs.detect-changes.outputs.changed-services != '[]'
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix: 
         service: ${{ fromJson(needs.detect-changes.outputs.changed-services) }}
 
@@ -106,6 +107,7 @@ jobs:
     if: needs.detect-changes.outputs.changed-services != '[]'
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.changed-services) }}
     steps:
