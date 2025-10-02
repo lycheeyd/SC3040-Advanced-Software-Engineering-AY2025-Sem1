@@ -1,8 +1,8 @@
-package com.controller;
+package com.RESTController;
 
 
-import com.dto.AchievementResponse;
-import com.service.AchievementService;
+import com.DataTransferObject.AchievementResponse;
+import com.Services.AchievementService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

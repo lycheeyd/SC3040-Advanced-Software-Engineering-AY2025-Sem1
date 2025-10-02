@@ -1,15 +1,15 @@
-package com.controller;
+package com.RESTController;
 
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import com.ENUM.TravelMethod;
-import com.dto.TripMetricsRequest;
-import com.dto.TripStartRequest;
-import com.models.Trip;
-import com.service.TripService;
+import com.Entity.TravelMethod;
+import com.DataTransferObject.TripMetricsRequest;
+import com.DataTransferObject.TripStartRequest;
+import com.Entity.Trip;
+import com.Services.TripService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
