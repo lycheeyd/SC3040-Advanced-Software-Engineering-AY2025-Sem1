@@ -1,4 +1,4 @@
-package com.client;
+package com.Services;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,14 +8,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
-public class NParkApiClient {
+@Service
+public class NParkApiService {
     private String datasetId = ""; // d_77d7ec97be83d44f61b85454f844382f for this specific data
     private String initiateUrl = "";
 
-    public NParkApiClient(String datasetId) {
+    public NParkApiService(String datasetId) {
         this.datasetId = datasetId;
         this.initiateUrl = "https://api-open.data.gov.sg/v1/public/api/datasets/" + datasetId + "/initiate-download";
     }
