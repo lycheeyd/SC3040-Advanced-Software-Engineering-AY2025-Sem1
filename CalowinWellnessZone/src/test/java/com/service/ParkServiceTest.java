@@ -1,6 +1,6 @@
 package com.service;
 
-import com.client.NParkApiClient;
+import com.Services.NParkApiService;
 import com.model.NPark;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,11 +20,11 @@ class ParkServiceTest {
 
     // We mock the ParkApiClient because we don't want to make real HTTP calls in a unit test
     @Mock
-    private NParkApiClient parkApiClient;
+    private NParkApiService parkApiClient;
 
     // This injects the mock ParkApiClient into our ParkService instance
     @InjectMocks
-    private ParkService parkService;
+    private ParkManager parkService;
 
     @Test
     @DisplayName("findNearbyParks should return a list of NParks when API call is successful")
