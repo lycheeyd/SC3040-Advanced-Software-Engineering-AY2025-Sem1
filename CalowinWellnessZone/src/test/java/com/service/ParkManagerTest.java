@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ParkServiceTest {
+class ParkManagerTest {
 
     // We mock the ParkApiClient because we don't want to make real HTTP calls in a unit test
     @Mock
