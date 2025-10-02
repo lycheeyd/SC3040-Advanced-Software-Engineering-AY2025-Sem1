@@ -14,11 +14,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api")
 public class ParkController {
 
-    private final ParkService parkService;
-
-    public ParkController(ParkService parkService) {
-        this.parkService = parkService;
-    }
+    @Autowired
+    private ParkService parkService;
 
     @GetMapping("/parks")
     public ResponseEntity<?> getNearbyParks(@RequestParam("lat") double userLat, @RequestParam("lon") double userLon) {

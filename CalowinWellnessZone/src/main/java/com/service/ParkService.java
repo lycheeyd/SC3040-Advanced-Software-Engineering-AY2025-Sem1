@@ -14,11 +14,8 @@ public class ParkService {
     private Map<String, Double> userCoordinate = new HashMap<>();
     private List<NPark> parks = new ArrayList<>();
 
+    @Autowired
     private final NParkApiClient parkApiClient;
-
-    public ParkService(NParkApiClient parkApiClient) {
-        this.parkApiClient = parkApiClient;
-    }
 
     public List<NPark> findNearbyParks(double userLat, double userLon) throws Exception {
         parkApiClient.initiateDownload();
