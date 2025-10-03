@@ -1,4 +1,4 @@
-package com.DataTransferObject;
+package com.dto;
 
 import java.util.Map;
 
