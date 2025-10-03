@@ -1,4 +1,4 @@
-package com.Entity;
+package com.ENUM;
 
 public enum FriendRequestStatus {
     PENDING,

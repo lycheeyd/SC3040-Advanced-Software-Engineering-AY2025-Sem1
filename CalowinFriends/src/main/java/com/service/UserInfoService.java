@@ -1,4 +1,4 @@
-package com.Services;
+package com.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.Entity.UserInfoEntity;
+import com.models.UserInfoEntity;
 import com.repository.UserInfoRepository;
 
 @Service

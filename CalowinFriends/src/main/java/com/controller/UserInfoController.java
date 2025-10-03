@@ -1,4 +1,4 @@
-package com.RESTController;
+package com.controller;
 
 import java.util.List;
 
@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.Entity.UserInfoEntity;
-import com.Services.UserInfoService;
+import com.models.UserInfoEntity;
+import com.service.UserInfoService;
 
 @RestController
 @RequestMapping("/api/users")

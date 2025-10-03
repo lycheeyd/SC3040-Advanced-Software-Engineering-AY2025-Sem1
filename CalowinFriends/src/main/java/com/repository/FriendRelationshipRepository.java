@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.Entity.FriendRelationshipEntity;
-import com.Entity.FriendRelationshipIdEntity;
+import com.models.FriendRelationshipEntity;
+import com.models.FriendRelationshipIdEntity;
 @Repository
 public interface FriendRelationshipRepository extends JpaRepository<FriendRelationshipEntity, FriendRelationshipIdEntity> {
 

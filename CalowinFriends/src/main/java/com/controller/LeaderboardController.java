@@ -1,4 +1,4 @@
-package com.RESTController;
+package com.controller;
 
 import java.util.List;
 
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.DataTransferObject.AchievementDTO;
-import com.Services.LeaderboardService;
+import com.dto.AchievementDTO;
+import com.service.LeaderboardService;
 
 @RestController
 @RequestMapping("/api/leaderboard")

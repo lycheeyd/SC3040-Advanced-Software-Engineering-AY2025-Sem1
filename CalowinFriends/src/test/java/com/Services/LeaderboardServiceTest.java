@@ -1,10 +1,11 @@
 package com.Services;
 
-import com.DataTransferObject.AchievementDTO;
-import com.Entity.AchievementEntity;
-import com.Entity.FriendRelationshipEntity;
-import com.Entity.FriendRelationshipIdEntity;
+import com.dto.AchievementDTO;
+import com.models.AchievementEntity;
+import com.models.FriendRelationshipEntity;
+import com.models.FriendRelationshipIdEntity;
 import com.repository.FriendRelationshipRepository;
+import com.service.LeaderboardService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

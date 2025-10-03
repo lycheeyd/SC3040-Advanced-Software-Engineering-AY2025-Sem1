@@ -1,4 +1,4 @@
-package com.Services;
+package com.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,10 +8,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.Entity.FriendStatus;
-import com.DataTransferObject.FriendRelationshipDTO;
-import com.Entity.FriendRelationshipEntity;
-import com.Entity.FriendRelationshipIdEntity;
+import com.ENUM.FriendStatus;
+import com.dto.FriendRelationshipDTO;
+import com.models.FriendRelationshipEntity;
+import com.models.FriendRelationshipIdEntity;
 import com.repository.FriendRelationshipRepository;
 
 import jakarta.transaction.Transactional;

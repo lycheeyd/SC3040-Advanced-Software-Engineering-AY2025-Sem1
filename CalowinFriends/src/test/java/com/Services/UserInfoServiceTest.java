@@ -1,7 +1,8 @@
 package com.Services;
 
-import com.Entity.UserInfoEntity;
+import com.models.UserInfoEntity;
 import com.repository.UserInfoRepository;
+import com.service.UserInfoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
