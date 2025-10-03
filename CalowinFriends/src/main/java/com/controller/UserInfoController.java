@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.models.UserInfoEntity;
+import com.models.UserInfo;
 import com.service.UserInfoService;
 
 @RestController
@@ -27,8 +27,8 @@ public class UserInfoController {
      * @return a list of matching users excluding the current user
      */
     @GetMapping("/search")
-    public ResponseEntity<List<UserInfoEntity>> searchUsers(@RequestParam String searchTerm, @RequestParam String currentUserId) {
-        List<UserInfoEntity> results = userInfoService.searchByUserIdOrName(searchTerm, currentUserId);
+    public ResponseEntity<List<UserInfo>> searchUsers(@RequestParam String searchTerm, @RequestParam String currentUserId) {
+        List<UserInfo> results = userInfoService.searchByUserIdOrName(searchTerm, currentUserId);
         return ResponseEntity.ok(results);
     }
 }

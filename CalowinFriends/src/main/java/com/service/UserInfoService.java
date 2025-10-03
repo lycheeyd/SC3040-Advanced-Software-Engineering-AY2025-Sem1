@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.models.UserInfoEntity;
+import com.models.UserInfo;
 import com.repository.UserInfoRepository;
 
 @Service
@@ -25,7 +25,7 @@ public class UserInfoService {
      * @return a list of UserInfo matching the search term, excluding the current
      *         user
      */
-    public List<UserInfoEntity> searchByUserIdOrName(String searchTerm, String currentUserId) {
+    public List<UserInfo> searchByUserIdOrName(String searchTerm, String currentUserId) {
         // Return an empty list if the search term is empty
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return List.of();
@@ -42,8 +42,8 @@ public class UserInfoService {
      * @param userId the ID of the user
      * @return the UserInfo object, or null if not found
      */
-    public UserInfoEntity getUserInfoById(String userId) {
-        Optional<UserInfoEntity> userInfoOptional = userInfoRepository.findById(userId);
+    public UserInfo getUserInfoById(String userId) {
+        Optional<UserInfo> userInfoOptional = userInfoRepository.findById(userId);
         return userInfoOptional.orElse(null);
     }
 
@@ -54,7 +54,7 @@ public class UserInfoService {
      * @return the name of the user, or null if not found
      */
     public String getUserNameById(String userId) {
-        Optional<UserInfoEntity> userInfoOptional = userInfoRepository.findById(userId);
-        return userInfoOptional.map(UserInfoEntity::getName).orElse(null);
+        Optional<UserInfo> userInfoOptional = userInfoRepository.findById(userId);
+        return userInfoOptional.map(UserInfo::getName).orElse(null);
     }
 }

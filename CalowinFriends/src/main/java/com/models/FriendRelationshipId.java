@@ -6,7 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public class FriendRelationshipIdEntity implements Serializable {
+public class FriendRelationshipId implements Serializable {
     @Column(name = "Unique_ID")
     private String uniqueId;
 
@@ -14,9 +14,9 @@ public class FriendRelationshipIdEntity implements Serializable {
     private String friendUniqueId;
 
     // Constructors, equals, and hashCode methods
-    public FriendRelationshipIdEntity() {}
+    public FriendRelationshipId() {}
 
-    public FriendRelationshipIdEntity(String uniqueId, String friendUniqueId) {
+    public FriendRelationshipId(String uniqueId, String friendUniqueId) {
         this.uniqueId = uniqueId;
         this.friendUniqueId = friendUniqueId;
     }
@@ -41,7 +41,7 @@ public class FriendRelationshipIdEntity implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FriendRelationshipIdEntity that = (FriendRelationshipIdEntity) o;
+        FriendRelationshipId that = (FriendRelationshipId) o;
         return uniqueId.equals(that.uniqueId) && friendUniqueId.equals(that.friendUniqueId);
     }
 
