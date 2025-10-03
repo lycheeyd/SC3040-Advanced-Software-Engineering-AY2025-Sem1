@@ -1,14 +1,14 @@
 package com.Relationship.Entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import jakarta.persistence.Column;
 
 @Entity
 @Table(name = "FriendRelationship")  // Map to your database table
-public class FriendRelationship {
+public class FriendRelationshipEntity {
 
     @Id
     @Column(name = "Unique_ID", length = 8, nullable = false, unique = true)
@@ -23,6 +23,8 @@ public class FriendRelationship {
     @Column(name = "status")
     private String status;
 
+    public FriendRelationshipEntity() {
+    }
     // Add other fields and their respective getters and setters
 
     public String getUniqueID() {
