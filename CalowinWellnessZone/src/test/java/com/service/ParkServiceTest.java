@@ -1,8 +1,7 @@
 package com.service;
 
-import com.Services.NParkApiService;
-import com.Managers.ParkManager;
-import com.Entity.NParkEntity;
+import com.client.NParkApiClient;
+import com.model.NPark;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,15 +16,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ParkManagerTest {
+class ParkServiceTest {
 
     // We mock the ParkApiClient because we don't want to make real HTTP calls in a unit test
     @Mock
-    private NParkApiService parkApiClient;
+    private NParkApiClient parkApiClient;
 
     // This injects the mock ParkApiClient into our ParkService instance
     @InjectMocks
-    private ParkManager parkService;
+    private ParkService parkService;
 
     @Test
     @DisplayName("findNearbyParks should return a list of NParks when API call is successful")
@@ -42,7 +41,7 @@ class ParkManagerTest {
         when(parkApiClient.getErrorMessage()).thenReturn(""); // No error
 
         // Act
-        List<NParkEntity> parks = parkService.findNearbyParks(userLat, userLon);
+        List<NPark> parks = parkService.findNearbyParks(userLat, userLon);
 
         // Assert
         assertThat(parks).isNotNull();

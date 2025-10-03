@@ -1,4 +1,4 @@
-package com.Services;
+package com.client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 
 @Service
-public class NParkApiService {
+public class NParkApiClient {
     private String datasetId = ""; // d_77d7ec97be83d44f61b85454f844382f for this specific data
     private String initiateUrl = "";
 
-    public NParkApiService(@Value("${np.park.datasetId}") String datasetId) {
+    public NParkApiClient(@Value("${np.park.datasetId}") String datasetId) {
         this.datasetId = datasetId;
         this.initiateUrl = "https://api-open.data.gov.sg/v1/public/api/datasets/" + datasetId + "/initiate-download";
     }

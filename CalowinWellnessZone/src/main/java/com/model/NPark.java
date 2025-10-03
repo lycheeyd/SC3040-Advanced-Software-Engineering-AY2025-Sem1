@@ -1,18 +1,18 @@
-package com.Entity;
+package com.model;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 
-public class NParkEntity {
+public class NPark {
     private double distance;
     private List<Map<String, Double>> coordinates = new ArrayList<>();
     private Map<String, Double> closestPoint = new HashMap<>();
     private Map<String, Double> userCoordinate = new HashMap<>();
     private String name;
 
-    public NParkEntity(List<Map<String, Double>> coordinates, Map<String, Double> userCoordinate, String name) {
+    public NPark(List<Map<String, Double>> coordinates, Map<String, Double> userCoordinate, String name) {
         this.coordinates = coordinates;
         this.userCoordinate = userCoordinate;
         this.name = name;
