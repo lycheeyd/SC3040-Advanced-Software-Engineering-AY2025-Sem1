@@ -18,7 +18,6 @@ public class AchievementRepository {
     @Autowired
     public AchievementRepository(@Qualifier("calowin-dbDataSource") DataSource dataSource) {
         this.dataSource = dataSource;
-        //
     }
     public Optional<AchievementEntity> fetchAchievementForUser(String userId) {
         String query = "SELECT * FROM achievement WHERE user_id = ?";
