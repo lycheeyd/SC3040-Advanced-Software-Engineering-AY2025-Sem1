@@ -2,8 +2,8 @@ package com.Services;
 
 import com.ENUM.FriendStatus;
 import com.dto.FriendRelationshipDTO;
-import com.models.FriendRelationshipEntity;
-import com.models.FriendRelationshipIdEntity;
+import com.models.FriendRelationship;
+import com.models.FriendRelationshipId;
 import com.repository.FriendRelationshipRepository;
 import com.service.FriendRelationshipService;
 import com.service.UserInfoService;
@@ -54,9 +54,9 @@ class FriendRelationshipServiceTest {
     }
 
     // Helper method to create relationship objects
-    private FriendRelationshipEntity createRelationship(String senderId, String receiverId, String status) {
-        FriendRelationshipEntity rel = new FriendRelationshipEntity();
-        rel.setId(new FriendRelationshipIdEntity(senderId, receiverId));
+    private FriendRelationship createRelationship(String senderId, String receiverId, String status) {
+        FriendRelationship rel = new FriendRelationship();
+        rel.setId(new FriendRelationshipId(senderId, receiverId));
         rel.setStatus(status);
         rel.setFriendedOn(LocalDateTime.now());
         return rel;
@@ -66,13 +66,13 @@ class FriendRelationshipServiceTest {
     @DisplayName("sendFriendRequest should succeed when no existing request")
     void sendFriendRequest_Success() {
         // ARRANGE
-        FriendRelationshipIdEntity id = new FriendRelationshipIdEntity(userA_Id, userB_Id);
-        FriendRelationshipIdEntity reverseId = new FriendRelationshipIdEntity(userB_Id, userA_Id);
-        FriendRelationshipEntity pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
+        FriendRelationshipId id = new FriendRelationshipId(userA_Id, userB_Id);
+        FriendRelationshipId reverseId = new FriendRelationshipId(userB_Id, userA_Id);
+        FriendRelationship pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
 
         when(repository.existsById(id)).thenReturn(false);
         when(repository.existsById(reverseId)).thenReturn(false);
-        when(repository.save(any(FriendRelationshipEntity.class))).thenReturn(pendingRequest);
+        when(repository.save(any(FriendRelationship.class))).thenReturn(pendingRequest);
 
         // ACT
         FriendRelationshipDTO result = friendRelationshipService.sendFriendRequest(userA_Id, userB_Id);
@@ -82,14 +82,14 @@ class FriendRelationshipServiceTest {
         assertThat(result.getStatus()).isEqualTo("PENDING");
         // --- THIS LINE IS CORRECTED ---
         assertThat(result.getFriendUserId()).isEqualTo(userB_Id);
-        verify(repository).save(any(FriendRelationshipEntity.class));
+        verify(repository).save(any(FriendRelationship.class));
     }
 
     @Test
     @DisplayName("sendFriendRequest should throw exception if request already exists")
     void sendFriendRequest_ThrowsExceptionWhenExists() {
         // ARRANGE
-        FriendRelationshipIdEntity id = new FriendRelationshipIdEntity(userA_Id, userB_Id);
+        FriendRelationshipId id = new FriendRelationshipId(userA_Id, userB_Id);
         when(repository.existsById(id)).thenReturn(true);
 
         // ACT & ASSERT
@@ -103,7 +103,7 @@ class FriendRelationshipServiceTest {
     @DisplayName("getPendingRequests should return a list of pending requests for a user")
     void getPendingRequests_ReturnsPendingList() {
         // ARRANGE
-        FriendRelationshipEntity pendingFromB = createRelationship(userB_Id, userA_Id, "PENDING");
+        FriendRelationship pendingFromB = createRelationship(userB_Id, userA_Id, "PENDING");
         when(repository.findByIdFriendUniqueIdAndStatus(userA_Id, "PENDING")).thenReturn(List.of(pendingFromB));
 
         // ACT
@@ -118,25 +118,25 @@ class FriendRelationshipServiceTest {
     @DisplayName("acceptFriendRequest should update status to ACCEPTED")
     void acceptFriendRequest_UpdatesStatus() {
         // ARRANGE
-        FriendRelationshipEntity pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
-        FriendRelationshipEntity acceptedRequest = createRelationship(userA_Id, userB_Id, "ACCEPTED");
+        FriendRelationship pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
+        FriendRelationship acceptedRequest = createRelationship(userA_Id, userB_Id, "ACCEPTED");
 
-        when(repository.findById(any(FriendRelationshipIdEntity.class))).thenReturn(Optional.of(pendingRequest));
-        when(repository.save(any(FriendRelationshipEntity.class))).thenReturn(acceptedRequest);
+        when(repository.findById(any(FriendRelationshipId.class))).thenReturn(Optional.of(pendingRequest));
+        when(repository.save(any(FriendRelationship.class))).thenReturn(acceptedRequest);
 
         // ACT
         FriendRelationshipDTO result = friendRelationshipService.acceptFriendRequest(userA_Id, userB_Id);
 
         // ASSERT
         assertThat(result.getStatus()).isEqualTo("ACCEPTED");
-        verify(repository).save(any(FriendRelationshipEntity.class));
+        verify(repository).save(any(FriendRelationship.class));
     }
 
     @Test
     @DisplayName("getFriendList should return a list of accepted friends")
     void getFriendList_ReturnsAcceptedFriends() {
         // ARRANGE
-        FriendRelationshipEntity acceptedFriendship = createRelationship(userA_Id, userB_Id, "ACCEPTED");
+        FriendRelationship acceptedFriendship = createRelationship(userA_Id, userB_Id, "ACCEPTED");
         when(repository.findByIdUniqueIdOrIdFriendUniqueIdAndStatus(userA_Id, userA_Id, "ACCEPTED")).thenReturn(List.of(acceptedFriendship));
 
         // ACT
@@ -152,9 +152,9 @@ class FriendRelationshipServiceTest {
     @DisplayName("getRelationshipStatus should return FRIEND for an accepted relationship")
     void getRelationshipStatus_ReturnsFriend() {
         // ARRANGE
-        FriendRelationshipEntity accepted = createRelationship(userA_Id, userB_Id, "ACCEPTED");
-        when(repository.findById(new FriendRelationshipIdEntity(userA_Id, userB_Id))).thenReturn(Optional.of(accepted));
-        when(repository.findById(new FriendRelationshipIdEntity(userB_Id, userA_Id))).thenReturn(Optional.empty());
+        FriendRelationship accepted = createRelationship(userA_Id, userB_Id, "ACCEPTED");
+        when(repository.findById(new FriendRelationshipId(userA_Id, userB_Id))).thenReturn(Optional.of(accepted));
+        when(repository.findById(new FriendRelationshipId(userB_Id, userA_Id))).thenReturn(Optional.empty());
 
         // ACT
         FriendStatus status = friendRelationshipService.getRelationshipStatus(userA_Id, userB_Id);
@@ -167,9 +167,9 @@ class FriendRelationshipServiceTest {
     @DisplayName("getRelationshipStatus should return REQUESTSENT for a pending relationship")
     void getRelationshipStatus_ReturnsRequestSent() {
         // ARRANGE
-        FriendRelationshipEntity pending = createRelationship(userA_Id, userB_Id, "PENDING");
-        when(repository.findById(new FriendRelationshipIdEntity(userA_Id, userB_Id))).thenReturn(Optional.of(pending));
-        when(repository.findById(new FriendRelationshipIdEntity(userB_Id, userA_Id))).thenReturn(Optional.empty());
+        FriendRelationship pending = createRelationship(userA_Id, userB_Id, "PENDING");
+        when(repository.findById(new FriendRelationshipId(userA_Id, userB_Id))).thenReturn(Optional.of(pending));
+        when(repository.findById(new FriendRelationshipId(userB_Id, userA_Id))).thenReturn(Optional.empty());
 
         // ACT
         FriendStatus status = friendRelationshipService.getRelationshipStatus(userA_Id, userB_Id);
@@ -182,8 +182,8 @@ class FriendRelationshipServiceTest {
     @DisplayName("removeFriend should delete the relationship")
     void removeFriend_DeletesRelationship() {
         // ARRANGE
-        FriendRelationshipEntity accepted = createRelationship(userA_Id, userB_Id, "ACCEPTED");
-        when(repository.findById(new FriendRelationshipIdEntity(userA_Id, userB_Id))).thenReturn(Optional.of(accepted));
+        FriendRelationship accepted = createRelationship(userA_Id, userB_Id, "ACCEPTED");
+        when(repository.findById(new FriendRelationshipId(userA_Id, userB_Id))).thenReturn(Optional.of(accepted));
 
         // ACT
         friendRelationshipService.removeFriend(userA_Id, userB_Id);
@@ -196,7 +196,7 @@ class FriendRelationshipServiceTest {
     @DisplayName("removeFriend should throw exception if no friendship is found")
     void removeFriend_ThrowsExceptionWhenNotFound() {
         // ARRANGE
-        when(repository.findById(any(FriendRelationshipIdEntity.class))).thenReturn(Optional.empty());
+        when(repository.findById(any(FriendRelationshipId.class))).thenReturn(Optional.empty());
 
         // ACT & ASSERT
         assertThrows(IllegalArgumentException.class, () -> {
@@ -210,26 +210,26 @@ class FriendRelationshipServiceTest {
     @DisplayName("rejectFriendRequest should update status to REJECTED")
     void rejectFriendRequest_UpdatesStatus() {
         // ARRANGE
-        FriendRelationshipEntity pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
-        FriendRelationshipEntity rejectedRequest = createRelationship(userA_Id, userB_Id, "REJECTED");
+        FriendRelationship pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
+        FriendRelationship rejectedRequest = createRelationship(userA_Id, userB_Id, "REJECTED");
 
-        when(repository.findById(any(FriendRelationshipIdEntity.class))).thenReturn(Optional.of(pendingRequest));
-        when(repository.save(any(FriendRelationshipEntity.class))).thenReturn(rejectedRequest);
+        when(repository.findById(any(FriendRelationshipId.class))).thenReturn(Optional.of(pendingRequest));
+        when(repository.save(any(FriendRelationship.class))).thenReturn(rejectedRequest);
 
         // ACT
         FriendRelationshipDTO result = friendRelationshipService.rejectFriendRequest(userA_Id, userB_Id);
 
         // ASSERT
         assertThat(result.getStatus()).isEqualTo("REJECTED");
-        verify(repository).save(any(FriendRelationshipEntity.class));
+        verify(repository).save(any(FriendRelationship.class));
     }
 
     @Test
     @DisplayName("respondToRequest should throw exception if request is not pending")
     void respondToRequest_ThrowsExceptionIfNotPending() {
         // ARRANGE
-        FriendRelationshipEntity acceptedRequest = createRelationship(userA_Id, userB_Id, "ACCEPTED");
-        when(repository.findById(any(FriendRelationshipIdEntity.class))).thenReturn(Optional.of(acceptedRequest));
+        FriendRelationship acceptedRequest = createRelationship(userA_Id, userB_Id, "ACCEPTED");
+        when(repository.findById(any(FriendRelationshipId.class))).thenReturn(Optional.of(acceptedRequest));
 
         // ACT & ASSERT
         assertThrows(IllegalArgumentException.class, () -> {
@@ -241,8 +241,8 @@ class FriendRelationshipServiceTest {
     @DisplayName("cancelFriendRequest should succeed for a pending request")
     void cancelFriendRequest_Success() {
         // ARRANGE
-        FriendRelationshipEntity pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
-        when(repository.findById(new FriendRelationshipIdEntity(userA_Id, userB_Id))).thenReturn(Optional.of(pendingRequest));
+        FriendRelationship pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
+        when(repository.findById(new FriendRelationshipId(userA_Id, userB_Id))).thenReturn(Optional.of(pendingRequest));
 
         // ACT
         friendRelationshipService.cancelFriendRequest(userA_Id, userB_Id);
@@ -255,8 +255,8 @@ class FriendRelationshipServiceTest {
     @DisplayName("cancelFriendRequest should throw exception if request is not pending")
     void cancelFriendRequest_ThrowsExceptionIfNotPending() {
         // ARRANGE
-        FriendRelationshipEntity acceptedRequest = createRelationship(userA_Id, userB_Id, "ACCEPTED");
-        when(repository.findById(new FriendRelationshipIdEntity(userA_Id, userB_Id))).thenReturn(Optional.of(acceptedRequest));
+        FriendRelationship acceptedRequest = createRelationship(userA_Id, userB_Id, "ACCEPTED");
+        when(repository.findById(new FriendRelationshipId(userA_Id, userB_Id))).thenReturn(Optional.of(acceptedRequest));
 
         // ACT & ASSERT
         assertThrows(IllegalArgumentException.class, () -> {
@@ -269,9 +269,9 @@ class FriendRelationshipServiceTest {
     @DisplayName("getRelationshipStatus should return REQUESTRECIEVED for an incoming pending request")
     void getRelationshipStatus_ReturnsRequestReceived() {
         // ARRANGE
-        FriendRelationshipEntity incomingRequest = createRelationship(userB_Id, userA_Id, "PENDING");
-        when(repository.findById(new FriendRelationshipIdEntity(userA_Id, userB_Id))).thenReturn(Optional.empty());
-        when(repository.findById(new FriendRelationshipIdEntity(userB_Id, userA_Id))).thenReturn(Optional.of(incomingRequest));
+        FriendRelationship incomingRequest = createRelationship(userB_Id, userA_Id, "PENDING");
+        when(repository.findById(new FriendRelationshipId(userA_Id, userB_Id))).thenReturn(Optional.empty());
+        when(repository.findById(new FriendRelationshipId(userB_Id, userA_Id))).thenReturn(Optional.of(incomingRequest));
 
         // ACT
         FriendStatus status = friendRelationshipService.getRelationshipStatus(userA_Id, userB_Id);
@@ -284,7 +284,7 @@ class FriendRelationshipServiceTest {
     @DisplayName("getRelationshipStatus should return STRANGER when no relationship exists")
     void getRelationshipStatus_ReturnsStranger() {
         // ARRANGE
-        when(repository.findById(any(FriendRelationshipIdEntity.class))).thenReturn(Optional.empty());
+        when(repository.findById(any(FriendRelationshipId.class))).thenReturn(Optional.empty());
 
         // ACT
         FriendStatus status = friendRelationshipService.getRelationshipStatus(userA_Id, userB_Id);
@@ -297,7 +297,7 @@ class FriendRelationshipServiceTest {
     @DisplayName("respondToRequest should throw exception if request is not found")
     void respondToRequest_ThrowsExceptionIfNotFound() {
         // ARRANGE
-        when(repository.findById(any(FriendRelationshipIdEntity.class))).thenReturn(Optional.empty());
+        when(repository.findById(any(FriendRelationshipId.class))).thenReturn(Optional.empty());
 
         // ACT & ASSERT
         // This tests the .orElseThrow() in the respondToRequest method
@@ -310,8 +310,8 @@ class FriendRelationshipServiceTest {
     @DisplayName("respondToRequest should throw exception for invalid status")
     void respondToRequest_ThrowsExceptionForInvalidStatus() {
         // ARRANGE
-        FriendRelationshipEntity pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
-        when(repository.findById(any(FriendRelationshipIdEntity.class))).thenReturn(Optional.of(pendingRequest));
+        FriendRelationship pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
+        when(repository.findById(any(FriendRelationshipId.class))).thenReturn(Optional.of(pendingRequest));
 
         // ACT & ASSERT
         // This tests the validation for "ACCEPTED" or "REJECTED" status strings
@@ -338,7 +338,7 @@ class FriendRelationshipServiceTest {
     @DisplayName("cancelFriendRequest should throw exception if request is not found")
     void cancelFriendRequest_ThrowsExceptionIfNotFound() {
         // ARRANGE
-        when(repository.findById(any(FriendRelationshipIdEntity.class))).thenReturn(Optional.empty());
+        when(repository.findById(any(FriendRelationshipId.class))).thenReturn(Optional.empty());
 
         // ACT & ASSERT
         assertThrows(IllegalArgumentException.class, () -> {
@@ -351,8 +351,8 @@ class FriendRelationshipServiceTest {
     void removeFriend_ThrowsExceptionForNonAcceptedRelationship() {
         // ARRANGE
         // A relationship exists but is not "ACCEPTED"
-        FriendRelationshipEntity pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
-        when(repository.findById(new FriendRelationshipIdEntity(userA_Id, userB_Id))).thenReturn(Optional.of(pendingRequest));
+        FriendRelationship pendingRequest = createRelationship(userA_Id, userB_Id, "PENDING");
+        when(repository.findById(new FriendRelationshipId(userA_Id, userB_Id))).thenReturn(Optional.of(pendingRequest));
 
         // REMOVED: The following line was unnecessary because the service logic finds the relationship
         // on its first attempt and never checks the reverse direction in this scenario.
@@ -369,8 +369,8 @@ class FriendRelationshipServiceTest {
     @DisplayName("sendFriendRequest should throw exception if reverse request already exists")
     void sendFriendRequest_ThrowsExceptionWhenReverseExists() {
         // ARRANGE
-        FriendRelationshipIdEntity id = new FriendRelationshipIdEntity(userA_Id, userB_Id);
-        FriendRelationshipIdEntity reverseId = new FriendRelationshipIdEntity(userB_Id, userA_Id);
+        FriendRelationshipId id = new FriendRelationshipId(userA_Id, userB_Id);
+        FriendRelationshipId reverseId = new FriendRelationshipId(userB_Id, userA_Id);
         when(repository.existsById(id)).thenReturn(false);
         when(repository.existsById(reverseId)).thenReturn(true); // The reverse relationship exists
 
@@ -384,9 +384,9 @@ class FriendRelationshipServiceTest {
     @DisplayName("getRelationshipStatus should return FRIEND for a reverse accepted relationship")
     void getRelationshipStatus_ReturnsFriendForReverse() {
         // ARRANGE
-        FriendRelationshipEntity accepted = createRelationship(userB_Id, userA_Id, "ACCEPTED");
-        when(repository.findById(new FriendRelationshipIdEntity(userA_Id, userB_Id))).thenReturn(Optional.empty());
-        when(repository.findById(new FriendRelationshipIdEntity(userB_Id, userA_Id))).thenReturn(Optional.of(accepted));
+        FriendRelationship accepted = createRelationship(userB_Id, userA_Id, "ACCEPTED");
+        when(repository.findById(new FriendRelationshipId(userA_Id, userB_Id))).thenReturn(Optional.empty());
+        when(repository.findById(new FriendRelationshipId(userB_Id, userA_Id))).thenReturn(Optional.of(accepted));
 
         // ACT
         FriendStatus status = friendRelationshipService.getRelationshipStatus(userA_Id, userB_Id);
@@ -399,9 +399,9 @@ class FriendRelationshipServiceTest {
     @DisplayName("getRelationshipStatus should return STRANGER if a request was REJECTED")
     void getRelationshipStatus_ReturnsStrangerForRejected() {
         // ARRANGE
-        FriendRelationshipEntity rejected = createRelationship(userA_Id, userB_Id, "REJECTED");
-        when(repository.findById(new FriendRelationshipIdEntity(userA_Id, userB_Id))).thenReturn(Optional.of(rejected));
-        when(repository.findById(new FriendRelationshipIdEntity(userB_Id, userA_Id))).thenReturn(Optional.empty());
+        FriendRelationship rejected = createRelationship(userA_Id, userB_Id, "REJECTED");
+        when(repository.findById(new FriendRelationshipId(userA_Id, userB_Id))).thenReturn(Optional.of(rejected));
+        when(repository.findById(new FriendRelationshipId(userB_Id, userA_Id))).thenReturn(Optional.empty());
 
         // ACT
         FriendStatus status = friendRelationshipService.getRelationshipStatus(userA_Id, userB_Id);
@@ -415,9 +415,9 @@ class FriendRelationshipServiceTest {
     @DisplayName("removeFriend should delete a relationship stored in the reverse direction")
     void removeFriend_DeletesReverseRelationship() {
         // ARRANGE
-        FriendRelationshipEntity reverseAccepted = createRelationship(userB_Id, userA_Id, "ACCEPTED");
-        when(repository.findById(new FriendRelationshipIdEntity(userA_Id, userB_Id))).thenReturn(Optional.empty());
-        when(repository.findById(new FriendRelationshipIdEntity(userB_Id, userA_Id))).thenReturn(Optional.of(reverseAccepted));
+        FriendRelationship reverseAccepted = createRelationship(userB_Id, userA_Id, "ACCEPTED");
+        when(repository.findById(new FriendRelationshipId(userA_Id, userB_Id))).thenReturn(Optional.empty());
+        when(repository.findById(new FriendRelationshipId(userB_Id, userA_Id))).thenReturn(Optional.of(reverseAccepted));
 
         // ACT
         friendRelationshipService.removeFriend(userA_Id, userB_Id);

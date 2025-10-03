@@ -7,7 +7,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "UserInfo", schema = "dbo")
-public class UserInfoEntity {
+public class UserInfo {
 
     @Id
     @Column(name = "user_id", columnDefinition = "nchar(8)")

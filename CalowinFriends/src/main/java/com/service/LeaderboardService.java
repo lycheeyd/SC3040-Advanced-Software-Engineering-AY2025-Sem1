@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.dto.AchievementDTO;
-import com.models.AchievementEntity;
-import com.models.FriendRelationshipEntity;
+import com.models.Achievement;
+import com.models.FriendRelationship;
 import com.repository.*;
 
 @Service
@@ -25,10 +25,10 @@ public class LeaderboardService {
     private JdbcTemplate jdbcTemplate;
 
     // Achievement RowMapper remains the same
-    private RowMapper<AchievementEntity> achievementRowMapper = new RowMapper<AchievementEntity>() {
+    private RowMapper<Achievement> achievementRowMapper = new RowMapper<Achievement>() {
         @Override
-        public AchievementEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
-            AchievementEntity achievement = new AchievementEntity();
+        public Achievement mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Achievement achievement = new Achievement();
             achievement.setUserId(rs.getString("user_id"));
             achievement.setTotalCarbonSaved(rs.getInt("total_carbon_saved"));
             achievement.setTotalCalorieBurnt(rs.getInt("total_calorie_burnt"));
@@ -39,7 +39,7 @@ public class LeaderboardService {
     };
 
     public List<String> getFriendsIds(String userId) {
-        List<FriendRelationshipEntity> relationships = friendRelationshipRepository
+        List<FriendRelationship> relationships = friendRelationshipRepository
                 .findByIdUniqueIdOrIdFriendUniqueIdAndStatus(userId, userId, "ACCEPTED");
 
         // Filter by accepted status to ensure no pending relationships are included
@@ -60,7 +60,7 @@ public class LeaderboardService {
         String sql = "SELECT * FROM Achievement WHERE user_id IN (" +
                 friendsIds.stream().map(id -> "?").collect(Collectors.joining(", ")) + ")";
 
-        List<AchievementEntity> achievements = jdbcTemplate.query(
+        List<Achievement> achievements = jdbcTemplate.query(
                 sql,
                 friendsIds.toArray(),
                 achievementRowMapper);
@@ -86,7 +86,7 @@ public class LeaderboardService {
         String sql = "SELECT * FROM Achievement WHERE user_id IN (" +
                 friendsIds.stream().map(id -> "?").collect(Collectors.joining(", ")) + ")";
 
-        List<AchievementEntity> achievements = jdbcTemplate.query(
+        List<Achievement> achievements = jdbcTemplate.query(
                 sql,
                 friendsIds.toArray(),
                 achievementRowMapper);

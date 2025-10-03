@@ -9,9 +9,9 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "FriendRelationship")
-public class FriendRelationshipEntity {
+public class FriendRelationship {
     @EmbeddedId
-    private FriendRelationshipIdEntity id;
+    private FriendRelationshipId id;
 
     @Column(name = "status")
     private String status;
@@ -20,11 +20,11 @@ public class FriendRelationshipEntity {
     private LocalDateTime friendedOn;
 
     // Getters and Setters
-    public FriendRelationshipIdEntity getId() {
+    public FriendRelationshipId getId() {
         return id;
     }
 
-    public void setId(FriendRelationshipIdEntity id) {
+    public void setId(FriendRelationshipId id) {
         this.id = id;
     }
 

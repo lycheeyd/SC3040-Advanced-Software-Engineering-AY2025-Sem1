@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 
 import com.ENUM.FriendStatus;
 import com.dto.FriendRelationshipDTO;
-import com.models.FriendRelationshipEntity;
-import com.models.FriendRelationshipIdEntity;
+import com.models.FriendRelationship;
+import com.models.FriendRelationshipId;
 import com.repository.FriendRelationshipRepository;
 
 import jakarta.transaction.Transactional;
@@ -25,7 +25,7 @@ public class FriendRelationshipService {
     @Autowired
     private UserInfoService userInfoService;
 
-    private FriendRelationshipDTO convertToDTO(FriendRelationshipEntity relationship) {
+    private FriendRelationshipDTO convertToDTO(FriendRelationship relationship) {
         String userName = userInfoService.getUserNameById(relationship.getId().getUniqueId());
         String friendUserName = userInfoService.getUserNameById(relationship.getId().getFriendUniqueId());
 
@@ -40,8 +40,8 @@ public class FriendRelationshipService {
 
     @Transactional
     public FriendRelationshipDTO sendFriendRequest(String senderId, String receiverId) {
-        FriendRelationshipIdEntity id = new FriendRelationshipIdEntity(senderId, receiverId);
-        FriendRelationshipIdEntity reverseId = new FriendRelationshipIdEntity(receiverId, senderId);
+        FriendRelationshipId id = new FriendRelationshipId(senderId, receiverId);
+        FriendRelationshipId reverseId = new FriendRelationshipId(receiverId, senderId);
 
         // Check if a relationship already exists in either direction
         if (repository.existsById(id) || repository.existsById(reverseId)) {
@@ -49,7 +49,7 @@ public class FriendRelationshipService {
         }
 
         // Create and save new friend relationship
-        FriendRelationshipEntity relationship = new FriendRelationshipEntity();
+        FriendRelationship relationship = new FriendRelationship();
         relationship.setId(id);
         relationship.setFriendedOn(LocalDateTime.now());
         relationship.setStatus("PENDING");
@@ -66,9 +66,9 @@ public class FriendRelationshipService {
     
 
     public FriendRelationshipDTO respondToRequest(String senderId, String receiverId, String status) {
-        FriendRelationshipIdEntity id = new FriendRelationshipIdEntity(senderId, receiverId);
+        FriendRelationshipId id = new FriendRelationshipId(senderId, receiverId);
 
-        FriendRelationshipEntity relationship = repository.findById(id)
+        FriendRelationship relationship = repository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Request not found"));
 
         if (!"PENDING".equals(relationship.getStatus())) {
@@ -115,8 +115,8 @@ public class FriendRelationshipService {
     }
 
     public void cancelFriendRequest(String senderId, String receiverId) {
-        FriendRelationshipIdEntity id = new FriendRelationshipIdEntity(senderId, receiverId);
-        FriendRelationshipEntity relationship = repository.findById(id)
+        FriendRelationshipId id = new FriendRelationshipId(senderId, receiverId);
+        FriendRelationship relationship = repository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Friend request not found"));
 
         if (!"PENDING".equals(relationship.getStatus())) {
@@ -127,8 +127,8 @@ public class FriendRelationshipService {
     }
 
     public FriendStatus getRelationshipStatus(String userId1, String userId2) {
-        Optional<FriendRelationshipEntity> directRelationship = repository.findById(new FriendRelationshipIdEntity(userId1, userId2));
-        Optional<FriendRelationshipEntity> reverseRelationship = repository.findById(new FriendRelationshipIdEntity(userId2, userId1));
+        Optional<FriendRelationship> directRelationship = repository.findById(new FriendRelationshipId(userId1, userId2));
+        Optional<FriendRelationship> reverseRelationship = repository.findById(new FriendRelationshipId(userId2, userId1));
     
         // If there's an "ACCEPTED" relationship in either direction, they're friends
         if (directRelationship.isPresent() && "ACCEPTED".equals(directRelationship.get().getStatus()) ||
@@ -155,10 +155,10 @@ public class FriendRelationshipService {
     
 
     public void removeFriend(String userId, String friendId) {
-        FriendRelationshipIdEntity id = new FriendRelationshipIdEntity(userId, friendId);
-        FriendRelationshipIdEntity reverseId = new FriendRelationshipIdEntity(friendId, userId);
+        FriendRelationshipId id = new FriendRelationshipId(userId, friendId);
+        FriendRelationshipId reverseId = new FriendRelationshipId(friendId, userId);
 
-        Optional<FriendRelationshipEntity> relationship = repository.findById(id);
+        Optional<FriendRelationship> relationship = repository.findById(id);
 
         if (relationship.isEmpty()) {
             relationship = repository.findById(reverseId);

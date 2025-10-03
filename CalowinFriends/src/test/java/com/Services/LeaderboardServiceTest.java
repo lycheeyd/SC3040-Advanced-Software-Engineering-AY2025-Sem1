@@ -1,9 +1,9 @@
 package com.Services;
 
 import com.dto.AchievementDTO;
-import com.models.AchievementEntity;
-import com.models.FriendRelationshipEntity;
-import com.models.FriendRelationshipIdEntity;
+import com.models.Achievement;
+import com.models.FriendRelationship;
+import com.models.FriendRelationshipId;
 import com.repository.FriendRelationshipRepository;
 import com.service.LeaderboardService;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,11 +34,11 @@ class LeaderboardServiceTest {
     @InjectMocks
     private LeaderboardService leaderboardService;
 
-    private FriendRelationshipEntity friendship1;
-    private FriendRelationshipEntity friendship2;
-    private AchievementEntity userAchievement;
-    private AchievementEntity friend1Achievement;
-    private AchievementEntity friend2Achievement;
+    private FriendRelationship friendship1;
+    private FriendRelationship friendship2;
+    private Achievement userAchievement;
+    private Achievement friend1Achievement;
+    private Achievement friend2Achievement;
 
     @BeforeEach
     void setUp() {
@@ -52,15 +52,15 @@ class LeaderboardServiceTest {
         friend2Achievement = createAchievement("friend2", "Friend Two", 100, 3000);
     }
 
-    private FriendRelationshipEntity createFriendship(String userId, String friendId, String status) {
-        FriendRelationshipEntity rel = new FriendRelationshipEntity();
-        rel.setId(new FriendRelationshipIdEntity(userId, friendId));
+    private FriendRelationship createFriendship(String userId, String friendId, String status) {
+        FriendRelationship rel = new FriendRelationship();
+        rel.setId(new FriendRelationshipId(userId, friendId));
         rel.setStatus(status);
         return rel;
     }
 
-    private AchievementEntity createAchievement(String userId, String userName, int carbon, int calories) {
-        AchievementEntity ach = new AchievementEntity();
+    private Achievement createAchievement(String userId, String userName, int carbon, int calories) {
+        Achievement ach = new Achievement();
         ach.setUserId(userId);
         ach.setTotalCarbonSaved(carbon);
         ach.setTotalCalorieBurnt(calories);
@@ -88,7 +88,7 @@ class LeaderboardServiceTest {
     void getCarbonLeaderboard_ShouldReturnSortedByCarbon() {
         // ARRANGE
         String userId = "user1";
-        List<AchievementEntity> achievements = List.of(userAchievement, friend1Achievement, friend2Achievement);
+        List<Achievement> achievements = List.of(userAchievement, friend1Achievement, friend2Achievement);
 
         // Mock the repository call within getFriendsIds
         when(friendRelationshipRepository.findByIdUniqueIdOrIdFriendUniqueIdAndStatus(userId, userId, "ACCEPTED"))
@@ -127,7 +127,7 @@ class LeaderboardServiceTest {
     void getCaloriesLeaderboard_ShouldReturnSortedByCalories() {
         // ARRANGE
         String userId = "user1";
-        List<AchievementEntity> achievements = List.of(userAchievement, friend1Achievement, friend2Achievement);
+        List<Achievement> achievements = List.of(userAchievement, friend1Achievement, friend2Achievement);
 
         // Mock the repository call within getFriendsIds
         when(friendRelationshipRepository.findByIdUniqueIdOrIdFriendUniqueIdAndStatus(userId, userId, "ACCEPTED"))
