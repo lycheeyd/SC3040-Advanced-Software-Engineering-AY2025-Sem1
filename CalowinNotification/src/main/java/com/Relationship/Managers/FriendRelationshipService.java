@@ -8,7 +8,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import com.Database.CalowinDB.FriendRelationshipRepository;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class FriendRelationshipService {
