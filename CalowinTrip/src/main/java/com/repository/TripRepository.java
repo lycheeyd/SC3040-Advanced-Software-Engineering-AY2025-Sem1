@@ -1,7 +1,6 @@
 package com.repository;
 
-import com.Database.DatabaseConnection;
-import com.Entity.TripEntity;
+import com.model.Trip;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
@@ -17,12 +16,12 @@ public class TripRepository {
 
     // Add this constructor to let Spring inject the DataSource
     @Autowired
-    public TripRepository(@Qualifier("calowin-dbDataSource") DataSource dataSource) {
+    public TripRepository(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
 
-    public void insertTripIntoDatabase(TripEntity trip) {
+    public void insertTripIntoDatabase(Trip trip) {
         String insertSQL = "INSERT INTO trips (trip_id, start_location, start_longitude, "
                 + "start_latitude, end_location, end_latitude, "
                 + "end_longitude, distance, calories_burnt, carbon_saved, trip_time, travel_method, status, user_id) "

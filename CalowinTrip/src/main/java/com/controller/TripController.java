@@ -1,15 +1,15 @@
-package com.RESTController;
+package com.controller;
 
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import com.Entity.TravelMethod;
+import com.ENUM.TravelMethod;
 import com.DataTransferObject.TripMetricsRequestDTO;
 import com.DataTransferObject.TripStartRequestDTO;
-import com.Entity.TripEntity;
-import com.Services.TripService;
+import com.model.Trip;
+import com.service.TripService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,7 +32,7 @@ public class TripController {
     }
 
     @PostMapping("/start")
-    public TripEntity startTrip(@RequestBody TripStartRequestDTO tripStartRequest) {
+    public Trip startTrip(@RequestBody TripStartRequestDTO tripStartRequest) {
         return tripService.startTrip(tripStartRequest);
     }
 

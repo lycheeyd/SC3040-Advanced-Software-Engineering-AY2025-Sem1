@@ -1,7 +1,6 @@
 package com.repository;
 
-import com.Database.DatabaseConnection;
-import com.Entity.AchievementEntity;
+import com.model.Achievement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
@@ -16,17 +15,17 @@ public class AchievementRepository {
 
     // Add this constructor to let Spring inject the DataSource
     @Autowired
-    public AchievementRepository(@Qualifier("calowin-dbDataSource") DataSource dataSource) {
+    public AchievementRepository(DataSource dataSource) {
         this.dataSource = dataSource;
     }
-    public Optional<AchievementEntity> fetchAchievementForUser(String userId) {
+    public Optional<Achievement> fetchAchievementForUser(String userId) {
         String query = "SELECT * FROM achievement WHERE user_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, userId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                AchievementEntity achievement = new AchievementEntity();
+                Achievement achievement = new Achievement();
                 achievement.setTotalCarbonSavedExp(rs.getInt("total_carbon_saved"));
                 achievement.setTotalCalorieBurntExp(rs.getInt("total_calorie_burnt"));
                 achievement.setCarbonSavedMedal(rs.getString("carbon_medal"));
@@ -39,7 +38,7 @@ public class AchievementRepository {
         return Optional.empty();
     }
 
-    public void updateAchievement(AchievementEntity achievement, String userId) {
+    public void updateAchievement(Achievement achievement, String userId) {
         // First, try to update. If no rows are affected, then insert.
         String updateQuery = "UPDATE achievement SET total_carbon_saved = ?, total_calorie_burnt = ?, carbon_medal = ?, calorie_medal = ? WHERE user_id = ?";
         try (Connection conn = dataSource.getConnection();

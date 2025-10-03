@@ -1,4 +1,4 @@
-package com.RESTController;
+package com.controller;
 
 import org.springframework.web.client.RestTemplate;
 
