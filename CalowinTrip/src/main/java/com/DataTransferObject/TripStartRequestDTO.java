@@ -5,14 +5,14 @@ import com.Entity.CurrentLocationEntity;
 import com.Entity.LocationEntity;
 
 public class TripStartRequestDTO {
-    private CurrentLocationEntity currentLocationEntity;
+    private CurrentLocationEntity currentLocation;
     private LocationEntity destination;
     private TravelMethod travelMethod;
     private String userId;
 
     // Getters and setters
-    public CurrentLocationEntity getCurrentLocation() { return currentLocationEntity; }
-    public void setCurrentLocation(CurrentLocationEntity currentLocationEntity) { this.currentLocationEntity = currentLocationEntity; }
+    public CurrentLocationEntity getCurrentLocation() { return currentLocation; }
+    public void setCurrentLocation(CurrentLocationEntity currentLocation) { this.currentLocation = currentLocation; }
     public LocationEntity getDestination() { return destination; }
     public void setDestination(LocationEntity destination) { this.destination = destination; }
     public TravelMethod getTravelMethod() { return travelMethod; }
