@@ -1,4 +1,4 @@
-package com.Services;
+package com.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,9 +10,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.DataTransferObject.AchievementDTO;
-import com.Entity.AchievementEntity;
-import com.Entity.FriendRelationshipEntity;
+import com.dto.AchievementDTO;
+import com.models.AchievementEntity;
+import com.models.FriendRelationshipEntity;
 import com.repository.*;
 
 @Service

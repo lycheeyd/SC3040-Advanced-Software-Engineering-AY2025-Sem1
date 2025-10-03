@@ -1,41 +1,38 @@
-package com.DataTransferObject;
+package com.models;
 
-public class AchievementDTO {
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "Achievement", schema = "dbo")
+public class AchievementEntity {
+
+    @Id
+    @Column(name = "user_id", columnDefinition = "nchar(255)")
     private String userId;
-    private String userName;
+
+    @Column(name = "total_carbon_saved")
     private int totalCarbonSaved;
+
+    @Column(name = "total_calorie_burnt")
     private int totalCalorieBurnt;
+
+    @Column(name = "carbon_medal")
     private String carbonMedal;
+
+    @Column(name = "calorie_medal")
     private String calorieMedal;
-
-    // Default Constructor
-    public AchievementDTO() {}
-
-    // Parameterized Constructor
-    public AchievementDTO(String userId, String userName, int totalCarbonSaved, int totalCalorieBurnt, String carbonMedal, String calorieMedal) {
-        this.userId = userId;
-        this.userName = userName;
-        this.totalCarbonSaved = totalCarbonSaved;
-        this.totalCalorieBurnt = totalCalorieBurnt;
-        this.carbonMedal = carbonMedal;
-        this.calorieMedal = calorieMedal;
-    }
-
+    
     // Getters and Setters
+
     public String getUserId() {
         return userId;
     }
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
     }
 
     public int getTotalCarbonSaved() {

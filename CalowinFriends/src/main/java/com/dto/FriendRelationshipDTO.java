@@ -1,4 +1,4 @@
-package com.DataTransferObject;
+package com.dto;
 
 public class FriendRelationshipDTO {
     private String userId;

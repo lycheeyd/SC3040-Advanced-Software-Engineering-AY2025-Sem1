@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.Entity.UserInfoEntity;
+import com.models.UserInfoEntity;
 
 public interface UserInfoRepository extends JpaRepository<UserInfoEntity, String> {
 
