@@ -1,6 +1,6 @@
-package com.Entity;
+package com.model;
 
-public class AchievementEntity {
+public class Achievement {
     private int totalCarbonSavedExp;
     private int totalCalorieBurntExp;
     private String carbonSavedMedal;
@@ -17,7 +17,7 @@ public class AchievementEntity {
     private final int CALORIE_GOLD_THRESHOLD = 10000;
     private final int CALORIE_PLATINUM_THRESHOLD = 15000;
 
-    public AchievementEntity() {
+    public Achievement() {
         this.totalCarbonSavedExp = 0; // Default value
         this.totalCalorieBurntExp = 0; // Default value
         this.carbonSavedMedal = "No Medal"; // Default value

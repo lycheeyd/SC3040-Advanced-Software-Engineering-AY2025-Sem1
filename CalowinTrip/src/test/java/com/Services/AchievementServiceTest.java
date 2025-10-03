@@ -3,8 +3,9 @@ package com.Services;
 
 
 import com.DataTransferObject.AchievementResponseDTO;
-import com.Entity.AchievementEntity;
+import com.model.Achievement;
 import com.repository.AchievementRepository;
+import com.service.AchievementService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +40,7 @@ class AchievementServiceTest {
         int caloriesToAdd = 75;
 
         // Create a pre-existing achievement record
-        AchievementEntity existingAchievement = new AchievementEntity();
+        Achievement existingAchievement = new Achievement();
         existingAchievement.setTotalCarbonSavedExp(initialCarbonExp);
         existingAchievement.setTotalCalorieBurntExp(initialCalorieExp);
 
@@ -51,9 +52,9 @@ class AchievementServiceTest {
 
         // Assert
         // Capture the achievement object that is passed to the save method
-        ArgumentCaptor<AchievementEntity> achievementCaptor = ArgumentCaptor.forClass(AchievementEntity.class);
+        ArgumentCaptor<Achievement> achievementCaptor = ArgumentCaptor.forClass(Achievement.class);
         verify(achievementRepository).updateAchievement(achievementCaptor.capture(), eq(userId));
-        AchievementEntity savedAchievement = achievementCaptor.getValue();
+        Achievement savedAchievement = achievementCaptor.getValue();
 
         // Check that the saved object has the correctly updated totals
         assertThat(savedAchievement.getTotalCarbonSavedExp()).isEqualTo(initialCarbonExp + carbonToAdd); // 100 + 50 = 150
@@ -61,7 +62,7 @@ class AchievementServiceTest {
 
         // Verify that findByUserId and save were each called once
         verify(achievementRepository, times(1)).fetchAchievementForUser(userId);
-        verify(achievementRepository, times(1)).updateAchievement(any(AchievementEntity.class), eq(userId));
+        verify(achievementRepository, times(1)).updateAchievement(any(Achievement.class), eq(userId));
     }
 
     @Test
@@ -80,9 +81,9 @@ class AchievementServiceTest {
 
         // Assert
         // Capture the new achievement object passed to the save method
-        ArgumentCaptor<AchievementEntity> achievementCaptor = ArgumentCaptor.forClass(AchievementEntity.class);
+        ArgumentCaptor<Achievement> achievementCaptor = ArgumentCaptor.forClass(Achievement.class);
         verify(achievementRepository).updateAchievement(achievementCaptor.capture(), eq(userId));
-        AchievementEntity savedAchievement = achievementCaptor.getValue();
+        Achievement savedAchievement = achievementCaptor.getValue();
 
         // Check that the new object has the correct initial totals
         assertThat(savedAchievement.getTotalCarbonSavedExp()).isEqualTo(carbonToAdd);
@@ -94,7 +95,7 @@ class AchievementServiceTest {
     void getAchievementProgress_whenUserExists_shouldReturnAchievementResponse() {
         // Arrange
         String userId = "user-with-progress";
-        AchievementEntity existingAchievement = new AchievementEntity();
+        Achievement existingAchievement = new Achievement();
         existingAchievement.setTotalCarbonSavedExp(1500); // Should be EcoBronze
         existingAchievement.setTotalCalorieBurntExp(5500); // Should be CalorieSilver
 

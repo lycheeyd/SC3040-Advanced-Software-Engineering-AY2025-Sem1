@@ -1,4 +1,4 @@
-package com.Services;
+package com.service;
 
 import com.repository.ApiKeyRepository;
 import org.springframework.stereotype.Service;

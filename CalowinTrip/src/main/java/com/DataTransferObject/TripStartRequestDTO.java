@@ -1,20 +1,20 @@
 package com.DataTransferObject;
 
-import com.Entity.TravelMethod;
-import com.Entity.CurrentLocationEntity;
-import com.Entity.LocationEntity;
+import com.ENUM.TravelMethod;
+import com.model.CurrentLocation;
+import com.model.Location;
 
 public class TripStartRequestDTO {
-    private CurrentLocationEntity currentLocation;
-    private LocationEntity destination;
+    private CurrentLocation currentLocation;
+    private Location destination;
     private TravelMethod travelMethod;
     private String userId;
 
     // Getters and setters
-    public CurrentLocationEntity getCurrentLocation() { return currentLocation; }
-    public void setCurrentLocation(CurrentLocationEntity currentLocation) { this.currentLocation = currentLocation; }
-    public LocationEntity getDestination() { return destination; }
-    public void setDestination(LocationEntity destination) { this.destination = destination; }
+    public CurrentLocation getCurrentLocation() { return currentLocation; }
+    public void setCurrentLocation(CurrentLocation currentLocation) { this.currentLocation = currentLocation; }
+    public Location getDestination() { return destination; }
+    public void setDestination(Location destination) { this.destination = destination; }
     public TravelMethod getTravelMethod() { return travelMethod; }
     public void setTravelMethod(TravelMethod travelMethod) { this.travelMethod = travelMethod; }
     public String getUserId() { return userId; }

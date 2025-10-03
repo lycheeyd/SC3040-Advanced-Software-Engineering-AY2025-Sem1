@@ -1,6 +1,5 @@
 package com.repository;
 
-import com.Database.DatabaseConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
@@ -19,7 +18,7 @@ public class ApiKeyRepository {
 
     // Add this constructor to let Spring inject the DataSource
     @Autowired
-    public ApiKeyRepository(@Qualifier("calowin-dbDataSource") DataSource dataSource) {
+    public ApiKeyRepository(DataSource dataSource) {
         this.dataSource = dataSource;
     }
     public Optional<String> getApiKeyFromDatabase(String keyName) {

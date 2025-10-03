@@ -1,9 +1,7 @@
 package com.repository;
 
-import com.Database.DatabaseConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -18,7 +16,7 @@ public class UserRepository {
 
     // Add this constructor to let Spring inject the DataSource
     @Autowired
-    public UserRepository(@Qualifier("calowin-dbDataSource") DataSource dataSource) {
+    public UserRepository(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 

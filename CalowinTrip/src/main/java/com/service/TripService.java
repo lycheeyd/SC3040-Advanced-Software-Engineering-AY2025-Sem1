@@ -1,9 +1,9 @@
-package com.Services;
+package com.service;
 
-import com.Entity.TravelMethod;
+import com.ENUM.TravelMethod;
 import com.DataTransferObject.TripMetricsRequestDTO;
 import com.DataTransferObject.TripStartRequestDTO;
-import com.Entity.*;
+import com.model.*;
 import com.repository.TripRepository;
 import com.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class TripService {
         this.achievementService = achievementService;
     }
 
-    public TripEntity startTrip(TripStartRequestDTO request) {
+    public Trip startTrip(TripStartRequestDTO request) {
         double distance = calculateDistance(request.getCurrentLocation(), request.getDestination());
         double weight = userRepository.getUserWeight(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User weight not found for userId: " + request.getUserId()));
@@ -38,7 +38,7 @@ public class TripService {
         int caloriesBurned = calculateCalories(request.getTravelMethod(), distance, weight);
         int carbonSaved = calculateCarbon(request.getTravelMethod(), distance);
 
-        TripEntity trip = new TripEntity(
+        Trip trip = new Trip(
                 generateUniqueTripId(),
                 request.getCurrentLocation(),
                 request.getDestination(),
@@ -75,7 +75,7 @@ public class TripService {
 
     // --- Private Helper Methods ---
 
-    private double calculateDistance(CurrentLocationEntity userLocation, LocationEntity destination) {
+    private double calculateDistance(CurrentLocation userLocation, Location destination) {
         double earthRadius = 6371; // Kilometers
         double dLat = toRadians(destination.getLatitude() - userLocation.getLatitude());
         double dLon = toRadians(destination.getLongitude() - userLocation.getLongitude());

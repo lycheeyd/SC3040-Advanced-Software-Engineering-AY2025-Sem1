@@ -1,11 +1,11 @@
-package com.Entity;
+package com.model;
 
-public class LocationEntity {
+public class Location {
     private String name;
     private double latitude;
     private double longitude;
 
-    public LocationEntity(String name, double latitude, double longitude) {
+    public Location(String name, double latitude, double longitude) {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;

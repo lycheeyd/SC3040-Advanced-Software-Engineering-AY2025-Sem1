@@ -1,16 +1,18 @@
-package com.Entity;
+package com.model;
 
-public class TripEntity {
+import com.ENUM.TravelMethod;
+
+public class Trip {
     private String tripId;
-    private CurrentLocationEntity currentLocation;
-    private LocationEntity destination;
+    private CurrentLocation currentLocation;
+    private Location destination;
     private double distance;
     private int caloriesBurnt;
     private int carbonSaved;
     private TravelMethod travelMethod;
     private String userId;
 
-    public TripEntity(String tripId, CurrentLocationEntity currentLocation, LocationEntity destination, TravelMethod travelMethod, String userId) {
+    public Trip(String tripId, CurrentLocation currentLocation, Location destination, TravelMethod travelMethod, String userId) {
         this.tripId = tripId;
         this.currentLocation = currentLocation;
         this.destination = destination;
@@ -22,11 +24,11 @@ public class TripEntity {
     public String getTripId() { return tripId; }
     public void setTripId(String tripId) { this.tripId = tripId; }
 
-    public CurrentLocationEntity getCurrentLocation() { return currentLocation; }
-    public void setCurrentLocation(CurrentLocationEntity currentLocation) { this.currentLocation = currentLocation; }
+    public CurrentLocation getCurrentLocation() { return currentLocation; }
+    public void setCurrentLocation(CurrentLocation currentLocation) { this.currentLocation = currentLocation; }
 
-    public LocationEntity getDestination() { return destination; }
-    public void setDestination(LocationEntity destination) { this.destination = destination; }
+    public Location getDestination() { return destination; }
+    public void setDestination(Location destination) { this.destination = destination; }
 
     public double getDistance() { return distance; }
     public void setDistance(double distance) { this.distance = distance; }

@@ -2,12 +2,14 @@ package com.Services;
 
 import com.DataTransferObject.TripMetricsRequestDTO;
 import com.DataTransferObject.TripStartRequestDTO;
-import com.Entity.CurrentLocationEntity;
-import com.Entity.LocationEntity;
-import com.Entity.TravelMethod;
-import com.Entity.TripEntity;
+import com.model.CurrentLocation;
+import com.model.Location;
+import com.ENUM.TravelMethod;
+import com.model.Trip;
 import com.repository.TripRepository;
 import com.repository.UserRepository;
+import com.service.AchievementService;
+import com.service.TripService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,8 +50,8 @@ class TripServiceTest {
     void setUp() {
         // We use fixed locations to get a consistent, predictable distance for our tests.
         // The calculated distance for these coordinates is ~8.207 km.
-        CurrentLocationEntity start = new CurrentLocationEntity("Start Point", 1.3521, 103.8198);
-        LocationEntity end = new LocationEntity("End Point", 1.2869, 103.8544);
+        CurrentLocation start = new CurrentLocation("Start Point", 1.3521, 103.8198);
+        Location end = new Location("End Point", 1.2869, 103.8544);
 
         tripStartRequest = new TripStartRequestDTO();
         tripStartRequest.setUserId("user123");
@@ -77,7 +79,7 @@ class TripServiceTest {
         when(tripRepository.tripIdExists(anyString())).thenReturn(false); // Ensure the ID generation loop runs once
 
         // Act
-        TripEntity resultTrip = tripService.startTrip(tripStartRequest);
+        Trip resultTrip = tripService.startTrip(tripStartRequest);
 
         // Assert
         // 1. Verify the returned object has the correct values
@@ -89,11 +91,11 @@ class TripServiceTest {
         assertThat(resultTrip.getTripId()).isNotNull();
 
         // 2. Verify that the repository and other services were called correctly
-        verify(tripRepository, times(1)).insertTripIntoDatabase(any(TripEntity.class));
+        verify(tripRepository, times(1)).insertTripIntoDatabase(any(Trip.class));
         verify(achievementService, times(1)).addTripMetricsToAchievement("user123", expectedCarbon, expectedCalories);
 
         // 3. (Optional) Capture the object passed to the repository to inspect it
-        ArgumentCaptor<TripEntity> tripCaptor = ArgumentCaptor.forClass(TripEntity.class);
+        ArgumentCaptor<Trip> tripCaptor = ArgumentCaptor.forClass(Trip.class);
         verify(tripRepository).insertTripIntoDatabase(tripCaptor.capture());
         assertThat(tripCaptor.getValue().getCaloriesBurnt()).isEqualTo(expectedCalories);
     }
@@ -113,7 +115,7 @@ class TripServiceTest {
         assertThat(exception.getMessage()).isEqualTo("User weight not found for userId: user123");
 
         // Verify that no database insertions or achievement updates occurred
-        verify(tripRepository, never()).insertTripIntoDatabase(any(TripEntity.class));
+        verify(tripRepository, never()).insertTripIntoDatabase(any(Trip.class));
         verify(achievementService, never()).addTripMetricsToAchievement(anyString(), anyInt(), anyInt());
     }
 
