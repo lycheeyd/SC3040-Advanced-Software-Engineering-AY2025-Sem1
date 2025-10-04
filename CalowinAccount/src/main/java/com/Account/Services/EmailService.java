@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 
 import com.Account.Entities.EmailServiceProperties;
 
-import javax.mail.*;
-import javax.mail.internet.*;
+import jakarta.mail.*;
+import jakarta.mail.internet.*;
 import java.util.Properties;
 
 @Service
