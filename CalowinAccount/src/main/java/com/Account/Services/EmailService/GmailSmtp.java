@@ -1,16 +1,16 @@
-package com.Account.Services;
+package com.Account.Services.EmailService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.Account.Entities.EmailServiceProperties;
 
-import jakarta.mail.*;
-import jakarta.mail.internet.*;
+import javax.mail.*;
+import javax.mail.internet.*;
 import java.util.Properties;
 
-@Service
-public class EmailService {
+@Service("gmailSmtpService")
+public class GmailSmtp implements IEmailService {
 
     @Autowired
     private EmailServiceProperties emailServiceProperties;
