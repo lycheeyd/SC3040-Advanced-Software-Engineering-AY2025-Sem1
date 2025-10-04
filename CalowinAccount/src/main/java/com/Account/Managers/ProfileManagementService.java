@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.Account.ExternalServiceClient;
+import com.Account.RESTController.ExternalServiceClient;
 import com.Account.Entities.AchievementEntry;
 import com.Account.Entities.FriendStatus;
 import com.Account.Entities.ProfileEntity;
