@@ -20,7 +20,7 @@ public class FriendRelationshipEntity {
     @Column(name = "Friended On", nullable = false)
     private String friendedOn;
 
-    @Column(name = "status")
+    @Column(name = "status", length = 20)
     private String status;
 
     public FriendRelationshipEntity() {
