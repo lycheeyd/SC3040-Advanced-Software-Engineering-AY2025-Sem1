@@ -9,7 +9,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/notifications")
 public class NotificationController {
-
     private final FriendRelationshipService friendRelationshipService;
 
     @Autowired
