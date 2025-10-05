@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EmailService implements IEmailService {
+public class EmailFactory implements IEmailService {
 
     private final IEmailService delegate;
 
     @Autowired
-    public EmailService(
+    public EmailFactory(
             @Value("${email.provider}") String provider,
             @Qualifier("gmailSmtpService") IEmailService smtpService,
             @Qualifier("gmailApiService") IEmailService apiService
