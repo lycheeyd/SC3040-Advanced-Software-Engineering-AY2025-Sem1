@@ -15,6 +15,8 @@ import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import jakarta.annotation.PostConstruct;
+
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.Properties;
