@@ -27,13 +27,13 @@ public class GmailApi implements IEmailService {
     @Autowired
     private EmailServiceProperties emailProperties;
 
-    String clientId = emailProperties.getClientId();
-    String clientSecret = emailProperties.getClientSecret();
-    String refreshToken = emailProperties.getRefreshToken();
-    String userEmail = emailProperties.getUsername();
-
     @Override
     public void sendEmail(String recipient, String subject, String messageBody) throws Exception {
+        String clientId = emailProperties.getClientId();
+        String clientSecret = emailProperties.getClientSecret();
+        String refreshToken = emailProperties.getRefreshToken();
+        String userEmail = emailProperties.getUsername();
+
         Credential credential = getCredential();
 
         Gmail service = new Gmail.Builder(
