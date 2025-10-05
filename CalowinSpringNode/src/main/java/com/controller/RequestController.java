@@ -24,7 +24,7 @@ public class RequestController {
     @GetMapping("/{userId}/friend-requests")
     public ResponseEntity<?> getFriendRequests(@PathVariable("userId") String userId) {
         // Construct the URL to call the NotificationController endpoint
-        String url = "http://localhost:8084/notifications/friend-requests/" + userId;
+        String url = "https://sc3040G5-CalowinFriends.hf.space/notifications/friend-requests/" + userId;
 
         try {
             // Use RestTemplate to make the request to the backend

@@ -41,7 +41,7 @@ public class TripController extends HttpReqController{
     @GetMapping("/methods")
     public ResponseEntity<?> getTravelMethods() {
         // Construct the URL for the backend trip controller
-        String url = "http://localhost:8082/trips/methods";
+        String url = "https://sc3040G5-CalowinTrip.hf.space/trips/methods";
         return restTemplate.getForEntity(url, Object.class);
         /* 
         // Make the request and return the result

@@ -23,7 +23,7 @@ public class WellnessZoneController {
     @GetMapping("/parks")
     public List<Map<String, Object>> findNearbyParks(@RequestParam("lat") double userLat, @RequestParam("lon") double userLon) {
         // Construct the URL to call the HttpReqController endpoint
-        String url = "http://localhost:8085/api/parks?lat=" + userLat + "&lon=" + userLon;
+        String url = "https://sc3040G5-CalowinWellnessZone.hf.space/api/parks?lat=" + userLat + "&lon=" + userLon;
 
         // Use RestTemplate to make the request to the backend
         ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
