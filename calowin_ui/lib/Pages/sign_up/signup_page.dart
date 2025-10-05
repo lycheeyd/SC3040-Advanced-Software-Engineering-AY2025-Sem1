@@ -160,7 +160,7 @@ class _SignupPageState extends State<SignupPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('Https://sc3040G5-calowin-unified.hf.space/central/account/verify-otp'),
+        Uri.parse('https://sc3040G5-CalowinSpringNode.hf.space/central/account/verify-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'otpCode': otp, 'type': ActionType.SIGN_UP.value}),
       );
