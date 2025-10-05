@@ -27,13 +27,21 @@ public class GmailApi implements IEmailService {
     @Autowired
     private EmailServiceProperties emailProperties;
 
+    private String clientId;
+    private String clientSecret;
+    private String refreshToken;
+    private String userEmail;
+
+    @PostConstruct // Initialize after Spring injects emailProperties
+    private void init() {
+        this.clientId = emailProperties.getClientId();
+        this.clientSecret = emailProperties.getClientSecret();
+        this.refreshToken = emailProperties.getRefreshToken();
+        this.userEmail = emailProperties.getUsername();
+    }
+
     @Override
     public void sendEmail(String recipient, String subject, String messageBody) throws Exception {
-        String clientId = emailProperties.getClientId();
-        String clientSecret = emailProperties.getClientSecret();
-        String refreshToken = emailProperties.getRefreshToken();
-        String userEmail = emailProperties.getUsername();
-
         Credential credential = getCredential();
 
         Gmail service = new Gmail.Builder(
