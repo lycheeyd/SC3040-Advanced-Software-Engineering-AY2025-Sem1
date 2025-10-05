@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.Account.Entities.OTPEntry;
+import com.Account.Services.EmailService.EmailFactory;
 import com.Account.Entities.ActionType;
 import com.Database.CalowinSecureDB.OTPRepository;
 
@@ -21,7 +22,7 @@ public class OTPService {
     private OTPRepository otpRepository;
 
     @Autowired
-    private EmailService emailService;
+    private EmailFactory emailFactory;
 
     // Generate and store OTP with 1-day expiry
     private String generateAndSaveOTP(String email, ActionType type) {
@@ -49,7 +50,7 @@ public class OTPService {
         String otpCode = generateAndSaveOTP(email, type);
 
         // Send OTP
-        emailService.sendEmail(email, type.getSubject(), type.getMessageBody(otpCode));
+        emailFactory.sendEmail(email, type.getSubject(), type.getMessageBody(otpCode));
     }
 
     // Verify if the OTP is valid (not expired and matches)
