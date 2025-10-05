@@ -6,17 +6,20 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.Message;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.Properties;
+
+import com.Account.Entities.EmailServiceProperties;
 
 @Service("gmailApiService")
 public class GmailApi implements IEmailService {
@@ -31,7 +34,7 @@ public class GmailApi implements IEmailService {
 
     @Override
     public void sendEmail(String recipient, String subject, String messageBody) throws Exception {
-        Credential credential = gmailOAuthUtil.getCredential();
+        Credential credential = getCredential();
 
         Gmail service = new Gmail.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
