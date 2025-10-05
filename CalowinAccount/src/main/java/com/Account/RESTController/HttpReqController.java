@@ -31,7 +31,7 @@ import com.DataTransferObject.VerifyOtpDTO;
 import com.DataTransferObject.ViewProfileResponseDTO;
 
 @RestController
-@RequestMapping("/account")
+@RequestMapping("/central/account")
 public class HttpReqController {
 
     protected final RestTemplate restTemplate;
