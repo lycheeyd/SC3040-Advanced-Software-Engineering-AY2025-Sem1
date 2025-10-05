@@ -1,11 +1,11 @@
 package com.Account.Managers;
 
+import com.Account.RESTController.ExternalServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.Account.RESTController.ExternalServiceClient;
 import com.Account.Entities.AchievementEntry;
 import com.Account.Entities.FriendStatus;
 import com.Account.Entities.ProfileEntity;

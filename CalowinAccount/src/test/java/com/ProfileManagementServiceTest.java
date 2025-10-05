@@ -4,7 +4,6 @@ import com.Account.Entities.AchievementEntry;
 import com.Account.Entities.FriendStatus;
 import com.Account.Entities.ProfileEntity;
 import com.Account.Entities.UserEntity;
-import com.Account.RESTController.ExternalServiceClient;
 import com.Account.Managers.ProfileManagementService;
 import com.DataTransferObject.LoginResponseDTO;
 import com.DataTransferObject.ViewProfileResponseDTO;
