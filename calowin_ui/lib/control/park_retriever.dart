@@ -23,7 +23,7 @@ class Park {
 
 class ParkRetriever {
   final String _baseUrl =
-      'http://172.21.146.188:8080/central/wellness/parks'; // Replace with your backend URL
+      'https://sc3040G5-CalowinSpringNode.hf.space'; // Replace with your backend URL
 
   // Function to retrieve parks based on user's coordinates
   Future<List<Park>> retrievePark(double userLat, double userLon) async {
