@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties(prefix = "email.service")
+@Primary
 public class EmailServiceProperties {
 
     // For SMTP usage
