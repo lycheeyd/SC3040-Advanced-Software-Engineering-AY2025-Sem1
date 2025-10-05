@@ -9,7 +9,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import com.Account.Entities.ActionType;
 import com.Account.Entities.UserEntity;
-import com.Account.Services.EmailService;
+import com.Account.Services.EmailService.EmailService;
 import com.Account.Services.OTPService;
 import com.Account.Services.PasswordSecurityService;
 import com.Database.CalowinSecureDB.SecureInfoDBRepository;
