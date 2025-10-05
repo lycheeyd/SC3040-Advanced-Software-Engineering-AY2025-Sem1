@@ -31,7 +31,7 @@ public class PasswordManagementService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private EmailFactory EmailFactory;
+    private EmailFactory emailFactory;
 
     @Autowired
     private OTPService otpService;
