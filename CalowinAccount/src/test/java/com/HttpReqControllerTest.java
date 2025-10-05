@@ -3,6 +3,7 @@ package com; // <-- CORRECTED PACKAGE
 import com.Account.Managers.AccountManagementService;
 import com.Account.Managers.PasswordManagementService;
 import com.Account.Managers.ProfileManagementService;
+import com.Account.RESTController.HttpReqController;
 import com.Account.Services.OTPService;
 import com.DataTransferObject.*;
 import com.fasterxml.jackson.databind.ObjectMapper;

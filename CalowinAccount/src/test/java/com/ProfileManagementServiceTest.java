@@ -5,6 +5,7 @@ import com.Account.Entities.FriendStatus;
 import com.Account.Entities.ProfileEntity;
 import com.Account.Entities.UserEntity;
 import com.Account.Managers.ProfileManagementService;
+import com.Account.RESTController.ExternalServiceClient;
 import com.DataTransferObject.LoginResponseDTO;
 import com.DataTransferObject.ViewProfileResponseDTO;
 import com.Database.CalowinDB.AchievementRepository;
