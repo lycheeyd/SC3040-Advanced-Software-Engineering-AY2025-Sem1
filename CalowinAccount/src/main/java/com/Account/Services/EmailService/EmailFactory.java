@@ -20,8 +20,9 @@ public class EmailFactory implements IEmailService {
             delegate = apiService;
             System.out.println("Using Gmail API (HTTPS 443)");
         } else {
-            delegate = smtpService;
-            System.out.println("Using Gmail SMTP (port 587)");
+            throw new IllegalStateException("FATAL: Email provider set to unexpected value: " + provider + ". Expected 'gmail-api'.");
+//            delegate = smtpService;
+//            System.out.println("Using Gmail SMTP (port 587)");
         }
     }
 
