@@ -10,10 +10,10 @@ import com.google.api.services.gmail.model.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
 import jakarta.annotation.PostConstruct;
 
@@ -82,7 +82,7 @@ public class GmailApi implements IEmailService {
 
         MimeMessage email = new MimeMessage(session);
         email.setFrom(new InternetAddress(from));
-        email.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
+        email.addRecipient(jakarta.mail.Message.RecipientType.TO, new InternetAddress(to));
         email.setSubject(subject);
         email.setText(bodyText);
         return email;
