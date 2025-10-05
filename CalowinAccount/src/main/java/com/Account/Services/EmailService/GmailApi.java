@@ -10,10 +10,12 @@ import com.google.api.services.gmail.model.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+// FIX: Ensure all Mail API imports use jakarta.*
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeUtility; // Keep MimeUtility for robustness
 
 import jakarta.annotation.PostConstruct;
 
@@ -44,8 +46,12 @@ public class GmailApi implements IEmailService {
 
     @Override
     public void sendEmail(String recipient, String subject, String messageBody) throws Exception {
+        // This execution path uses HTTPS (Port 443).
+
+        // 1. Get OAuth Credential
         Credential credential = getCredential();
 
+        // 2. Build Gmail Service
         Gmail service = new Gmail.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 JacksonFactory.getDefaultInstance(),
@@ -53,7 +59,10 @@ public class GmailApi implements IEmailService {
                 .setApplicationName("Calowin")
                 .build();
 
+        // 3. Create MIME Message
         MimeMessage email = createEmail(recipient, userEmail, subject, messageBody);
+
+        // 4. Encode and Send
         Message message = createMessageWithEmail(email);
 
         service.users().messages().send("me", message).execute();
@@ -78,10 +87,12 @@ public class GmailApi implements IEmailService {
     private MimeMessage createEmail(String to, String from, String subject, String bodyText)
             throws MessagingException {
         Properties props = new Properties();
+        // FIX: Ensure Session is created from Jakarta API
         Session session = Session.getDefaultInstance(props, null);
 
         MimeMessage email = new MimeMessage(session);
         email.setFrom(new InternetAddress(from));
+        // Recipient type is now guaranteed to be jakarta.mail.Message.RecipientType
         email.addRecipient(jakarta.mail.Message.RecipientType.TO, new InternetAddress(to));
         email.setSubject(subject);
         email.setText(bodyText);
@@ -98,4 +109,3 @@ public class GmailApi implements IEmailService {
         return message;
     }
 }
-
