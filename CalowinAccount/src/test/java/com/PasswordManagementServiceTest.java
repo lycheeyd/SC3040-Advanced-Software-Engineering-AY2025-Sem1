@@ -3,7 +3,7 @@ package com;
 import com.Account.Entities.ActionType;
 import com.Account.Entities.UserEntity;
 import com.Account.Managers.PasswordManagementService;
-import com.Account.Services.EmailService;
+import com.Account.Services.EmailService.EmailFactory;
 import com.Account.Services.OTPService;
 import com.Account.Services.PasswordSecurityService;
 import com.Database.CalowinSecureDB.SecureInfoDBRepository;
@@ -37,7 +37,7 @@ class PasswordManagementServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
-    private EmailService emailService;
+    private EmailFactory emailService;
     @Mock
     private OTPService otpService;
 

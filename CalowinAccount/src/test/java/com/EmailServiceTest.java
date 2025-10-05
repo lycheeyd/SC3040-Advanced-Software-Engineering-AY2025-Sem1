@@ -1,7 +1,7 @@
 package com;
 
 import com.Account.Entities.EmailServiceProperties;
-import com.Account.Services.EmailService;
+import com.Account.Services.EmailService.EmailFactory;
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
@@ -27,7 +27,7 @@ class EmailServiceTest {
 
     // We inject the real EmailService bean
     @Autowired
-    private EmailService emailService;
+    private EmailFactory emailService;
 
     // We mock the properties bean to redirect the service to our fake server
     @MockBean
