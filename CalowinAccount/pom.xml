@@ -90,21 +90,25 @@
             <version>1.6.2</version>
         </dependency>
 
-        <!-- Gmail API -->
+        <!-- Gmail API Client-->
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
             <version>2.6.0</version>
         </dependency>
+
+        <!-- Google OAuth client -->
         <dependency>
             <groupId>com.google.oauth-client</groupId>
             <artifactId>google-oauth-client-jetty</artifactId>
-            <version>2.6.0</version>
+            <version>1.39.0</version>
         </dependency>
+
+        <!-- Gmail API Gmail Service -->
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-gmail</artifactId>
-            <version>v1-rev20250223-2.0.0</version>
+            <version>v1-rev110-1.25.0</version>
         </dependency>
 
         <dependency>
