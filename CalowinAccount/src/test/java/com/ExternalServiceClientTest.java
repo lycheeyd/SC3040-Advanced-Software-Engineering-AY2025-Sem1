@@ -1,6 +1,7 @@
 package com;
 
 import com.Account.Entities.FriendStatus;
+import com.Account.RESTController.ExternalServiceClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
