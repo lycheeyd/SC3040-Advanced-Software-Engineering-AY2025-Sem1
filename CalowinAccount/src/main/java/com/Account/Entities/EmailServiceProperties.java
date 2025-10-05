@@ -3,9 +3,7 @@ package com.Account.Entities;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-@Component
 @ConfigurationProperties(prefix = "email.service")
-@Primary
 public class EmailServiceProperties {
 
     // For SMTP usage
