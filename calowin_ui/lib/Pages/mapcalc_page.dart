@@ -111,7 +111,8 @@ class _MapcalcPageState extends State<MapcalcPage> {
   Future<void> _retrieveMapKey() async {
     try {
       apiMapKey = await apiService.fetchApiKey('Maps SDK Android API');
-      setState(() {}); 
+      print(apiMapKey);
+      setState(() {});
       //print('API Key retrieved: $apiMapKey');
     } catch (e) {
       //print("Error retrieving API Key: $e");

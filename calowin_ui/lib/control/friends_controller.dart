@@ -9,10 +9,12 @@ class FriendsController {
   // Function to retrieve LeaderboardItems based on user's coordinates
   Future<List<UserProfile>> retrieveFriendList(String userId) async {
     final url = Uri.parse('$_baseUrl/friend-requests/friends/$userId');
-    //print(url);
+    print(url);
 
     try {
       final response = await http.get(url);
+      print(response.body);
+
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         //print(data);

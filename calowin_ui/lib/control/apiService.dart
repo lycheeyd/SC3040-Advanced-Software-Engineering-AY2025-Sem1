@@ -22,7 +22,8 @@ class ApiService {
 
   Future<String> fetchApiKey(String keyName) async {
   final response = await http.get(Uri.parse('$baseUrl/api/keys/$keyName'));
-  //print("$baseUrl/api/keys/$keyName");
+  // print("hello");
+  // print("$baseUrl/api/keys/$keyName");
   if (response.statusCode == 200) {
     // Return the API key from the response
     return response.body; // The body contains the API key as a string
@@ -118,6 +119,7 @@ Future<Map<String, dynamic>> startTrip(
 
   // Fetch achievement progress from the backend
   Future<Map<String, dynamic>> getAchievementProgress(String userId) async {
+    print(userId);
     final response =
         //await http.get(Uri.parse(baseUrl + "/achievements/progress"));
         await http.get(Uri.parse(baseUrl + "/achievements/progress?userId=$userId"));

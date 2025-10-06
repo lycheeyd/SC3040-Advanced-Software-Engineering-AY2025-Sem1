@@ -112,7 +112,6 @@ class _EditprofilePageState extends State<EditprofilePage> {
 
         if (response.statusCode == 200) {
           _showSuccessDialog(responseData['message']);
-          //print(responseData);
           final responseObject = UserProfile.editfromJson(responseData['UserObject']);
           setState(() {
             _profile.setName(responseObject.getName());
