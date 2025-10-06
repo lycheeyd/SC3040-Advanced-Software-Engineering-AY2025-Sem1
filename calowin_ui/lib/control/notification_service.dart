@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 
 class NotificationService {
-  final String baseUrl = "https://sc3040G5-CalowinSpringNode.hf.space"; // Update with actual base URL
+  final String baseUrl = "https://sc3040G5-CalowinNotification.hf.space"; // Update with actual base URL
 
   Future<List<String>> fetchFriendRequests(String userId) async {
     final url = '$baseUrl/notifications/friend-requests/$userId';

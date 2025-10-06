@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class UserRetriever {
   Future<UserProfile> retrieveFriend(String userId, String otherId) async {
-    final String _baseUrl = 'https://sc3040G5-CalowinSpringNode.hf.space'; // Replace with your backend URL
+    final String _baseUrl = 'https://sc3040G5-CalowinSpringNode.hf.space/central/account/view-profile'; // Replace with your backend URL
     // Endpoint format: /selfid/otherid
     final url = Uri.parse('$_baseUrl/$userId/$otherId');
     //print(url);
