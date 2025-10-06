@@ -65,4 +65,25 @@ public class TripController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
         }
     }
+
+    @GetMapping("/places/details")
+    public ResponseEntity<?> proxyPlaceDetails(@RequestParam("place_id") String placeId) {
+        try {
+            // Get the API key securely on the server
+            String apiKey = apiKeyService.getApiKey("Places API");
+
+            // Build the URL to call the actual Google API
+            String googleUrl = "https://maps.googleapis.com/maps/api/place/details/json?place_id="
+                    + placeId + "&key=" + apiKey;
+
+            // Use RestTemplate to call Google and forward the response to Flutter
+            RestTemplate restTemplate = new RestTemplate();
+            return restTemplate.getForEntity(googleUrl, String.class);
+
+        } catch (HttpClientErrorException ex) {
+            return ResponseEntity.status(ex.getStatusCode()).body(ex.getResponseBodyAsString());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+        }
+    }
 }
