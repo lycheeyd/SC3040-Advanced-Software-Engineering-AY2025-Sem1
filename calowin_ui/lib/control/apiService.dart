@@ -66,6 +66,7 @@ Future<Map<String, dynamic>> startTrip(
         'name': currentLocation.name,
       },
     };
+    print(requestBody);
 
     // Print the values being posted to the backend for debugging
     // print('Posting the following data to the backend at $url:');

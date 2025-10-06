@@ -40,6 +40,7 @@ class CurrentLocation {
       List<Placemark> placemarks = await placemarkFromCoordinates(latitude!, longitude!);
       if (placemarks.isNotEmpty) {
         name = placemarks.first.name; // Retrieve the name of the location
+        print(name);
       }
     } catch (e) {
       print('Error retrieving place name: $e');

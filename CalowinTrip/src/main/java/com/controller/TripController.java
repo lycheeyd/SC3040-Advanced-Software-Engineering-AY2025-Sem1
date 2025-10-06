@@ -86,4 +86,26 @@ public class TripController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
         }
     }
+    @GetMapping("/directions")
+    public ResponseEntity<?> proxyDirections(
+            @RequestParam("origin") String origin,
+            @RequestParam("destination") String destination) {
+        try {
+            // Get the API key securely on the server
+            String apiKey = apiKeyService.getApiKey("Directions API");
+
+            // Build the URL to call the actual Google API
+            String googleUrl = "https://maps.googleapis.com/maps/api/directions/json?origin="
+                    + origin + "&destination=" + destination + "&key=" + apiKey;
+
+            // Use RestTemplate to call Google and forward the response
+            RestTemplate restTemplate = new RestTemplate();
+            return restTemplate.getForEntity(googleUrl, String.class);
+
+        } catch (HttpClientErrorException ex) {
+            return ResponseEntity.status(ex.getStatusCode()).body(ex.getResponseBodyAsString());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+        }
+    }
 }

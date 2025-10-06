@@ -266,13 +266,16 @@ class _MapcalcPageState extends State<MapcalcPage> {
 
 
   Future<void> _getDirections(LatLng origin, LatLng destination) async {
-    final directionsUrl = Uri.https("maps.googleapis.com", "maps/api/directions/json", {
-      "origin": "${origin.latitude},${origin.longitude}",
-      "destination": "${destination.latitude},${destination.longitude}",
-      "key": apiDirectionKey,
-    });
+    final String baseUrl = "https://sc3040G5-CalowinTrip.hf.space";
 
+    // CONSTRUCT THE URL TO YOUR OWN BACKEND
+    final directionsUrl = Uri.parse(
+        '$baseUrl/trips/directions?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}'
+    );
+
+    // The API key is no longer exposed here. The call is now safe.
     final response = await http.get(directionsUrl);
+
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       final polylinePoints = json["routes"][0]["overview_polyline"]["points"];
