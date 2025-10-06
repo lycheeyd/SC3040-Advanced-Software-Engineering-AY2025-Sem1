@@ -34,7 +34,7 @@ class UserRetriever {
   }
 
   Future<UserProfile> retrieveSelf(String userId) async {
-    final String _baseUrl = 'http://172.21.146.188:8080/central/account/view-profile'; // Replace with your backend URL
+    final String _baseUrl = 'https://sc3040G5-CalowinSpringNode.hf.space/central/account/view-profile'; // Replace with your backend URL
     // Endpoint format: /selfid/otherid
     final url = Uri.parse('$_baseUrl/$userId');
     //print(url);

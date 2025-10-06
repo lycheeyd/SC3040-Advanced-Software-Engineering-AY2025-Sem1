@@ -93,7 +93,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
         _weightError == null &&
         _bioError == null) {
 
-      final String url = "http://172.21.146.188:8080/central/account/edit-profile";
+      final String url = "https://sc3040G5-CalowinSpringNode.hf.space/central/account/edit-profile";
 
       try {
         final response = await http.post(
@@ -137,7 +137,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
   Future<void> _sendOTP() async {
     try {
       final response = await http.post(
-        Uri.parse('http://172.21.146.188:8080/central/account/send-otp'),
+        Uri.parse('https://sc3040G5-CalowinSpringNode.hf.space/central/account/send-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _profile.getEmail() ?? "",
@@ -159,7 +159,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
 
   Future<void> _handleDeleteAccount(String otpCode) async {
     
-    final String url = "http://172.21.146.188:8080/central/account/delete-account";
+    final String url = "https://sc3040G5-CalowinSpringNode.hf.space/central/account/delete-account";
 
     try {
       final response = await http.post(
