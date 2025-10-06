@@ -5,7 +5,7 @@ import 'location.dart';
 import 'current_location.dart';
 
 class ApiService {
-  final String baseUrl = "https://sc3040G5-CalowinSpringNode.hf.space"; // VM URL
+  final String baseUrl = "https://sc3040G5-CalowinTrip.hf.space"; // VM URL
   ApiService();
 
   static Future<String?> fetchUrl(Uri uri, {Map<String, String>? headers}) async {

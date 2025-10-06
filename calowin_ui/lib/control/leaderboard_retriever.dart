@@ -49,7 +49,7 @@ class LeaderboardItem {
 
 class LeaderboardRetriever {
   final String _baseUrl =
-      'https://sc3040G5-CalowinSpringNode.hf.space/api/leaderboard'; // Replace with your backend URL
+      'https://sc3040G5-CalowinFriends.hf.space/api/leaderboard'; // Replace with your backend URL
 
   // Function to retrieve LeaderboardItems based on user's coordinates
   Future<List<LeaderboardItem>> retrieveCarbonLeaderboard(String userId) async {
