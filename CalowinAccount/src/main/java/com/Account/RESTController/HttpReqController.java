@@ -234,7 +234,7 @@ public class HttpReqController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
-
+//d
     @GetMapping("/view-profile/{selfID}")
     public ResponseEntity<?> viewProfile(@PathVariable String selfID) {
         // View account logic
