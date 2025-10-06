@@ -58,7 +58,7 @@ public class TripController extends HttpReqController{
     @PostMapping("/start")
     public ResponseEntity<String> startTrip(@RequestBody TripInfoDTO tripInfo) {
         // Define the backend URL for starting the trip
-        String url = "http://localhost:8082/trips/start"; // URL for backend /start endpoint
+        String url = "https://sc3040G5-CalowinTrip.hf.space/trips/start"; // URL for backend /start endpoint
         return restTemplate.postForEntity(url, tripInfo, String.class);
         /* 
         // Send the request to the backend with the trip data
@@ -75,7 +75,7 @@ public class TripController extends HttpReqController{
     @PostMapping("/addTripMetrics")
     public ResponseEntity<String> addTripMetrics(@RequestParam int carbonSaved, @RequestParam int caloriesBurnt, TripInfoDTO trip) {
         // Define the backend URL for starting the trip
-        String url = "http://localhost:8082/achievement/start"; // URL for backend /start endpoint
+        String url = "https://sc3040G5-CalowinTrip.hf.space/achievement/start"; // URL for backend /start endpoint
 
         // Send the request to the backend with the trip data
         ResponseEntity<String> response = restTemplate.exchange(
@@ -91,7 +91,7 @@ public class TripController extends HttpReqController{
     @GetMapping("/progress")
     public ResponseEntity<?> getAchievementProgress() {
         // Construct the URL to call the external achievement service
-        String url = "http://localhost:8082/achievements/progress";
+        String url = "https://sc3040G5-CalowinTrip.hf.space/achievements/progress";
         return restTemplate.getForEntity(url, Object.class);
         /* 
         // Use RestTemplate to make the GET request to the external service
@@ -116,7 +116,7 @@ public class TripController extends HttpReqController{
     public ResponseEntity<?> getApiKey(@PathVariable String keyName) {
         // Forward view profile request to AccountModule
         try {
-            String url = "http://localhost:8082" + "/api/keys/" + keyName;
+            String url = "https://sc3040G5-CalowinTrip.hf.space" + "/api/keys/" + keyName;
             return restTemplate.getForEntity(url, String.class);
         } catch (HttpClientErrorException ex) {
             HttpStatusCode statusCode = ex.getStatusCode();
@@ -133,7 +133,7 @@ public class TripController extends HttpReqController{
 
     @PostMapping("/retrieve-metrics")
     public ResponseEntity<?> retrieveMetrics(@RequestBody TripInfoDTO trip) {
-        String url = "http://localhost:8082/trips/retrieve-metrics";
+        String url = "https://sc3040G5-CalowinTrip.hf.space/trips/retrieve-metrics";
         return restTemplate.postForEntity(url, trip,Map.class);
     }
 }
