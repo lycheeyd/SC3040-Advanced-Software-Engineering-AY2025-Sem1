@@ -67,7 +67,7 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
         _passwordError = "Password cannot exceed 60 characters";
       } else if (!RegExp(passwordPattern).hasMatch(_newPWController.text)) {
         _passwordError =
-            "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character.";
+            "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character. \"(\", \")\", \".\" are not allowed";
       } else {
         _passwordError = null;
       }
