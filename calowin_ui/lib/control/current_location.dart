@@ -10,6 +10,7 @@ class CurrentLocation {
     bool serviceEnabled;
     LocationPermission permission;
 
+    // hi
     // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
