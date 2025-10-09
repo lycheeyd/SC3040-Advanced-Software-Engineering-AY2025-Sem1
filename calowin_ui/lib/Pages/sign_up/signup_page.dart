@@ -77,7 +77,7 @@ class _SignupPageState extends State<SignupPage> {
         _passwordError = "Password cannot exceed 60 characters";
       } else if (!RegExp(passwordPattern).hasMatch(_inputPassword.text)) {
         _passwordError =
-            "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character.";
+            "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character.  \"(\", \")\", \".\" are not allowed";
       } else {
         _passwordError = null;
       }
@@ -303,7 +303,7 @@ class _SignupPageState extends State<SignupPage> {
                   title: "Password",
                   inputHint: "Enter Your Password",
                   bottomHint:
-                      "Password must be at least 8 characters long, have at least 1 digit, 1 uppercase, 1 lowercase, and 1 special character.",
+                      "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character. \"(\", \")\", \".\" are not allowed",
                   errorText: '',
                   hasError: false,
                 ),
