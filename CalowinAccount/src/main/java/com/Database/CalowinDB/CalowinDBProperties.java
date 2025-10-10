@@ -8,6 +8,5 @@ import com.Database.DBProperties;
 @Component
 @ConfigurationProperties(prefix = "spring.datasource.calowin-db")
 public class CalowinDBProperties extends DBProperties {
-    
 
 }

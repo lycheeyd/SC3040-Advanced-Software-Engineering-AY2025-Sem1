@@ -65,15 +65,17 @@ class HttpReqControllerTest {
             signupDTO.setConfirm_password("a-valid-password");
             signupDTO.setWeight(70f);
 
-            LoginResponseDTO responseDTO = new LoginResponseDTO("USER123", "newuser@example.com", "New User", 70f, "", 0, 0, "No Medal", "No Medal");
+            LoginResponseDTO responseDTO = new LoginResponseDTO("USER123", "newuser@example.com", "New User", 70f, "",
+                    0, 0, "No Medal", "No Medal");
 
             // This mock will now be triggered and return the responseDTO
-            when(accountManagementService.signup(anyString(), anyString(), anyString(), anyString(), anyFloat())).thenReturn(responseDTO);
+            when(accountManagementService.signup(anyString(), anyString(), anyString(), anyString(), anyFloat()))
+                    .thenReturn(responseDTO);
 
             // Act & Assert
             mockMvc.perform(post("/account/signup")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(signupDTO)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(signupDTO)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.message").value("Signup successful"))
                     .andExpect(jsonPath("$.UserObject.email").value("newuser@example.com")); // This should now pass
@@ -97,8 +99,8 @@ class HttpReqControllerTest {
 
             // Act & Assert
             mockMvc.perform(post("/account/signup")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(signupDTO)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(signupDTO)))
                     .andExpect(status().isBadRequest()) // This should now pass
                     .andExpect(jsonPath("$").value("Signup failed: User already exists"));
         }
@@ -115,13 +117,14 @@ class HttpReqControllerTest {
             loginDTO.setEmail("test@example.com");
             loginDTO.setPassword("encryptedPassword");
 
-            LoginResponseDTO responseDTO = new LoginResponseDTO("USER1234", "test@example.com", "Test User", 70f, "", 0, 0, "No Medal", "No Medal");
+            LoginResponseDTO responseDTO = new LoginResponseDTO("USER1234", "test@example.com", "Test User", 70f, "", 0,
+                    0, "No Medal", "No Medal");
             when(accountManagementService.login(anyString(), anyString())).thenReturn(responseDTO);
 
             // Act & Assert
             mockMvc.perform(post("/account/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(loginDTO)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(loginDTO)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("Login successful"))
                     .andExpect(jsonPath("$.UserObject.email").value("test@example.com"));
@@ -142,8 +145,8 @@ class HttpReqControllerTest {
 
             // Act & Assert
             mockMvc.perform(post("/account/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(loginDTO)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(loginDTO)))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$").value("Invalid email or password"));
         }
@@ -165,8 +168,8 @@ class HttpReqControllerTest {
 
             // Act & Assert
             mockMvc.perform(post("/account/delete-account")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(deleteDTO)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(deleteDTO)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").value("Account deleted"));
         }
@@ -187,8 +190,8 @@ class HttpReqControllerTest {
 
             // Act & Assert
             mockMvc.perform(post("/account/delete-account")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(deleteDTO)))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(deleteDTO)))
                     .andExpect(status().isUnauthorized()) // This assertion should now pass
                     .andExpect(jsonPath("$").value("Invalid OTP"));
         }
@@ -202,7 +205,8 @@ class HttpReqControllerTest {
         void viewProfile_self_success() throws Exception {
             // Arrange
             String selfId = "USER123";
-            LoginResponseDTO responseDTO = new LoginResponseDTO(selfId, "test@example.com", "Test User", 70f, "bio", 10, 20, "Bronze", "Bronze");
+            LoginResponseDTO responseDTO = new LoginResponseDTO(selfId, "test@example.com", "Test User", 70f, "bio", 10,
+                    20, "Bronze", "Bronze");
             when(profileManagementService.viewProfile(selfId)).thenReturn(responseDTO);
 
             // Act & Assert

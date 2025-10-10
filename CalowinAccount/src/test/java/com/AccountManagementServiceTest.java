@@ -63,7 +63,8 @@ class AccountManagementServiceTest {
         when(secureInfoRepository.save(any(UserEntity.class))).thenReturn(user);
 
         // Act
-        LoginResponseDTO result = accountManagementService.signup("test@example.com", "encPass", "encPass", "Test User", 70.5f);
+        LoginResponseDTO result = accountManagementService.signup("test@example.com", "encPass", "encPass", "Test User",
+                70.5f);
 
         // Assert
         assertThat(result).isNotNull();

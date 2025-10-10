@@ -4,8 +4,8 @@ import com.Account.Entities.AchievementEntry;
 import com.Account.Entities.FriendStatus;
 import com.Account.Entities.ProfileEntity;
 import com.Account.Entities.UserEntity;
-import com.Account.RESTController.ExternalServiceClient;
 import com.Account.Managers.ProfileManagementService;
+import com.Account.RESTController.ExternalServiceClient;
 import com.DataTransferObject.LoginResponseDTO;
 import com.DataTransferObject.ViewProfileResponseDTO;
 import com.Database.CalowinDB.AchievementRepository;
@@ -56,7 +56,7 @@ class ProfileManagementServiceTest {
         user = new UserEntity("USER001", "test@example.com", "password");
     }
 
-    //--- Tests for editProfile ---
+    // --- Tests for editProfile ---
     @Test
     @DisplayName("editProfile should update and save the profile when user is found")
     void editProfile_whenUserExists_shouldUpdateAndReturnProfile() throws Exception {
@@ -65,7 +65,8 @@ class ProfileManagementServiceTest {
         when(userInfoRepository.save(any(ProfileEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        ProfileEntity updatedProfile = profileManagementService.editProfile("USER001", "Updated Name", 80.0f, "New Bio");
+        ProfileEntity updatedProfile = profileManagementService.editProfile("USER001", "Updated Name", 80.0f,
+                "New Bio");
 
         // Assert
         assertThat(updatedProfile).isNotNull();
@@ -91,7 +92,7 @@ class ProfileManagementServiceTest {
         verify(userInfoRepository, never()).save(any());
     }
 
-    //--- Tests for viewProfile (other's profile) ---
+    // --- Tests for viewProfile (other's profile) ---
     @Test
     @DisplayName("viewProfile (other) should return full profile DTO when user is found")
     void viewProfile_forOtherUser_whenFound_shouldReturnViewProfileResponseDTO() throws Exception {
@@ -133,7 +134,7 @@ class ProfileManagementServiceTest {
         assertThat(exception.getMessage()).isEqualTo("User not found");
     }
 
-    //--- Tests for viewProfile (self profile) ---
+    // --- Tests for viewProfile (self profile) ---
     @Test
     @DisplayName("viewProfile (self) should return full profile DTO when user is found")
     void viewProfile_forSelf_whenFound_shouldReturnLoginResponseDTO() throws Exception {

@@ -3,25 +3,26 @@ package com.DataTransferObject;
 import com.Account.Entities.FriendStatus;
 
 public class ViewProfileResponseDTO {
-    
+
     // UserEntity
     private String userID;
     private String name;
     private String bio;
     private FriendStatus friendStatus;
 
-    //AchievementEntry
+    // AchievementEntry
     private int totalCarbonSaved;
     private int totalCalorieBurnt;
     private String carbonMedal;
     private String calorieMedal;
 
-    public ViewProfileResponseDTO(String userID, String name, String bio, FriendStatus friendStatus, int totalCarbonSaved, int totalCalorieBurnt, String carbonMedal, String calorieMedal) {
+    public ViewProfileResponseDTO(String userID, String name, String bio, FriendStatus friendStatus,
+            int totalCarbonSaved, int totalCalorieBurnt, String carbonMedal, String calorieMedal) {
         this.userID = userID;
         this.name = name;
         this.bio = bio;
         this.friendStatus = friendStatus;
-        
+
         this.totalCarbonSaved = totalCarbonSaved;
         this.totalCalorieBurnt = totalCalorieBurnt;
         this.carbonMedal = carbonMedal;

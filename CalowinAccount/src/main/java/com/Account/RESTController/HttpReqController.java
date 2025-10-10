@@ -235,6 +235,7 @@ public class HttpReqController {
         }
     }
 
+    // d
     @GetMapping("/view-profile/{selfID}")
     public ResponseEntity<?> viewProfile(@PathVariable String selfID) {
         // View account logic

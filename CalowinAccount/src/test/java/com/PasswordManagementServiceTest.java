@@ -82,16 +82,17 @@ class PasswordManagementServiceTest {
         @Test
         @DisplayName("should throw exception if user is not found")
         void changePassword_whenUserNotFound_shouldThrowException() throws Exception {
-            // REMOVED: when(passwordSecurityService.decrypt(anyString(), anyString())).thenAnswer(i -> i.getArgument(0));
+            // REMOVED: when(passwordSecurityService.decrypt(anyString(),
+            // anyString())).thenAnswer(i -> i.getArgument(0));
             when(secureInfoRepository.findByUserID(userId)).thenReturn(Optional.empty());
 
-            Exception e = assertThrows(RuntimeException.class, () ->
-                    passwordManagementService.changePassword(userId, "old", "new", "new")
-            );
+            Exception e = assertThrows(RuntimeException.class,
+                    () -> passwordManagementService.changePassword(userId, "old", "new", "new"));
 
             assertThat(e.getMessage()).isEqualTo("Invalid user");
             verify(secureInfoRepository, never()).save(any());
         }
+
         @Test
         @DisplayName("should throw exception if old password does not match")
         void changePassword_whenOldPasswordIsIncorrect_shouldThrowException() throws Exception {
@@ -100,9 +101,8 @@ class PasswordManagementServiceTest {
             when(secureInfoRepository.findByUserID(userId)).thenReturn(Optional.of(user));
             when(passwordEncoder.matches("wrongOldPassword", "encodedOldPassword")).thenReturn(false);
 
-            Exception e = assertThrows(RuntimeException.class, () ->
-                    passwordManagementService.changePassword(userId, "wrongOldPassword", "newPassword", "newPassword")
-            );
+            Exception e = assertThrows(RuntimeException.class, () -> passwordManagementService.changePassword(userId,
+                    "wrongOldPassword", "newPassword", "newPassword"));
 
             assertThat(e.getMessage()).isEqualTo("Wrong password");
             verify(secureInfoRepository, never()).save(any());
@@ -121,7 +121,8 @@ class PasswordManagementServiceTest {
             when(otpService.verifyOTP(userEmail, "123456", ActionType.FORGOT_PASSWORD)).thenReturn(true);
             when(passwordSecurityService.generateRandomPassword()).thenReturn("randomNewPassword");
             when(passwordEncoder.encode("randomNewPassword")).thenReturn("encodedRandomNewPassword");
-            // We don't need a doNothing() for void methods unless we need to throw an exception.
+            // We don't need a doNothing() for void methods unless we need to throw an
+            // exception.
 
             // Act
             passwordManagementService.forgotPassword(userEmail, "123456");
@@ -143,9 +144,8 @@ class PasswordManagementServiceTest {
         void forgotPassword_whenUserNotFound_shouldThrowException() throws Exception { // <-- FIX IS HERE
             when(secureInfoRepository.findByEmail(userEmail)).thenReturn(Optional.empty());
 
-            Exception e = assertThrows(RuntimeException.class, () ->
-                    passwordManagementService.forgotPassword(userEmail, "123456")
-            );
+            Exception e = assertThrows(RuntimeException.class,
+                    () -> passwordManagementService.forgotPassword(userEmail, "123456"));
 
             assertThat(e.getMessage()).isEqualTo("Invalid user");
             verify(otpService, never()).verifyOTP(anyString(), anyString(), any());
@@ -158,9 +158,8 @@ class PasswordManagementServiceTest {
             when(secureInfoRepository.findByEmail(userEmail)).thenReturn(Optional.of(user));
             when(otpService.verifyOTP(userEmail, "wrong-otp", ActionType.FORGOT_PASSWORD)).thenReturn(false);
 
-            Exception e = assertThrows(RuntimeException.class, () ->
-                    passwordManagementService.forgotPassword(userEmail, "wrong-otp")
-            );
+            Exception e = assertThrows(RuntimeException.class,
+                    () -> passwordManagementService.forgotPassword(userEmail, "wrong-otp"));
 
             assertThat(e.getMessage()).isEqualTo("Invalid OTP");
             verify(secureInfoRepository, never()).save(any());

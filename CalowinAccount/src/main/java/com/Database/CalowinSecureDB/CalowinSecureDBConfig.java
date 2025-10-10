@@ -17,11 +17,8 @@ import jakarta.persistence.EntityManagerFactory;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(
-    basePackages = "com.Database.CalowinSecureDB",  // Repository package for this database
-    entityManagerFactoryRef = "calowinSecureDBEntityManagerFactory",
-    transactionManagerRef = "calowinSecureDBTransactionManager"
-)
+@EnableJpaRepositories(basePackages = "com.Database.CalowinSecureDB", // Repository package for this database
+        entityManagerFactoryRef = "calowinSecureDBEntityManagerFactory", transactionManagerRef = "calowinSecureDBTransactionManager")
 
 public class CalowinSecureDBConfig {
 

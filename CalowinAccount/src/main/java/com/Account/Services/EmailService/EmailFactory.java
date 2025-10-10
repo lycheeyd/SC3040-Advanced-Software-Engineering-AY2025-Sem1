@@ -14,12 +14,13 @@ public class EmailFactory implements IEmailService {
     public EmailFactory(
             @Value("${email.provider}") String provider,
             @Qualifier("gmailSmtpService") IEmailService smtpService,
-            @Qualifier("gmailApiService") IEmailService apiService
-    ) {
+            @Qualifier("gmailApiService") IEmailService apiService) {
         if ("gmail-api".equalsIgnoreCase(provider)) {
             delegate = apiService;
             System.out.println("Using Gmail API (HTTPS 443)");
         } else {
+            // throw new IllegalStateException("FATAL: Email provider set to unexpected
+            // value: " + provider + ". Expected 'gmail-api'.");
             delegate = smtpService;
             System.out.println("Using Gmail SMTP (port 587)");
         }

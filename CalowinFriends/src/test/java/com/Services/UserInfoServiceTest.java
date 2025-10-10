@@ -1,7 +1,8 @@
 package com.Services;
 
-import com.Entity.UserInfoEntity;
+import com.models.UserInfo;
 import com.repository.UserInfoRepository;
+import com.service.UserInfoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -35,9 +36,9 @@ class UserInfoServiceTest {
     private UserInfoService userInfoService;
 
     // Test data objects, re-initialized before each test
-    private UserInfoEntity alice;
-    private UserInfoEntity bob;
-    private UserInfoEntity charlie;
+    private UserInfo alice;
+    private UserInfo bob;
+    private UserInfo charlie;
 
     @BeforeEach
     void setUp() {
@@ -50,8 +51,8 @@ class UserInfoServiceTest {
     /**
      * Helper method to reduce boilerplate code for creating UserInfo objects.
      */
-    private UserInfoEntity createUser(String id, String name) {
-        UserInfoEntity user = new UserInfoEntity();
+    private UserInfo createUser(String id, String name) {
+        UserInfo user = new UserInfo();
         user.setUserId(id);
         user.setName(name);
         return user;
@@ -63,11 +64,11 @@ class UserInfoServiceTest {
 
         @ParameterizedTest
         @NullAndEmptySource
-        @ValueSource(strings = {" ", "   "})
+        @ValueSource(strings = { " ", "   " })
         @DisplayName("should return an empty list for null, empty, or blank search terms")
         void search_WithInvalidTerm_ShouldReturnEmptyList(String invalidSearchTerm) {
             // ACT
-            List<UserInfoEntity> result = userInfoService.searchByUserIdOrName(invalidSearchTerm, "any_user_id");
+            List<UserInfo> result = userInfoService.searchByUserIdOrName(invalidSearchTerm, "any_user_id");
 
             // ASSERT
             assertThat(result).isEmpty();
@@ -85,12 +86,12 @@ class UserInfoServiceTest {
                     .thenReturn(List.of(alice, bob, charlie));
 
             // ACT
-            List<UserInfoEntity> result = userInfoService.searchByUserIdOrName(searchTerm, currentUserId);
+            List<UserInfo> result = userInfoService.searchByUserIdOrName(searchTerm, currentUserId);
 
             // ASSERT
             // The result should contain Bob and Charlie, but not Alice.
             assertThat(result)
-                    .extracting(UserInfoEntity::getUserId)
+                    .extracting(UserInfo::getUserId)
                     .containsExactly("bob_id", "charlie_id");
             verify(userInfoRepository).searchByUserIdOrName(searchTerm);
         }
@@ -105,7 +106,7 @@ class UserInfoServiceTest {
                     .thenReturn(List.of(bob));
 
             // ACT
-            List<UserInfoEntity> result = userInfoService.searchByUserIdOrName(searchTerm, currentUserId);
+            List<UserInfo> result = userInfoService.searchByUserIdOrName(searchTerm, currentUserId);
 
             // ASSERT
             // The result should be exactly what the repository returned.
@@ -121,7 +122,7 @@ class UserInfoServiceTest {
             when(userInfoRepository.searchByUserIdOrName(searchTerm)).thenReturn(List.of());
 
             // ACT
-            List<UserInfoEntity> result = userInfoService.searchByUserIdOrName(searchTerm, "any_user_id");
+            List<UserInfo> result = userInfoService.searchByUserIdOrName(searchTerm, "any_user_id");
 
             // ASSERT
             assertThat(result).isEmpty();
@@ -140,7 +141,7 @@ class UserInfoServiceTest {
             when(userInfoRepository.findById("bob_id")).thenReturn(Optional.of(bob));
 
             // ACT
-            UserInfoEntity result = userInfoService.getUserInfoById("bob_id");
+            UserInfo result = userInfoService.getUserInfoById("bob_id");
 
             // ASSERT
             assertThat(result).isEqualTo(bob);
@@ -154,7 +155,7 @@ class UserInfoServiceTest {
             when(userInfoRepository.findById("nobody")).thenReturn(Optional.empty());
 
             // ACT
-            UserInfoEntity result = userInfoService.getUserInfoById("nobody");
+            UserInfo result = userInfoService.getUserInfoById("nobody");
 
             // ASSERT
             assertThat(result).isNull();

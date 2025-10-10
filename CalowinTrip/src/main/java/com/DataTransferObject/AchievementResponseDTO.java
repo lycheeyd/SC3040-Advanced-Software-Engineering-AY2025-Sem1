@@ -7,7 +7,7 @@ public class AchievementResponseDTO {
     private String calorieBurntMedal;
 
     public AchievementResponseDTO(int totalCarbonSavedExp, int totalCalorieBurntExp, String carbonSavedMedal,
-                                  String calorieBurntMedal) {
+            String calorieBurntMedal) {
         this.totalCarbonSavedExp = totalCarbonSavedExp;
         this.totalCalorieBurntExp = totalCalorieBurntExp;
         this.carbonSavedMedal = carbonSavedMedal;
@@ -15,8 +15,19 @@ public class AchievementResponseDTO {
     }
 
     // Getters
-    public int getTotalCarbonSavedExp() { return totalCarbonSavedExp; }
-    public int getTotalCalorieBurntExp() { return totalCalorieBurntExp; }
-    public String getCarbonSavedMedal() { return carbonSavedMedal; }
-    public String getCalorieBurntMedal() { return calorieBurntMedal; }
+    public int getTotalCarbonSavedExp() {
+        return totalCarbonSavedExp;
+    }
+
+    public int getTotalCalorieBurntExp() {
+        return totalCalorieBurntExp;
+    }
+
+    public String getCarbonSavedMedal() {
+        return carbonSavedMedal;
+    }
+
+    public String getCalorieBurntMedal() {
+        return calorieBurntMedal;
+    }
 }

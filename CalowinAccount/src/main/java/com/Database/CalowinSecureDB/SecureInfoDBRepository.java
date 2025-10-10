@@ -12,7 +12,10 @@ import com.Account.Entities.UserEntity;
 @Primary
 public interface SecureInfoDBRepository extends JpaRepository<UserEntity, String> {
     Optional<UserEntity> findByEmail(String email);
+
     Optional<UserEntity> findByUserID(String userID);
+
     boolean existsByUserID(String userID);
+
     void deleteByUserID(String userID);
 }
