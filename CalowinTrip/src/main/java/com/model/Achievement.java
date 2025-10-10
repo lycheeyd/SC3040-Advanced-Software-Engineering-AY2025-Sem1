@@ -1,6 +1,6 @@
-package com.Entity;
+package com.model;
 
-public class AchievementEntity {
+public class Achievement {
     private int totalCarbonSavedExp;
     private int totalCalorieBurntExp;
     private String carbonSavedMedal;
@@ -17,7 +17,7 @@ public class AchievementEntity {
     private final int CALORIE_GOLD_THRESHOLD = 10000;
     private final int CALORIE_PLATINUM_THRESHOLD = 15000;
 
-    public AchievementEntity() {
+    public Achievement() {
         this.totalCarbonSavedExp = 0; // Default value
         this.totalCalorieBurntExp = 0; // Default value
         this.carbonSavedMedal = "No Medal"; // Default value
@@ -37,8 +37,8 @@ public class AchievementEntity {
         this.calorieBurntMedal = calculateCalorieMedal(totalCalorieBurntExp);
     }
 
-     // Helper method to calculate carbon medal based on experience
-     private String calculateCarbonMedal(int exp) {
+    // Helper method to calculate carbon medal based on experience
+    private String calculateCarbonMedal(int exp) {
         if (exp >= CARBON_PLATINUM_THRESHOLD) {
             return "EcoPlatinum";
         } else if (exp >= CARBON_GOLD_THRESHOLD) {
@@ -77,20 +77,23 @@ public class AchievementEntity {
     }
 
     public int pointsToNextCarbonGold() {
-        return CARBON_GOLD_THRESHOLD - totalCarbonSavedExp > 0 ?  CARBON_GOLD_THRESHOLD - totalCarbonSavedExp : 0;
+        return CARBON_GOLD_THRESHOLD - totalCarbonSavedExp > 0 ? CARBON_GOLD_THRESHOLD - totalCarbonSavedExp : 0;
     }
 
     public int pointsToNextCarbonPlatinum() {
-        return CARBON_PLATINUM_THRESHOLD - totalCarbonSavedExp > 0 ? CARBON_PLATINUM_THRESHOLD - totalCarbonSavedExp : 0;
+        return CARBON_PLATINUM_THRESHOLD - totalCarbonSavedExp > 0 ? CARBON_PLATINUM_THRESHOLD - totalCarbonSavedExp
+                : 0;
 
     }
 
     public int pointsToNextCalorieBronze() {
-        return CALORIE_BRONZE_THRESHOLD - totalCalorieBurntExp > 0 ? CALORIE_BRONZE_THRESHOLD - totalCalorieBurntExp : 0;
+        return CALORIE_BRONZE_THRESHOLD - totalCalorieBurntExp > 0 ? CALORIE_BRONZE_THRESHOLD - totalCalorieBurntExp
+                : 0;
     }
 
     public int pointsToNextCalorieSilver() {
-        return CALORIE_SILVER_THRESHOLD - totalCalorieBurntExp > 0 ? CALORIE_SILVER_THRESHOLD - totalCalorieBurntExp : 0;
+        return CALORIE_SILVER_THRESHOLD - totalCalorieBurntExp > 0 ? CALORIE_SILVER_THRESHOLD - totalCalorieBurntExp
+                : 0;
     }
 
     public int pointsToNextCalorieGold() {
@@ -98,7 +101,8 @@ public class AchievementEntity {
     }
 
     public int pointsToNextCaloriePlatinum() {
-        return CALORIE_PLATINUM_THRESHOLD - totalCalorieBurntExp > 0 ? CALORIE_PLATINUM_THRESHOLD - totalCalorieBurntExp : 0;
+        return CALORIE_PLATINUM_THRESHOLD - totalCalorieBurntExp > 0 ? CALORIE_PLATINUM_THRESHOLD - totalCalorieBurntExp
+                : 0;
 
     }
 
@@ -165,13 +169,8 @@ public class AchievementEntity {
         this.calorieBurntMedal = calorieBurntMedal;
     }
 
-
     public void setCarbonSavedMedal(String carbonSavedMedal) {
         this.carbonSavedMedal = carbonSavedMedal;
     }
 
-
-
-    
 }
-
