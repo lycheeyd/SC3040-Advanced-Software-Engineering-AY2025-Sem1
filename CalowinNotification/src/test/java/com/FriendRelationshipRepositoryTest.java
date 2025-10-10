@@ -4,8 +4,9 @@ import com.Database.CalowinDB.CalowinDBConfig;
 import com.Database.CalowinDB.CalowinDBProperties;
 import com.Database.DataSourceConfig;
 import com.Database.MyBeans;
-import com.Relationship.Entity.FriendRelationshipEntity;
 import com.Database.CalowinDB.FriendRelationshipRepository;
+import com.RelationshipNotification.Entity.FriendRelationshipEntity;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

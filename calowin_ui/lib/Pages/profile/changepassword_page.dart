@@ -67,7 +67,7 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
         _passwordError = "Password cannot exceed 60 characters";
       } else if (!RegExp(passwordPattern).hasMatch(_newPWController.text)) {
         _passwordError =
-            "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character. \"(\", \")\", \".\" are not allowed";
+            "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character.";
       } else {
         _passwordError = null;
       }
@@ -88,7 +88,7 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
       final String encryptedNewPassword = AES_Encryptor.encrypt(_newPWController.text);
       final String encryptedNewConfirmPassword = AES_Encryptor.encrypt(_confirmPWController.text);
 
-      final String url = "http://172.21.146.188:8080/central/account/change-password";
+      final String url = "https://sc3040G5-CalowinSpringNode.hf.space/central/account/change-password";
 
       try {
         print("called");
