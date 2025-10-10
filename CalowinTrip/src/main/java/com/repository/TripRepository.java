@@ -1,23 +1,33 @@
 package com.repository;
 
-import com.Database.DatabaseConnection;
-import com.Entity.TripEntity;
+import com.model.Trip;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.time.LocalDateTime;
 
 @Repository
 public class TripRepository {
 
-    public void insertTripIntoDatabase(TripEntity trip) {
+    private final DataSource dataSource; // <-- Add a field for DataSource
+
+    // Add this constructor to let Spring inject the DataSource
+    @Autowired
+    public TripRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public void insertTripIntoDatabase(Trip trip) {
         String insertSQL = "INSERT INTO trips (trip_id, start_location, start_longitude, "
                 + "start_latitude, end_location, end_latitude, "
                 + "end_longitude, distance, calories_burnt, carbon_saved, trip_time, travel_method, status, user_id) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(insertSQL)) {
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(insertSQL)) {
 
             preparedStatement.setString(1, trip.getTripId());
             preparedStatement.setString(2, trip.getCurrentLocation().getName());
@@ -50,8 +60,8 @@ public class TripRepository {
 
     public boolean tripIdExists(String tripId) {
         String query = "SELECT COUNT(*) FROM trips WHERE trip_id = ?";
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, tripId);
             ResultSet rs = preparedStatement.executeQuery();
             if (rs.next()) {

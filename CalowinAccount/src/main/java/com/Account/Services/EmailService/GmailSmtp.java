@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 
 import com.Account.Entities.EmailServiceProperties;
 
-import javax.mail.*;
-import javax.mail.internet.*;
+import jakarta.mail.*;
+import jakarta.mail.internet.*;
 import java.util.Properties;
 
 @Service("gmailSmtpService")
@@ -28,16 +28,17 @@ public class GmailSmtp implements IEmailService {
         Session session = Session.getInstance(properties, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(emailServiceProperties.getUsername(), emailServiceProperties.getPassword());
+                return new PasswordAuthentication(emailServiceProperties.getUsername(),
+                        emailServiceProperties.getPassword());
             }
         });
 
         try {
             // Create email message
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(emailServiceProperties.getUsername()));  // sender email
+            message.setFrom(new InternetAddress(emailServiceProperties.getUsername())); // sender email
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient)); // recipient email
-            message.setSubject(subject);  // email subject
+            message.setSubject(subject); // email subject
             message.setText(messageBody); // email body
 
             // Send email

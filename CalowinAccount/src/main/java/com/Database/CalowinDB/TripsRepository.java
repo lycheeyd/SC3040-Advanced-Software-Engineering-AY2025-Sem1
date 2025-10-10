@@ -18,4 +18,3 @@ public interface TripsRepository extends JpaRepository<TripsEntry, String> {
     @Query("DELETE FROM TripsEntry t WHERE t.userID = :userID")
     void deleteByUserID(@Param("userID") String userID);
 }
-    

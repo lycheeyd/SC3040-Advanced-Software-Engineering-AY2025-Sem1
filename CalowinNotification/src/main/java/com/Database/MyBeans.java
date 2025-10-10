@@ -1,7 +1,7 @@
 package com.Database;
 
 import java.util.HashMap;
-
+import java.util.Properties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +24,8 @@ public class MyBeans {
     }
 
     @Bean
-    public EntityManagerFactoryBuilder entityManagerFactoryBuilder(JpaVendorAdapter jpaVendorAdapter, JpaProperties jpaProperties) {
+    public EntityManagerFactoryBuilder entityManagerFactoryBuilder(JpaVendorAdapter jpaVendorAdapter,
+            JpaProperties jpaProperties) {
         return new EntityManagerFactoryBuilder(jpaVendorAdapter, new HashMap<>(jpaProperties.getProperties()), null);
     }
 

@@ -2,12 +2,14 @@ package com.Services;
 
 import com.DataTransferObject.TripMetricsRequestDTO;
 import com.DataTransferObject.TripStartRequestDTO;
-import com.Entity.CurrentLocationEntity;
-import com.Entity.LocationEntity;
-import com.Entity.TravelMethod;
-import com.Entity.TripEntity;
+import com.model.CurrentLocation;
+import com.model.Location;
+import com.ENUM.TravelMethod;
+import com.model.Trip;
 import com.repository.TripRepository;
 import com.repository.UserRepository;
+import com.service.AchievementService;
+import com.service.TripService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class TripServiceTest {
 
@@ -46,10 +49,11 @@ class TripServiceTest {
 
     @BeforeEach
     void setUp() {
-        // We use fixed locations to get a consistent, predictable distance for our tests.
+        // We use fixed locations to get a consistent, predictable distance for our
+        // tests.
         // The calculated distance for these coordinates is ~8.207 km.
-        CurrentLocationEntity start = new CurrentLocationEntity("Start Point", 1.3521, 103.8198);
-        LocationEntity end = new LocationEntity("End Point", 1.2869, 103.8544);
+        CurrentLocation start = new CurrentLocation("Start Point", 1.3521, 103.8198);
+        Location end = new Location("End Point", 1.2869, 103.8544);
 
         tripStartRequest = new TripStartRequestDTO();
         tripStartRequest.setUserId("user123");
@@ -70,14 +74,14 @@ class TripServiceTest {
         // Arrange
         double userWeight = 70.0; // kg
         int expectedCalories = 287; // (int) (8.207 * 70.0 * 0.5)
-        int expectedCarbon = 246;   // (int) (8.207 * 30)
+        int expectedCarbon = 246; // (int) (8.207 * 30)
 
         // Configure mocks to return expected values
         when(userRepository.getUserWeight("user123")).thenReturn(Optional.of(userWeight));
         when(tripRepository.tripIdExists(anyString())).thenReturn(false); // Ensure the ID generation loop runs once
 
         // Act
-        TripEntity resultTrip = tripService.startTrip(tripStartRequest);
+        Trip resultTrip = tripService.startTrip(tripStartRequest);
 
         // Assert
         // 1. Verify the returned object has the correct values
@@ -89,11 +93,11 @@ class TripServiceTest {
         assertThat(resultTrip.getTripId()).isNotNull();
 
         // 2. Verify that the repository and other services were called correctly
-        verify(tripRepository, times(1)).insertTripIntoDatabase(any(TripEntity.class));
+        verify(tripRepository, times(1)).insertTripIntoDatabase(any(Trip.class));
         verify(achievementService, times(1)).addTripMetricsToAchievement("user123", expectedCarbon, expectedCalories);
 
         // 3. (Optional) Capture the object passed to the repository to inspect it
-        ArgumentCaptor<TripEntity> tripCaptor = ArgumentCaptor.forClass(TripEntity.class);
+        ArgumentCaptor<Trip> tripCaptor = ArgumentCaptor.forClass(Trip.class);
         verify(tripRepository).insertTripIntoDatabase(tripCaptor.capture());
         assertThat(tripCaptor.getValue().getCaloriesBurnt()).isEqualTo(expectedCalories);
     }
@@ -113,7 +117,7 @@ class TripServiceTest {
         assertThat(exception.getMessage()).isEqualTo("User weight not found for userId: user123");
 
         // Verify that no database insertions or achievement updates occurred
-        verify(tripRepository, never()).insertTripIntoDatabase(any(TripEntity.class));
+        verify(tripRepository, never()).insertTripIntoDatabase(any(Trip.class));
         verify(achievementService, never()).addTripMetricsToAchievement(anyString(), anyInt(), anyInt());
     }
 
@@ -123,7 +127,7 @@ class TripServiceTest {
         // Arrange
         double userWeight = 75.0; // kg
         int expectedCalories = 184; // (int) (8.207 * 75.0 * 0.3) for CYCLE
-        int expectedCarbon = 164;   // (int) (8.207 * 20) for CYCLE
+        int expectedCarbon = 164; // (int) (8.207 * 20) for CYCLE
 
         when(userRepository.getUserWeight("user123")).thenReturn(Optional.of(userWeight));
 
@@ -156,7 +160,8 @@ class TripServiceTest {
             "CYCLE, 80.0, 196, 164",
             "PUBLIC_TRANSPORT, 65.0, 53, 82"
     })
-    void calculations_forAllTravelMethods_shouldReturnCorrectValues(TravelMethod method, double weight, int expectedCalories, int expectedCarbon) {
+    void calculations_forAllTravelMethods_shouldReturnCorrectValues(TravelMethod method, double weight,
+            int expectedCalories, int expectedCarbon) {
         // Arrange
         tripMetricsRequest.setTravelMethod(method); // Use the method from the CSV source
         when(userRepository.getUserWeight("user123")).thenReturn(Optional.of(weight));

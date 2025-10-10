@@ -17,11 +17,11 @@ public class Achievement {
 
     // Constructor
     public Achievement(int totalCarbonSavedExp, int totalCalorieBurntExp,
-                               String carbonSavedMedal, String calorieBurntMedal,
-                               int pointsToNextCarbonBronze, int pointsToNextCarbonSilver,
-                               int pointsToNextCarbonGold, int pointsToNextCarbonPlatinum,
-                               int pointsToNextCalorieBronze, int pointsToNextCalorieSilver,
-                               int pointsToNextCalorieGold, int pointsToNextCaloriePlatinum) {
+            String carbonSavedMedal, String calorieBurntMedal,
+            int pointsToNextCarbonBronze, int pointsToNextCarbonSilver,
+            int pointsToNextCarbonGold, int pointsToNextCarbonPlatinum,
+            int pointsToNextCalorieBronze, int pointsToNextCalorieSilver,
+            int pointsToNextCalorieGold, int pointsToNextCaloriePlatinum) {
         this.totalCarbonSavedExp = totalCarbonSavedExp;
         this.totalCalorieBurntExp = totalCalorieBurntExp;
         this.carbonSavedMedal = carbonSavedMedal;
@@ -133,5 +133,3 @@ public class Achievement {
         this.pointsToNextCaloriePlatinum = pointsToNextCaloriePlatinum;
     }
 }
-
-

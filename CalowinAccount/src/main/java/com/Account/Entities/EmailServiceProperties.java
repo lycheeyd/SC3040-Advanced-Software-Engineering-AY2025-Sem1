@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 public class EmailServiceProperties {
 
     // For SMTP usage
-    private String username;      // email address
+    private String username; // email address
     private String password;
     private String host;
     private String port;
