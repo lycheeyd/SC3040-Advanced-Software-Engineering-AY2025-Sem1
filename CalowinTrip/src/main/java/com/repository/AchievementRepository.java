@@ -1,23 +1,32 @@
 package com.repository;
 
-import com.Database.DatabaseConnection;
-import com.Entity.AchievementEntity;
+import com.model.Achievement;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Optional;
 
 @Repository
 public class AchievementRepository {
+    private final DataSource dataSource; // <-- Add a field for DataSource
 
-    public Optional<AchievementEntity> fetchAchievementForUser(String userId) {
+    // Add this constructor to let Spring inject the DataSource
+    @Autowired
+    public AchievementRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public Optional<Achievement> fetchAchievementForUser(String userId) {
         String query = "SELECT * FROM achievement WHERE user_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, userId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                AchievementEntity achievement = new AchievementEntity();
+                Achievement achievement = new Achievement();
                 achievement.setTotalCarbonSavedExp(rs.getInt("total_carbon_saved"));
                 achievement.setTotalCalorieBurntExp(rs.getInt("total_calorie_burnt"));
                 achievement.setCarbonSavedMedal(rs.getString("carbon_medal"));
@@ -30,11 +39,11 @@ public class AchievementRepository {
         return Optional.empty();
     }
 
-    public void updateAchievement(AchievementEntity achievement, String userId) {
+    public void updateAchievement(Achievement achievement, String userId) {
         // First, try to update. If no rows are affected, then insert.
         String updateQuery = "UPDATE achievement SET total_carbon_saved = ?, total_calorie_burnt = ?, carbon_medal = ?, calorie_medal = ? WHERE user_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
             updateStmt.setInt(1, achievement.getTotalCarbonSavedExp());
             updateStmt.setInt(2, achievement.getTotalCalorieBurntExp());
             updateStmt.setString(3, achievement.getCarbonSavedMedal());

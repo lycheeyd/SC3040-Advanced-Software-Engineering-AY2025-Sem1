@@ -7,6 +7,6 @@ import com.Database.DBProperties;
 
 @Component
 @ConfigurationProperties(prefix = "spring.datasource.calowin-secure-db")
-public class CalowinSecureDBProperties extends DBProperties{
+public class CalowinSecureDBProperties extends DBProperties {
 
 }

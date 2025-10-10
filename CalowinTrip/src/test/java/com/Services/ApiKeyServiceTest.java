@@ -1,6 +1,7 @@
 package com.Services;
 
 import com.repository.ApiKeyRepository;
+import com.service.ApiKeyService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +43,8 @@ class ApiKeyServiceTest {
         // Check that the returned value is the expected API key
         assertThat(actualApiKey).isEqualTo(expectedApiKey);
 
-        // Verify that the findApiKeyByName method was called exactly once with the correct argument
+        // Verify that the findApiKeyByName method was called exactly once with the
+        // correct argument
         verify(apiKeyRepository).getApiKeyFromDatabase(keyName);
     }
 
@@ -63,7 +65,8 @@ class ApiKeyServiceTest {
         // Check that the returned value is the expected error message
         assertThat(actualMessage).isEqualTo(expectedMessage);
 
-        // Verify that the findApiKeyByName method was called exactly once with the correct argument
+        // Verify that the findApiKeyByName method was called exactly once with the
+        // correct argument
         verify(apiKeyRepository).getApiKeyFromDatabase(keyName);
     }
 }

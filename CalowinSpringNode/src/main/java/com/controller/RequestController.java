@@ -24,7 +24,7 @@ public class RequestController {
     @GetMapping("/{userId}/friend-requests")
     public ResponseEntity<?> getFriendRequests(@PathVariable("userId") String userId) {
         // Construct the URL to call the NotificationController endpoint
-        String url = "http://localhost:8084/notifications/friend-requests/" + userId;
+        String url = "https://sc3040G5-CalowinNotification.hf.space/notifications/friend-requests/" + userId;
 
         try {
             // Use RestTemplate to make the request to the backend
@@ -45,7 +45,8 @@ public class RequestController {
 
         } catch (Exception e) {
             // Log and return error response
-            return new ResponseEntity<>("Failed to retrieve friend requests: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to retrieve friend requests: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

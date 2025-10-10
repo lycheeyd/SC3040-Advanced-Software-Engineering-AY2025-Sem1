@@ -26,7 +26,7 @@ import com.DataTransferObject.AccountDTO.VerifyOtpDTO;
 
 @RestController
 @RequestMapping("/central/account")
-public class AccountController extends HttpReqController{
+public class AccountController extends HttpReqController {
 
     public AccountController(RestTemplate restTemplate) {
         super(restTemplate);
@@ -52,7 +52,8 @@ public class AccountController extends HttpReqController{
             }
         } catch (Exception ex) {
             System.out.println(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + ex.getMessage());
         }
     }
 
@@ -69,20 +70,22 @@ public class AccountController extends HttpReqController{
             } else {
                 return ResponseEntity.status(statusCode).body(statusCode + ex.getMessage());
             }
-        } catch (Exception ex)  {
+        } catch (Exception ex) {
             System.out.println(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + ex.getMessage());
         }
     }
 
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendOtp(@RequestBody SendOtpDTO DTO) {
         try {
-           String url = urlPrefix + "/account/send-otp";
-            return restTemplate.postForEntity(url, DTO, String.class); 
-        } catch (Exception ex)  {
+            String url = urlPrefix + "/account/send-otp";
+            return restTemplate.postForEntity(url, DTO, String.class);
+        } catch (Exception ex) {
             System.out.println(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + ex.getMessage());
         }
     }
 
@@ -101,7 +104,8 @@ public class AccountController extends HttpReqController{
         } catch (Exception ex) {
             // Handle generic exceptions
             System.out.println(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + ex.getMessage());
         }
     }
 
@@ -118,9 +122,10 @@ public class AccountController extends HttpReqController{
             } else {
                 return ResponseEntity.status(statusCode).body(ex.getMessage());
             }
-        } catch (Exception ex)  {
+        } catch (Exception ex) {
             System.out.println(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + ex.getMessage());
         }
     }
 
@@ -137,9 +142,10 @@ public class AccountController extends HttpReqController{
             } else {
                 return ResponseEntity.status(statusCode).body(statusCode + ex.getMessage());
             }
-        } catch (Exception ex)  {
+        } catch (Exception ex) {
             System.out.println(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + ex.getMessage());
         }
     }
 
@@ -156,9 +162,10 @@ public class AccountController extends HttpReqController{
             } else {
                 return ResponseEntity.status(statusCode).body(statusCode + ex.getMessage());
             }
-        } catch (Exception ex)  {
+        } catch (Exception ex) {
             System.out.println(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + ex.getMessage());
         }
     }
 
@@ -175,9 +182,10 @@ public class AccountController extends HttpReqController{
             } else {
                 return ResponseEntity.status(statusCode).body(ex.getMessage());
             }
-        } catch (Exception ex)  {
+        } catch (Exception ex) {
             System.out.println(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + ex.getMessage());
         }
     }
 
@@ -187,9 +195,10 @@ public class AccountController extends HttpReqController{
         try {
             String url = urlPrefix + "/account/view-profile/" + selfID + "/" + otherID;
             return restTemplate.getForEntity(url, Map.class);
-        } catch (Exception ex)  {
+        } catch (Exception ex) {
             System.out.println(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + ex.getMessage());
         }
     }
 
@@ -199,11 +208,11 @@ public class AccountController extends HttpReqController{
         try {
             String url = urlPrefix + "/account/view-profile/" + selfID;
             return restTemplate.getForEntity(url, Map.class);
-        } catch (Exception ex)  {
+        } catch (Exception ex) {
             System.out.println(ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + ex.getMessage());
         }
     }
-    
-}
 
+}

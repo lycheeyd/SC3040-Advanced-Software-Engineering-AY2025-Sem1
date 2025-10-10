@@ -34,7 +34,7 @@ public class TripsEntry {
 
     @Column(name = "end_latitude", nullable = false)
     private BigDecimal endLatitude;
-    
+
     @Column(name = "distance", nullable = false)
     private BigDecimal distance;
 
@@ -60,7 +60,10 @@ public class TripsEntry {
     public TripsEntry() {
     }
 
-    public TripsEntry(String tripID, String startLocation, String endLocation, BigDecimal startLongitude, BigDecimal startLatitude, BigDecimal endLongitude, BigDecimal endLatitude, BigDecimal distance, int caloriesBurnt, int carbonSaved, LocalDateTime tripTime, String travelMethod, String status, String userID) {
+    public TripsEntry(String tripID, String startLocation, String endLocation, BigDecimal startLongitude,
+            BigDecimal startLatitude, BigDecimal endLongitude, BigDecimal endLatitude, BigDecimal distance,
+            int caloriesBurnt, int carbonSaved, LocalDateTime tripTime, String travelMethod, String status,
+            String userID) {
         this.tripID = tripID;
         this.startLocation = startLocation;
         this.endLocation = endLocation;

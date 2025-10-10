@@ -17,7 +17,7 @@ public class WebSocketController extends TextWebSocketHandler {
     // implement for your own respective case
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        //example implementation
+        // example implementation
         System.out.println("Received message: " + message.getPayload());
         session.sendMessage(new TextMessage("Hello! You sent: " + message.getPayload()));
     }

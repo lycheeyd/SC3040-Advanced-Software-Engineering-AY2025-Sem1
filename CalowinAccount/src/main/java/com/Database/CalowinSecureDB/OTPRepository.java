@@ -11,6 +11,7 @@ import com.Account.Entities.OTPEntry;
 @Repository
 public interface OTPRepository extends JpaRepository<OTPEntry, String> {
     Optional<OTPEntry> findByEmailAndOtpType(String email, ActionType otpType);
+
     void deleteByEmailAndOtpType(String email, ActionType otpType);
-    
+
 }

@@ -37,5 +37,5 @@ public class EditProfileDTO {
     public void setBio(String bio) {
         this.bio = bio;
     }
-    
+
 }

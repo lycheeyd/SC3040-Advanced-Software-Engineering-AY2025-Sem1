@@ -38,32 +38,35 @@ public class PasswordSecurityService {
 
     // Utility function to validate the password
     public void isPasswordValid(String password, String confirmPassword) throws Exception {
-        // At least 8 characters, 1 digit, 1 uppercase, 1 lowercase, and 1 special character
+        // At least 8 characters, 1 digit, 1 uppercase, 1 lowercase, and 1 special
+        // character
         String passwordPattern = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[@#$%^&+=!])(?=.{8,}).*$";
-        
+
         if (!password.equals(confirmPassword)) {
             throw new RuntimeException("Password does not match");
         }
 
         if (!password.matches(passwordPattern)) {
-            throw new RuntimeException("Invalid password. Password must have at least 8 characters, 1 uppercase, and 1 special character");
+            throw new RuntimeException(
+                    "Invalid password. Password must have at least 8 characters, 1 uppercase, and 1 special character");
         }
-    }  
+    }
 
     public String generateRandomPassword() {
         // Max length of generated password
         int maxLength = 12; // Max allowed by SQL = 16
-        
-        // Randomly decide how many special characters to include, ensuring the total length does not exceed maxLength
-        int specialCharCount = (int) (Math.random() * (5 - 1)) + 1;  // At most 5 and at least 1 special character
-        
+
+        // Randomly decide how many special characters to include, ensuring the total
+        // length does not exceed maxLength
+        int specialCharCount = (int) (Math.random() * (5 - 1)) + 1; // At most 5 and at least 1 special character
+
         // Generate alphanumeric characters to fill the remaining length
         int alphanumericLength = maxLength - specialCharCount;
         String alphanumeric = RandomStringUtils.randomAlphanumeric(alphanumericLength);
-        
+
         // Generate the specified number of special characters
         String specialChars = RandomStringUtils.random(specialCharCount, "!@#$%^&*()-_=+<>?");
-        
+
         // Combine alphanumeric and special characters
         String combined = alphanumeric + specialChars;
 

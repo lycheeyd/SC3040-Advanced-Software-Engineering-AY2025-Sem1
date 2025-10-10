@@ -28,5 +28,5 @@ public class DeleteAccountDTO {
     public void setOtpCode(String otpCode) {
         this.otpCode = otpCode;
     }
-    
+
 }

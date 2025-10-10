@@ -1,9 +1,9 @@
 package com.DataTransferObject.TripDTO;
 
 public class TripInfoDTO {
-    private CurrentLocation currentLocation;  // Current location (latitude, longitude)
-    private Location destination;             // Destination (latitude, longitude)
-    private TravelMethod travelMethod;           // Travel method (walk, car, bus, etc.)
+    private CurrentLocation currentLocation; // Current location (latitude, longitude)
+    private Location destination; // Destination (latitude, longitude)
+    private TravelMethod travelMethod; // Travel method (walk, car, bus, etc.)
     private String tripId;
     private double distance;
     private int caloriesBurnt;
@@ -35,18 +35,43 @@ public class TripInfoDTO {
         this.travelMethod = travelMethod;
     }
 
-    public String getTripId() { return tripId; }
-    public void setTripId(String tripId) { this.tripId = tripId; }
+    public String getTripId() {
+        return tripId;
+    }
 
-    public double getDistance() { return distance; }
-    public void setDistance(double distance) { this.distance = distance; }
+    public void setTripId(String tripId) {
+        this.tripId = tripId;
+    }
 
-    public int getCaloriesBurnt() { return caloriesBurnt; }
-    public void setCaloriesBurnt(int caloriesBurnt) { this.caloriesBurnt = caloriesBurnt; }
+    public double getDistance() {
+        return distance;
+    }
 
-    public int getCarbonSaved() { return carbonSaved; }
-    public void setCarbonSaved(int carbonSaved) { this.carbonSaved = carbonSaved; }
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public int getCaloriesBurnt() {
+        return caloriesBurnt;
+    }
+
+    public void setCaloriesBurnt(int caloriesBurnt) {
+        this.caloriesBurnt = caloriesBurnt;
+    }
+
+    public int getCarbonSaved() {
+        return carbonSaved;
+    }
+
+    public void setCarbonSaved(int carbonSaved) {
+        this.carbonSaved = carbonSaved;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 }

@@ -42,6 +42,5 @@ public class DataSourceConfig {
         ds.setMaxPoolSize(calowinDBProperties.getMaxPoolSize());
         return ds;
     }
-    
-}
 
+}

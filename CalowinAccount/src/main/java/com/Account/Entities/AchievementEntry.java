@@ -30,7 +30,8 @@ public class AchievementEntry {
     public AchievementEntry() {
     }
 
-    public AchievementEntry(String userID, int totalCarbonSaved, int totalCalorieBurnt, String carbonMedal, String calorieMedal) {
+    public AchievementEntry(String userID, int totalCarbonSaved, int totalCalorieBurnt, String carbonMedal,
+            String calorieMedal) {
         this.userID = userID;
         this.totalCarbonSaved = totalCarbonSaved;
         this.totalCalorieBurnt = totalCalorieBurnt;

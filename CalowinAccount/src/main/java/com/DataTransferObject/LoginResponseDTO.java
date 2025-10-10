@@ -1,7 +1,7 @@
 package com.DataTransferObject;
 
 public class LoginResponseDTO {
-    
+
     // UserEntity
     private String userID;
     private String email;
@@ -9,20 +9,20 @@ public class LoginResponseDTO {
     private float weight;
     private String bio;
 
-    //AchievementEntry
+    // AchievementEntry
     private int totalCarbonSaved;
     private int totalCalorieBurnt;
     private String carbonMedal;
     private String calorieMedal;
 
-
-    public LoginResponseDTO(String userID, String email, String name, float weight, String bio, int totalCarbonSaved, int totalCalorieBurnt, String carbonMedal, String calorieMedal) {
+    public LoginResponseDTO(String userID, String email, String name, float weight, String bio, int totalCarbonSaved,
+            int totalCalorieBurnt, String carbonMedal, String calorieMedal) {
         this.userID = userID;
         this.email = email;
         this.name = name;
         this.weight = weight;
         this.bio = bio;
-        
+
         this.totalCarbonSaved = totalCarbonSaved;
         this.totalCalorieBurnt = totalCalorieBurnt;
         this.carbonMedal = carbonMedal;

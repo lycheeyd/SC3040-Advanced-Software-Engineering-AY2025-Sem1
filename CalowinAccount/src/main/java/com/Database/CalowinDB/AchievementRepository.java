@@ -10,5 +10,6 @@ import com.Account.Entities.AchievementEntry;
 @Repository
 public interface AchievementRepository extends JpaRepository<AchievementEntry, String> {
     Optional<AchievementEntry> findByUserID(String userID);
+
     void deleteByUserID(String userID);
 }

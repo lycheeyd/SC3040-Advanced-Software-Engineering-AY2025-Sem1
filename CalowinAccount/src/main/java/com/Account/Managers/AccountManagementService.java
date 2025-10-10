@@ -25,12 +25,11 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
-
 @Service
 public class AccountManagementService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountManagementService.class);
-    
+
     @Autowired
     @Qualifier("calowinSecureDBTransactionManager")
     private PlatformTransactionManager calowinSecureDBTransactionManager;
@@ -68,7 +67,8 @@ public class AccountManagementService {
 
     // Signup method
     @Transactional // (transactionManager = "calowinSecureDBTransactionManager")
-    public LoginResponseDTO signup(String email, String encryptedPassword, String encryptedConfirmPassword, String name, float weight) throws Exception {
+    public LoginResponseDTO signup(String email, String encryptedPassword, String encryptedConfirmPassword, String name,
+            float weight) throws Exception {
         // Check if user exist
         if (secureInfoRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("User already exists");
@@ -79,7 +79,7 @@ public class AccountManagementService {
 
         // Check if password meet requirements
         passwordSecurityService.isPasswordValid(decryptedPassword, decryptedConfirmPassword);
-        
+
         // Generate userID
         String userID = generateUniqueUserId();
 
@@ -91,13 +91,16 @@ public class AccountManagementService {
         ProfileEntity profile = new ProfileEntity(userID, name, weight, "");
         userInfoRepository.save(profile);
 
-        // Create and initialise default empty entry in database (CALOWIN - Achievement Table)
+        // Create and initialise default empty entry in database (CALOWIN - Achievement
+        // Table)
         AchievementEntry achievement = new AchievementEntry(userID, 0, 0, "No Medal", "No Medal");
         achievementRepository.save(achievement);
 
         // Prepare and returns user data to frontend
-        return new LoginResponseDTO(user.getUserID(), user.getEmail(), profile.getName(), profile.getWeight(), profile.getBio(), 
-                                    achievement.getTotalCarbonSaved(), achievement.getTotalCalorieBurnt(), achievement.getCarbonMedal(), achievement.getCalorieMedal());
+        return new LoginResponseDTO(user.getUserID(), user.getEmail(), profile.getName(), profile.getWeight(),
+                profile.getBio(),
+                achievement.getTotalCarbonSaved(), achievement.getTotalCalorieBurnt(), achievement.getCarbonMedal(),
+                achievement.getCalorieMedal());
 
     }
 
@@ -118,16 +121,18 @@ public class AccountManagementService {
         AchievementEntry achievement = achievementRepository.findByUserID(user.getUserID())
                 .orElseThrow(() -> new Exception("Failed to retrieve achievement data"));
 
-        return new LoginResponseDTO(user.getUserID(), user.getEmail(), profile.getName(), profile.getWeight(), profile.getBio(), 
-                                    achievement.getTotalCarbonSaved(), achievement.getTotalCalorieBurnt(), achievement.getCarbonMedal(), achievement.getCalorieMedal());
-    
+        return new LoginResponseDTO(user.getUserID(), user.getEmail(), profile.getName(), profile.getWeight(),
+                profile.getBio(),
+                achievement.getTotalCarbonSaved(), achievement.getTotalCalorieBurnt(), achievement.getCarbonMedal(),
+                achievement.getCalorieMedal());
+
     }
 
     // Delete account method
-    @Transactional (transactionManager = "chainedTransactionManager", rollbackFor = Exception.class)
+    @Transactional(transactionManager = "chainedTransactionManager", rollbackFor = Exception.class)
     public void deleteAccount(String userID, String email, String otpCode) throws Exception {
         LOGGER.info("Starting account deletion for userID: {}", userID);
-        
+
         try {
             // Authenticate OTP
             if (!otpService.verifyOTP(email, otpCode, ActionType.DELETE_ACCOUNT)) {
@@ -136,43 +141,45 @@ public class AccountManagementService {
 
             // Delete from CalowinSecureDB
             LOGGER.info("Deleting from SecureInfoRepository...");
-            secureInfoRepository.deleteByUserID(userID); //UserEntity
+            secureInfoRepository.deleteByUserID(userID); // UserEntity
 
             // Delete from CalowinDB
             LOGGER.info("Deleting from UserInfoRepository...");
-            userInfoRepository.deleteByUserID(userID); //ProfileEntity
+            userInfoRepository.deleteByUserID(userID); // ProfileEntity
 
             LOGGER.info("Deleting from AchievementRepository...");
             achievementRepository.deleteByUserID(userID); // AchievementEntry
-            
+
             LOGGER.info("Deleting from TripsRepository...");
-            tripsRepository.deleteByUserID(userID); //TripsEntry
+            tripsRepository.deleteByUserID(userID); // TripsEntry
 
             LOGGER.info("Deleting from FriendRelationshipRepository...");
-            friendRelationshipRepository.deleteByUserID(userID); //FriendRelationshipEntry
+            friendRelationshipRepository.deleteByUserID(userID); // FriendRelationshipEntry
 
-            // ADD MORE FOR EACH TABLE 
+            // ADD MORE FOR EACH TABLE
             LOGGER.info("Successfully deleted all associated records for userID: {}", userID);
         } catch (Exception e) {
-            LOGGER.error("Error during account deletion for userID: {}, rolling back. Reason: {}", userID, e.getMessage());
+            LOGGER.error("Error during account deletion for userID: {}, rolling back. Reason: {}", userID,
+                    e.getMessage());
             throw e; // Trigger rollback
         }
-        
+
     }
 
     // Method to generate a unique 8-character userID
     private String generateUniqueUserId() {
         String userID;
         boolean exists;
-    
+
         // Loop until a unique userID is generated
         do {
             // Generate random 8-character alphanumeric string (both letters and numbers)
-            userID = RandomStringUtils.randomAlphanumeric(8).toUpperCase();;
+            userID = RandomStringUtils.randomAlphanumeric(8).toUpperCase();
+            ;
             // Check if the generated userID already exists in the database
             exists = secureInfoRepository.existsByUserID(userID);
         } while (exists);
-    
+
         return userID;
     }
 
