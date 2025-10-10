@@ -34,10 +34,11 @@ public class OTPService {
 
         // Check if the OTP of action type already exists for user, then delete
         otpRepository.findByEmailAndOtpType(email, type)
-                        .ifPresent(existingOtp -> otpRepository.delete(existingOtp));
+                .ifPresent(existingOtp -> otpRepository.delete(existingOtp));
 
         // Save new OTP to database (CALOWIN_SECURE)
-        System.out.println(email, otpCode, expiresAt, type);
+        System.out
+                .println(String.format("Email: %s, OTP: %s, ExpiresAt: %s, Type: %s", email, otpCode, expiresAt, type));
         OTPEntry otpEntity = new OTPEntry(email, otpCode, expiresAt, type);
         otpRepository.save(otpEntity);
 
@@ -63,7 +64,7 @@ public class OTPService {
             // Check if the OTP has expired
             if (otpEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
                 // Clean up expired OTP
-                otpRepository.deleteByEmailAndOtpType(email, type); 
+                otpRepository.deleteByEmailAndOtpType(email, type);
                 return false;
             }
 
@@ -90,4 +91,3 @@ public class OTPService {
     }
 
 }
-
