@@ -26,7 +26,7 @@ public class CalowinDBConfig {
             EntityManagerFactoryBuilder builder, @Qualifier("calowinDBDataSource") DataSource dataSource) {
         return builder
                 .dataSource(dataSource)
-                .packages("com.Relationship.Entity") // Entity package for CalowinDB
+                .packages("com.RelationshipNotification.Entity")
                 .persistenceUnit("calowinDB")
                 .build();
     }

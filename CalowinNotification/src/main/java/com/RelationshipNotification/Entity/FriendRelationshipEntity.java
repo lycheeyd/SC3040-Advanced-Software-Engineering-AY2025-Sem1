@@ -1,4 +1,4 @@
-package com.Relationship.Entity;
+package com.RelationshipNotification.Entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
