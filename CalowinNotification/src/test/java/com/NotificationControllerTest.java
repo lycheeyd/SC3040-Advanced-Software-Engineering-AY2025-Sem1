@@ -1,7 +1,7 @@
 package com;
 
-import com.Relationship.Managers.FriendRelationshipService;
-import com.Relationship.NotificationController;
+import com.RelationshipNotification.Managers.FriendRelationshipService;
+import com.RestController.NotificationController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

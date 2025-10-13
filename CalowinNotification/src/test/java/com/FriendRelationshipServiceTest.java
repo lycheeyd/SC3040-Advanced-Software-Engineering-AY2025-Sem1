@@ -1,7 +1,7 @@
 package com;
 
-import com.Relationship.Managers.FriendRelationshipService;
 import com.Database.CalowinDB.FriendRelationshipRepository;
+import com.RelationshipNotification.Managers.FriendRelationshipService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
