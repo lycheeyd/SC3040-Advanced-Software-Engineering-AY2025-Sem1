@@ -4,15 +4,17 @@ import 'package:http/http.dart' as http;
 
 class FriendsController {
   final String _baseUrl =
-      'https://sc3040G5-CalowinSpringNode.hf.space'; // Replace with your backend URL
+      'https://sc3040G5-CalowinFriends.hf.space'; // Replace with your backend URL
 
   // Function to retrieve LeaderboardItems based on user's coordinates
   Future<List<UserProfile>> retrieveFriendList(String userId) async {
     final url = Uri.parse('$_baseUrl/friend-requests/friends/$userId');
-    //print(url);
+    print(url);
 
     try {
       final response = await http.get(url);
+      print(response.body);
+
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         //print(data);

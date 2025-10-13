@@ -151,7 +151,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: PrimaryColors.dullGreen,
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
@@ -274,9 +274,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-            Expanded(
-              child: SizedBox(
-                child: Padding(
+            Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Row(
@@ -334,8 +332,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-              ),
-            )
           ],
         ),
       ),

@@ -77,7 +77,7 @@ class _SignupPageState extends State<SignupPage> {
         _passwordError = "Password cannot exceed 60 characters";
       } else if (!RegExp(passwordPattern).hasMatch(_inputPassword.text)) {
         _passwordError =
-            "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character.  \"(\", \")\", \".\" are not allowed";
+            "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character.";
       } else {
         _passwordError = null;
       }
@@ -160,7 +160,7 @@ class _SignupPageState extends State<SignupPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('Https://sc3040G5-calowin-unified.hf.space/central/account/verify-otp'),
+        Uri.parse('https://sc3040G5-CalowinSpringNode.hf.space/central/account/verify-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'otpCode': otp, 'type': ActionType.SIGN_UP.value}),
       );
@@ -303,7 +303,7 @@ class _SignupPageState extends State<SignupPage> {
                   title: "Password",
                   inputHint: "Enter Your Password",
                   bottomHint:
-                      "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character. \"(\", \")\", \".\" are not allowed",
+                      "Password must be at least 8 characters long, have at least 1 digit, 1 uppercase, 1 lowercase, and 1 special character.",
                   errorText: '',
                   hasError: false,
                 ),

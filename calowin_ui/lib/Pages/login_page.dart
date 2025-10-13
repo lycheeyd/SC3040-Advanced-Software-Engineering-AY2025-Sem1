@@ -125,7 +125,7 @@ class _LoginpageState extends State<Loginpage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://172.21.146.188:8080/central/account/send-otp'),
+        Uri.parse('https://sc3040G5-CalowinSpringNode.hf.space/central/account/send-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(
             {'email': email, 'type': ActionType.FORGOT_PASSWORD.value}),
@@ -167,7 +167,7 @@ class _LoginpageState extends State<Loginpage> {
   Future<void> _handlePwdSending(String email, String otpCode) async {
     //verifying otp and send email
     final String url =
-        "http://172.21.146.188:8080/central/account/forgot-password";
+        "https://sc3040G5-CalowinSpringNode.hf.space/central/account/forgot-password";
 
     try {
       final response = await http.post(
