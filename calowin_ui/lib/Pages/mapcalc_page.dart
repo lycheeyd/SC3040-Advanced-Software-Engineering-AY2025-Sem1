@@ -12,8 +12,6 @@ import 'package:http/http.dart' as http;
 import '../control/apiService.dart';
 import '../control/autocomplate_prediction.dart';
 import '../control/place_auto_complate_response.dart';
-import 'package:geolocator/geolocator.dart';
-
 
 // ignore: must_be_immutable
 class MapcalcPage extends StatefulWidget {
@@ -130,71 +128,30 @@ class _MapcalcPageState extends State<MapcalcPage> {
     }
   }
 
-Future<void> _initializeLocation() async {
-  // --- Start of new integrated logic ---
-  bool serviceEnabled;
-  LocationPermission permission;
+  Future<void> _initializeLocation() async {
+    try {
+      await userCurrentLocation.getCurrentLocation();
+      setState(() {
+        //default address 1.3521,103.8198
+        currentLocationMarker = Marker(
+          markerId: MarkerId('currentLocation'),
+          position: LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
+          infoWindow: InfoWindow(title: 'Current Location'),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen), // Set the color
+        );
+      });
+      //print("Initial location: ${userCurrentLocation.name}");
+      mapController.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
+          15,
+        ),
+      );
 
-  // 1. Test if location services are enabled.
-  serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
-    // Location services are not enabled, show an error or prompt.
-    // For now, we'll just print and exit.
-    print('Location services are disabled.');
-    // You could show a dialog here to ask the user to enable them.
-    return;
-  }
-
-  // 2. Check the current permission status.
-  permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    // If permission is denied, request it from the user.
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) {
-      // The user denied the request. Handle this gracefully.
-      print('Location permissions are denied.');
-      return;
+    } catch (e) {
+      print('Error initializing location: $e');
     }
   }
-  
-  if (permission == LocationPermission.deniedForever) {
-    // The user has permanently denied permission.
-    // You should show a dialog explaining how to re-enable it in settings.
-    print('Location permissions are permanently denied, we cannot request permissions.');
-    return;
-  } 
-
-  // --- End of new integrated logic ---
-
-  // 3. When we reach here, permissions are granted. Now we can get the location
-  //    and update the UI, just like your old method did.
-  try {
-    Position position = await Geolocator.getCurrentPosition();
-    
-    // Update your userCurrentLocation object
-    userCurrentLocation.latitude = position.latitude;
-    userCurrentLocation.longitude = position.longitude;
-
-    setState(() {
-      currentLocationMarker = Marker(
-        markerId: const MarkerId('currentLocation'),
-        position: LatLng(position.latitude, position.longitude),
-        infoWindow: const InfoWindow(title: 'Current Location'),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-      );
-    });
-
-    // Animate the map to the user's new location
-    mapController.animateCamera(
-      CameraUpdate.newLatLngZoom(
-        LatLng(position.latitude, position.longitude),
-        15,
-      ),
-    );
-  } catch (e) {
-    print('Error getting current location: $e');
-  }
-}
 
   void placeAutocomplete(String query) async {
     // Uri uri = Uri.https(
@@ -586,7 +543,8 @@ Future<void> _initializeLocation() async {
                 ],
               ),
               const SizedBox(height: 15),
-              Expanded(
+              SizedBox(
+                height: 400,
                 child: Stack(
                   children: [
                     GoogleMap(
