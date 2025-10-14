@@ -7,7 +7,7 @@ on:
         description: "Select one or more services to deploy"
         type: choice
         required: true
-        multiple: true
+        default: ALL
         options:
           - CalowinAccount
           - CalowinFriends
@@ -22,37 +22,13 @@ permissions:
   actions: write
 
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    outputs:
-      selected-services: ${{ steps.select.outputs.list }}
-    steps:
-      - id: select
-        run: |
-          # Define all services
-          ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
-
-          # Parse input
-          INPUT="${{ github.event.inputs.services }}"
-
-          if [[ "$INPUT" == *"ALL"* ]]; then
-            echo "All services selected."
-            JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s .)
-          else
-            echo "Selected specific services: $INPUT"
-            JSON=$(echo "$INPUT" | jq -R 'split(",")')
-          fi
-
-          echo "list=$JSON" >> $GITHUB_OUTPUT
-          echo "Selected services JSON: $JSON"
-
   build-and-deploy:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJson(needs.prepare.outputs.selected-services) }}
-
+        service: ${{ fromJSON(format('["{0}"]', github.event.inputs.services)) }}
+        
     outputs:
       built-services: ${{ steps.collect.outputs.built }}
 
