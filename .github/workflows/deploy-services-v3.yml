@@ -1,0 +1,185 @@
+name: V3 Deploy Calowin Services to Hugging Face
+
+on:
+  push:
+    branches: [ uat ]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changed-services: ${{ steps.filter.outputs.services }}
+      src-changes: ${{ steps.filter.outputs.src_changes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed services
+        id: filter
+        run: |
+          echo "Detecting changed services..."
+
+          SERVICE_DIRS=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+
+          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+
+          SERVICES=()
+
+          SRC_CHANGES_JSON="{"
+
+          for dir in "${SERVICE_DIRS[@]}"; do
+            if echo "$CHANGED" | grep -Eq "^$dir/(src/|pom.xml|Dockerfile|README.md)"; then
+              SERVICES+=("\"$dir\"")
+            fi
+            if echo "$CHANGED" | grep -Eq "^$dir/(src/|pom.xml)"; then
+              SRC_CHANGES_JSON+="\"$dir\":true,"
+            else
+              SRC_CHANGES_JSON+="\"$dir\":false,"
+            fi
+          done
+          SRC_CHANGES_JSON="${SRC_CHANGES_JSON%,}}"
+
+          JSON="[$(IFS=,; echo "${SERVICES[*]}")]"
+          echo "services=$JSON" >> $GITHUB_OUTPUT
+          echo "src_changes=$SRC_CHANGES_JSON" >> $GITHUB_OUTPUT
+          echo "Changed services detected: $JSON"
+          echo "Source changes map: $SRC_CHANGES_JSON"
+
+  build-jar:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.changed-services != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: 
+        service: ${{ fromJson(needs.detect-changes.outputs.changed-services) }}
+    outputs:
+      built-services: ${{ steps.collect.outputs.built }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-
+
+      - name: Set up JDK
+        if: ${{ fromJson(needs.detect-changes.outputs.src-changes)[matrix.service] }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build JAR
+        if: ${{ fromJson(needs.detect-changes.outputs.src-changes)[matrix.service] }}
+        run: |
+          cd ${{ matrix.service }}
+          mvn clean package -DskipTests
+          echo "Built $(ls target/*-SNAPSHOT.jar)"
+
+      - name: Upload built JAR
+        id: upload
+        if: ${{ fromJson(needs.detect-changes.outputs.src-changes)[matrix.service] }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-jar
+          path: ${{ matrix.service }}/target/*-SNAPSHOT.jar
+
+      - name: Update LAST_BUILD_ID respository variable
+        if: ${{ fromJson(needs.detect-changes.outputs.src-changes)[matrix.service] && steps.upload.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          VAR_NAME="LAST_BUILD_ID_${{ matrix.service }}"
+          gh variable set "$VAR_NAME" --repo "${{ github.repository }}" --body "${{ github.run_id }}"
+          echo "Updated repository variable $VAR_NAME = ${{ github.run_id }}"
+
+      - id: collect
+        if: ${{ fromJson(needs.detect-changes.outputs.src-changes)[matrix.service] && steps.upload.outcome == 'success' }}
+        run: |
+          echo "built=[\"${{ matrix.service }}\"]" >> $GITHUB_OUTPUT
+          echo "Successfully built and uploaded artifact for ${{ matrix.service }}"
+
+
+  deploy:
+    needs: [detect-changes, build-jar]
+    if: needs.detect-changes.outputs.changed-services != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.changed-services) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Push to HuggingFace
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          SERVICE_DIR=${{ matrix.service }}
+          GITHUB_REPO="${{ github.repository }}"
+          SRC_CHANGED=$(echo '${{ needs.detect-changes.outputs.src-changes }}' | jq -r --arg s "$SERVICE_DIR" '.[$s]')
+
+          if [ "$src_changed" == "true" ]; then
+            GITHUB_BUILD_ID="${{ github.run_id }}"
+          else
+            GITHUB_BUILD_ID="$(gh variable get "LAST_BUILD_ID_$SERVICE_DIR" --repo $GITHUB_REPO --json value -q ".value")"
+          fi
+
+          echo "Deploying $SERVICE_DIR using build ID: $GITHUB_BUILD_ID
+
+          git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR hf_upload/$SERVICE_DIR
+
+          cd hf_upload/$SERVICE_DIR
+          git checkout main || git checkout -b main
+
+          cp ../../$SERVICE_DIR/Dockerfile . || true
+          cp ../../$SERVICE_DIR/README.md . || true
+
+          cat <<EOF > build-vars.env
+          SERVICE_NAME=$SERVICE_DIR
+          GITHUB_BUILD_ID=$GITHUB_BUILD_ID
+          GITHUB_REPO=$GITHUB_REPO
+          EOF
+
+          git config user.name "CI/CD Pipeline"
+          git config user.email "cicd-pipeline@github.com"
+
+          git add -A
+
+          if ! git diff --cached --quiet; then
+            git commit -m "Deployed updates for $SERVICE_DIR"
+            git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR main
+            echo "Pushed updates for $SERVICE_DIR"
+          else
+            echo "No changes to commit for $SERVICE_DIR"
+          fi
+
+  dispatch-cleanup:
+    needs: build-jar
+    if: needs.build-jar.outputs.built-services != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: cleanup-old-artifacts
+          client-payload: |
+            { "services": ${{ needs.build-jar.outputs.built-services }} }
