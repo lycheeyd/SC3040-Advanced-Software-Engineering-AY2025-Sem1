@@ -2,10 +2,24 @@ name: Manual Full Deploy to Hugging Face
 
 on:
   workflow_dispatch:
+    inputs:
+      services:
+        description: "Select one or more services to deploy"
+        type: choice
+        required: true
+        multiple: true
+        options:
+          - CalowinAccount
+          - CalowinFriends
+          - CalowinNotification
+          - CalowinSpringNode
+          - CalowinTrip
+          - CalowinWellnessZone
+          - ALL
 
 permissions:
   contents: read
-  actions: read
+  actions: write
 
 jobs:
   build-and-deploy:
@@ -13,7 +27,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: ["CalowinAccount", "CalowinFriends", "CalowinNotification", "CalowinSpringNode", "CalowinTrip", "CalowinWellnessZone"]
+        service:
+          - CalowinAccount
+          - CalowinFriends
+          - CalowinNotification
+          - CalowinSpringNode
+          - CalowinTrip
+          - CalowinWellnessZone
+
+    if: |
+      contains(fromJson('["ALL"]'), github.event.inputs.services) ||
+      contains(github.event.inputs.services, matrix.service)
+
+    outputs:
+      built-services: ${{ steps.collect.outputs.built }}
 
     steps:
       - uses: actions/checkout@v4
@@ -26,21 +53,30 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-
+
       - name: Build fresh JAR
+        id: build
         run: |
           cd ${{ matrix.service }}
           mvn clean package -DskipTests
-          echo "Contents of target folder:"
-          ls -lh target/
           echo "Built $(ls target/*-SNAPSHOT.jar)"
 
       - name: Upload built JAR
+        id: upload
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.service }}-jar
           path: ${{ matrix.service }}/target/*-SNAPSHOT.jar
 
       - name: Update LAST_BUILD_ID repository variable
+        if: success()
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -49,6 +85,7 @@ jobs:
           echo "Updated repository variable $VAR_NAME = ${{ github.run_id }}"
 
       - name: Push to HuggingFace
+        if: success()
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
@@ -86,3 +123,22 @@ jobs:
           else
             echo "No changes to commit for $SERVICE_DIR"
           fi
+
+      - id: collect
+        if: success()
+        run: |
+          echo "built=[\"${{ matrix.service }}\"]" >> $GITHUB_OUTPUT
+          echo "Successfully built and deployed ${{ matrix.service }}"
+
+  dispatch-cleanup:
+    needs: build-and-deploy
+    if: needs.build-and-deploy.outputs.built-services != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: cleanup-old-artifacts
+          client-payload: |
+            { "services": ${{ needs.build-and-deploy.outputs.built-services }} }
