@@ -22,30 +22,56 @@ permissions:
   actions: write
 
 jobs:
-  set-matrix:
+  prepare:
     runs-on: ubuntu-latest
-    outputs:
-      target_matrix: ${{ steps.set-matrix.outputs.matrix_output }}
     steps:
-      - id: set-matrix
+      - id: hardcode
         run: |
-          input_target="${{ inputs.target }}"
-          # Define all possible target options
-          all_targets='["CalowinAccount", "CalowinFriends", "CalowinNotification", "CalowinSpringNode", "CalowinTrip", "CalowinWellnessZone"]'
-          if [ "$input_target" == "ALL" ]; then
-            echo "matrix_output=$all_targets" >> $GITHUB_OUTPUT
-          else
-            echo "matrix_output=[\"$input_target\"]" >> $GITHUB_OUTPUT
-          fi
-          echo ${{ needs.set-matrix.outputs.target_matrix }}
+          CHOICE="${{ github.event.inputs.my_choice }}"
+          echo "Selected choice: $CHOICE"
 
+          # Hardcoded JSON for each choice
+          case "$CHOICE" in
+            ALL)
+              JSON_PAYLOAD='{"services":["CalowinAccount","CalowinFriends","CalowinNotification","CalowinSpringNode","CalowinTrip","CalowinWellnessZone"]}'
+              ;;
+            CalowinAccount)
+              JSON_PAYLOAD='{"services":["CalowinAccount"]}'
+              ;;
+            CalowinFriends)
+              JSON_PAYLOAD='{"services":["CalowinFriends"]}'
+              ;;
+            CalowinNotification)
+              JSON_PAYLOAD='{"services":["CalowinNotification"]}'
+              ;;
+            CalowinSpringNode)
+              JSON_PAYLOAD='{"services":["CalowinSpringNode"]}'
+              ;;
+            CalowinTrip)
+              JSON_PAYLOAD='{"services":["CalowinTrip"]}'
+              ;;
+            CalowinWellnessZone)
+              JSON_PAYLOAD='{"services":["CalowinWellnessZone"]}'
+              ;;
+            *)
+              JSON_PAYLOAD='{"services":[]}'
+              ;;
+          esac
+
+          echo "Hardcoded JSON: $JSON_PAYLOAD"
+
+          # Set as job output
+          echo "json_output=$JSON_PAYLOAD" >> $GITHUB_OUTPUT
+
+    outputs:
+      json_output: ${{ steps.hardcode.outputs.json_output }}
+      
   build-and-deploy:
-    needs: set-matrix
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJSON(needs.set-matrix.outputs.target_matrix) }}
+        service: ${{ fromJson(needs.prepare.outputs.json_output).services }}
         
     outputs:
       built-services: ${{ steps.collect.outputs.built }}
