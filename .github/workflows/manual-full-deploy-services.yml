@@ -37,7 +37,7 @@ jobs:
       
         service: ${{
           github.event.inputs.services == 'ALL' &&
-          fromJSON(matrix._all_services)) ||
+          fromJSON(matrix._all_services) ||
           fromJSON(format('["{0}"]', github.event.inputs.services))
           }}
       
