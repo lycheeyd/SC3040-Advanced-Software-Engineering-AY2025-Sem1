@@ -2,7 +2,7 @@ name: V3 Deploy Calowin Services to Hugging Face
 
 on:
   push:
-    branches: [ uat, feat/deploy_dev ]
+    branches: [ uat ]
 
   workflow_dispatch:
 
