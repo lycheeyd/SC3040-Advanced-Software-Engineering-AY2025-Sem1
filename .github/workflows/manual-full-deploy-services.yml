@@ -22,56 +22,12 @@ permissions:
   actions: write
 
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    steps:
-      - id: hardcode
-        run: |
-          CHOICE="${{ github.event.inputs.my_choice }}"
-          echo "Selected choice: $CHOICE"
-
-          # Hardcoded JSON for each choice
-          case "$CHOICE" in
-            ALL)
-              JSON_PAYLOAD='{"services":["CalowinAccount","CalowinFriends","CalowinNotification","CalowinSpringNode","CalowinTrip","CalowinWellnessZone"]}'
-              ;;
-            CalowinAccount)
-              JSON_PAYLOAD='{"services":["CalowinAccount"]}'
-              ;;
-            CalowinFriends)
-              JSON_PAYLOAD='{"services":["CalowinFriends"]}'
-              ;;
-            CalowinNotification)
-              JSON_PAYLOAD='{"services":["CalowinNotification"]}'
-              ;;
-            CalowinSpringNode)
-              JSON_PAYLOAD='{"services":["CalowinSpringNode"]}'
-              ;;
-            CalowinTrip)
-              JSON_PAYLOAD='{"services":["CalowinTrip"]}'
-              ;;
-            CalowinWellnessZone)
-              JSON_PAYLOAD='{"services":["CalowinWellnessZone"]}'
-              ;;
-            *)
-              JSON_PAYLOAD='{"services":[]}'
-              ;;
-          esac
-
-          echo "Hardcoded JSON: $JSON_PAYLOAD"
-
-          # Set as job output
-          echo "json_output=$JSON_PAYLOAD" >> $GITHUB_OUTPUT
-
-    outputs:
-      json_output: ${{ steps.hardcode.outputs.json_output }}
-      
   build-and-deploy:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJson(needs.prepare.outputs.json_output).services }}
+        service: ${{ fromJson(github.event.inputs.services) }}
         
     outputs:
       built-services: ${{ steps.collect.outputs.built }}
