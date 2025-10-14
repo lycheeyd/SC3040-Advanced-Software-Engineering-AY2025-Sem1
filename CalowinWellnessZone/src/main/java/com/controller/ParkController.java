@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*") // <-- 2. Add this annotation
+
 public class ParkController {
 
     @Autowired
@@ -23,8 +25,11 @@ public class ParkController {
         try {
             List<NPark> parks = parkService.findNearbyParks(userLat, userLon);
 
+            // In ParkController.java
+
             if (parks.isEmpty()) {
-                return new ResponseEntity<>("No parks found near the given coordinates.", HttpStatus.NOT_FOUND);
+                // This is a clearer response: status 200 OK with an empty list
+                return new ResponseEntity<>(List.of(), HttpStatus.OK);
             }
 
             // Map the list of NPark domain objects to a list of ParkResponseDto objects

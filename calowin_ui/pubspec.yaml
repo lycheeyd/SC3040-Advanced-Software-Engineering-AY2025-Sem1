@@ -40,7 +40,7 @@ dependencies:
   encrypt: ^5.0.1
   crypto: ^3.0.0
   flutter_secure_storage: ^9.2.2
-  google_maps_flutter: ^2.2.0 # Use the latest version
+  google_maps_flutter: ^2.13.1 # Use the latest version
   geolocator: ^13.0.1
   geocoding: ^3.0.0
   permission_handler: ^11.3.1
