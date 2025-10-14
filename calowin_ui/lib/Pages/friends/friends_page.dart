@@ -30,7 +30,7 @@ class _FriendsPageState extends State<FriendsPage> {
       _notifier.addListener(_getFriends);
       flag = true;
       _getFriends();
-   }
+    }
   }
 
   @override
@@ -45,13 +45,6 @@ class _FriendsPageState extends State<FriendsPage> {
     _userID = widget.userID;
   }
 
-  // @override
-  // void didUpdateWidget(FriendsPage oldWidget){
-  //   super.didUpdateWidget(oldWidget);
-  //   _getFriends();
-  // }
-
-  //handle the loading of friend list
   Future<void> _getFriends() async {
     print("Get friends: Friends Page");
     _friendlist = await friendListRetriever.retrieveFriendList(_userID);
@@ -61,150 +54,128 @@ class _FriendsPageState extends State<FriendsPage> {
     });}
   }
 
-  //handle redirection to add friends page
   void _redirectToAddFriendsPage() {
     final pageNavigatorState =
-        context.findAncestorStateOfType<PageNavigatorState>();
-    //change here
+    context.findAncestorStateOfType<PageNavigatorState>();
     if (pageNavigatorState != null) {
       _notifier.updateProfile();
       pageNavigatorState.navigateToPage(6); // Navigate to AddFriendsPage
     }
   }
 
-  //handle when friend is tapped
   void _onListItemTap(UserProfile friend) {
     final pageNavigatorState =
-        context.findAncestorStateOfType<PageNavigatorState>();
-    //change here
+    context.findAncestorStateOfType<PageNavigatorState>();
     if (pageNavigatorState != null) {
       pageNavigatorState.navigateToPage(5,
           params: {'userID': _userID,'otherUserID': friend.getUserID()}); // Navigate to OtheruserPage
     }
   }
 
+  // MODIFIED: Updated list item to use a Card and a cleaner design.
   Widget _buildListItem(int index, UserProfile friend) {
-    Color tileColor = const Color.fromARGB(255, 214, 241, 214);
-    TextStyle fontStyle =
-        GoogleFonts.aBeeZee(fontSize: 16, fontWeight: FontWeight.bold);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: tileColor, // Rounded corners
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2), // Shadow color with opacity
-              blurRadius: 6, // Softness of the shadow
-              offset: const Offset(0, 4), // Offset in x and y direction
-            ),
-          ],
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: ListTile(
+        onTap: () => _onListItemTap(friend),
+        leading: const CircleAvatar(
+          backgroundColor: PrimaryColors.dullGreen,
+          child: Icon(Icons.person, color: Colors.white),
         ),
-        child: ListTile(
-          onTap: () => _onListItemTap(friend),
-          leading: const Icon(
-            Icons.person,
-            size: 25,
-          ),
-          title: Text(
-            friend.getName(),
-            style: fontStyle,
-          ),
-          trailing: SizedBox(
-            width: 80,
-            height: 35,
-            child: ElevatedButton(
-                onPressed: () => _onListItemTap(friend),
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: PrimaryColors.darkGreen,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10), // Rounded corners
-                  ),
-                ),
-                child: Text(
-                  "Profile",
-                  style: GoogleFonts.roboto(fontSize: 16, color: Colors.white),
-                )),
-          ),
+        title: Text(
+          friend.getName(),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
       ),
     );
   }
 
+  // NEW: A dedicated widget for the empty state.
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.people_outline, size: 80, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            "No Friends Yet",
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Tap the button below to add friends!",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // MODIFIED: Build method is refactored for a flexible layout and to show the new empty state.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PrimaryColors.dullGreen,
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        toolbarHeight: 30,
         automaticallyImplyLeading: false,
         backgroundColor: PrimaryColors.dullGreen,
-        actions: [IconButton(onPressed: _getFriends, icon: Icon(Icons.refresh))],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  "Friends",
-                  style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22),
-                ),
-              ),
-              SizedBox(
-                height: 500,
-                child: ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  itemCount: _friendlist.length,
-                  itemBuilder: (context, index) {
-                    return _buildListItem(index, _friendlist[index]);
-                  },
-                ),
-              ),
-              Divider(
-                indent: 20,
-                endIndent: 20,
-                color: Colors.grey.shade400,
-                thickness: 2,
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              Center(
-                child: SizedBox(
-                  width: 150,
-                  height: 40,
-                  child: ElevatedButton(
-                      onPressed: _redirectToAddFriendsPage,
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: PrimaryColors.darkGreen,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Rounded corners
-                        ),
-                      ),
-                      child: Text(
-                        "Add Friends",
-                        style: GoogleFonts.roboto(
-                            fontSize: 16, color: Colors.white),
-                      )),
-                ),
-              ),
-            ],
+        title: Text(
+          "Friends",
+          style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.bold
           ),
         ),
+        actions: [IconButton(onPressed: _getFriends, icon: const Icon(Icons.refresh, color: Colors.white,))],
+      ),
+      body: Column(
+        children: [
+          // MODIFIED: Replaced fixed-height SizedBox with Expanded for a flexible layout.
+          Expanded(
+            child: _friendlist.isEmpty
+                ? _buildEmptyState()
+                : ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: _friendlist.length,
+              itemBuilder: (context, index) {
+                return _buildListItem(index, _friendlist[index]);
+              },
+            ),
+          ),
+          // MODIFIED: Button is placed outside the list and styled for prominence.
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            color: Colors.grey[100],
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.person_add),
+                onPressed: _redirectToAddFriendsPage,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: PrimaryColors.darkGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                label: Text(
+                  "Add Friends",
+                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:calowin/common/colors_and_fonts.dart';
+import 'package:calowin/common/custom_scaffold.dart';
 import 'package:calowin/common/singlebutton_dialog.dart';
 import 'package:calowin/common/user_profile.dart';
 import 'package:calowin/control/friends_controller.dart';
@@ -22,6 +23,8 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
   final FriendsController _friendsController = FriendsController();
   late UserProfile _notifier;
   bool flag = false;
+  bool _searchPerformed = false;
+  bool _isSearching = false;
 
   @override
   void didChangeDependencies() {
@@ -37,8 +40,9 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
 
   @override
   void dispose() {
-    super.dispose();
     _notifier.removeListener(_getRequesters);
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -47,220 +51,206 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
     _profile = widget.profile;
   }
 
-  // @override  
-  // void didUpdateWidget(AddfriendsPage oldWidget){
-  //   super.didUpdateWidget(oldWidget);
-  //   _getRequesters();
-  // }
-
   Future<void> _getRequesters() async {
     print("getRequester: AddFriendsPage");
     _friendRequests = await _friendsController.retrieveRequesterList(_profile.getUserID());
     if(mounted)
-   { setState(() {
+    { setState(() {
       _friendRequests = _friendRequests;
     });}
   }
 
-
   void _handleBack() {
     final pageNavigatorState =
-        context.findAncestorStateOfType<PageNavigatorState>();
+    context.findAncestorStateOfType<PageNavigatorState>();
     if (pageNavigatorState != null) {
       FocusScope.of(context).unfocus();
-      pageNavigatorState.navigateToPage(3); // Navigate to AddFriendsPage
+      pageNavigatorState.navigateToPage(3);
     }
   }
 
   void _handleSearch(String search) async {
-    _searchList = await _friendsController.searchUser(search,_profile.getUserID());
+    if (search.isEmpty) {
+      setState(() {
+        _searchList = [];
+        _searchPerformed = false;
+        _isSearching = false;
+      });
+      return;
+    }
+
     setState(() {
-      _searchList = _searchList;
+      _isSearching = true;
+      _searchPerformed = true;
     });
+
+    try {
+      _searchList = await _friendsController.searchUser(search,_profile.getUserID());
+    } finally {
+      if(mounted) {
+        setState(() {
+          _isSearching = false;
+        });
+      }
+    }
   }
 
   void _onSearchItemTap(String id) {
     final pageNavigatorState =
-        context.findAncestorStateOfType<PageNavigatorState>();
+    context.findAncestorStateOfType<PageNavigatorState>();
     if (pageNavigatorState != null) {
       FocusScope.of(context).unfocus();
-      pageNavigatorState.navigateToPage(5,params: {'otherUserID': id,'userID':_profile.getUserID()}); // Navigate to OtheruserPage
+      pageNavigatorState.navigateToPage(5,params: {'otherUserID': id,'userID':_profile.getUserID()});
     }
   }
 
+  // NEW: A reusable function to show a loading spinner dialog.
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 20),
+                Text("Please wait..."),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // MODIFIED: _handleAccept now shows a loading spinner.
   void _handleAccept(String id) async {
-    bool success = await _friendsController.acceptFriend(_profile.getUserID(),id);
-    setState(() {
+    _showLoadingDialog(); // Show spinner
+    try {
+      bool success = await _friendsController.acceptFriend(_profile.getUserID(),id);
+      if(mounted) Navigator.of(context).pop(); // Hide spinner
+
       if(success){
         _getRequesters();
-        _profile.updateProfile(); //notify other pages that user relationships has been changed
+        _profile.updateProfile();
         showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Success", content: "Friend added successfully", onConfirm: ()=>Navigator.pop(context));
-            }); 
+            context: context,
+            builder: (BuildContext context) {
+              return SinglebuttonDialog(title: "Success", content: "Friend added successfully", onConfirm: ()=>Navigator.pop(context));
+            });
       }
       else{
         showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Failed", content: "Failed to add friend, please try again later", onConfirm: ()=>Navigator.pop(context));
+            context: context,
+            builder: (BuildContext context) {
+              return SinglebuttonDialog(title: "Failed", content: "Failed to add friend, please try again later", onConfirm: ()=>Navigator.pop(context));
             });
       }
-    });
+    } catch (e) {
+      if(mounted) Navigator.of(context).pop(); // Hide spinner on error
+    }
   }
 
+  // MODIFIED: _handleReject now shows a loading spinner.
   void _handleReject(String id) async {
-    bool success = await _friendsController.rejectFriend(_profile.getUserID(),id);
-    _profile.updateProfile(); //notify other pages that user relationships has been changed
-    setState(() {
+    _showLoadingDialog(); // Show spinner
+    try {
+      bool success = await _friendsController.rejectFriend(_profile.getUserID(),id);
+      if(mounted) Navigator.of(context).pop(); // Hide spinner
+
       if(success){
+        _getRequesters();
+        _profile.updateProfile();
         showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Success", content: "Request rejected successfully", onConfirm: ()=>Navigator.pop(context));
-            }); 
+            context: context,
+            builder: (BuildContext context) {
+              return SinglebuttonDialog(title: "Success", content: "Request rejected successfully", onConfirm: ()=>Navigator.pop(context));
+            });
       }
       else{
         showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Failed", content: "Failed to reject request, please try again later", onConfirm: ()=>Navigator.pop(context));
+            context: context,
+            builder: (BuildContext context) {
+              return SinglebuttonDialog(title: "Failed", content: "Failed to reject request, please try again later", onConfirm: ()=>Navigator.pop(context));
             });
       }
-    });
+    } catch (e) {
+      if(mounted) Navigator.of(context).pop(); // Hide spinner on error
+    }
   }
 
-  Widget _buildSearchListItem(int index, UserProfile user) {
-    Color tileColor = const Color.fromARGB(255, 214, 241, 214);
-    TextStyle fontStyle =
-        GoogleFonts.aBeeZee(fontSize: 16, fontWeight: FontWeight.bold);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: tileColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 6,
-              offset: const Offset(0, 4),
+  Widget _buildSearchListItem(UserProfile user) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+      child: ListTile(
+        onTap: () => _onSearchItemTap(user.getUserID()),
+        leading: const CircleAvatar(
+          backgroundColor: PrimaryColors.dullGreen,
+          child: Icon(Icons.person, color: Colors.white),
+        ),
+        title: Text(user.getName(), style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      ),
+    );
+  }
+
+  Widget _buildFriendRequestItem(UserProfile user) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            ListTile(
+              onTap: () => _onSearchItemTap(user.getUserID()),
+              contentPadding: EdgeInsets.zero,
+              leading: const CircleAvatar(
+                backgroundColor: PrimaryColors.dullGreen,
+                child: Icon(Icons.person_add_alt_1, color: Colors.white),
+              ),
+              title: Text(user.getName(), style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              subtitle: const Text("Sent you a friend request"),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => _handleReject(user.getUserID()),
+                  child: const Text("Reject", style: TextStyle(color: Colors.red)),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () => _handleAccept(user.getUserID()),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: PrimaryColors.brightGreen,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text("Accept"),
+                ),
+              ],
             ),
           ],
-        ),
-        child: ListTile(
-          onTap: () => _onSearchItemTap(user.getUserID()),
-          leading: const Icon(
-            Icons.person,
-            size: 25,
-          ),
-          title: Text(
-            user.getName(),
-            style: fontStyle,
-          ),
         ),
       ),
     );
   }
 
-  Widget _buildFriendRequests(int index, UserProfile user) {
-    Color tileColor = const Color.fromARGB(255, 214, 241, 214);
-    TextStyle fontStyle =
-        GoogleFonts.aBeeZee(fontSize: 16, fontWeight: FontWeight.bold);
-    return GestureDetector(
-      onTap: ()=>_onSearchItemTap(user.getUserID()),
+  Widget _buildEmptyState({required String title, required String message, required IconData icon}) {
+    return Center(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-          height: 90,
-          width: 400,
-          decoration: BoxDecoration(
-            color: tileColor,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 6,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.person_add,
-                      size: 25,
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      user.getName(),
-                      style: fontStyle,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 15),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: SizedBox(
-                        width: 140,
-                        height: 27,
-                        child: ElevatedButton(
-                          onPressed: ()=>_handleAccept(user.getUserID()),
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: PrimaryColors.brightGreen,
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            "Accept",
-                            style: GoogleFonts.roboto(
-                                fontSize: 13, color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.bottomLeft,
-                      child: SizedBox(
-                        width: 140,
-                        height: 27,
-                        child: ElevatedButton(
-                          onPressed: ()=>_handleReject(user.getUserID()),
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            "Reject",
-                            style: GoogleFonts.roboto(
-                                fontSize: 13, color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+        padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+        child: Column(
+          children: [
+            Icon(icon, size: 50, color: Colors.grey[400]),
+            const SizedBox(height: 12),
+            Text(title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[600])),
+            Text(message, textAlign: TextAlign.center, style: GoogleFonts.poppins(color: Colors.grey[500])),
+          ],
         ),
       ),
     );
@@ -270,99 +260,71 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: PrimaryColors.dullGreen,
-      appBar: AppBar(
-        backgroundColor: PrimaryColors.dullGreen,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _handleBack,
+    return CustomScaffold(
+      body: Scaffold(
+        backgroundColor: Colors.grey[100],
+        appBar: AppBar(
+          title: Text("Add Friends", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          backgroundColor: PrimaryColors.dullGreen,
+          foregroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _handleBack,
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
+        body: ListView(
+          padding: const EdgeInsets.all(16.0),
           children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text(
-                "Add Friends!",
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
+            TextField(
+              controller: _searchController,
+              onSubmitted: _handleSearch,
+              decoration: InputDecoration(
+                hintText: "Search for friends by name",
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
-            Container(
-              height: 45,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: "Search for your friends!",
-                  hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
-                  border: InputBorder.none,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.search),
-                    onPressed: ()=>_handleSearch(_searchController.text),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 16),
 
-            // Search List
-            Column(
-              children: _searchList.isEmpty
-                  ? [
-                      const SizedBox()
-                    ] // Return an empty widget if no search results
-                  : List.generate(
-                      _searchList.length,
-                      (index) =>
-                          _buildSearchListItem(index, _searchList[index]),
-                    ),
+            if (_searchPerformed)
+              _isSearching
+                  ? const Center(child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator()))
+                  : _searchList.isEmpty
+                  ? _buildEmptyState(
+                icon: Icons.search_off,
+                title: "No Users Found",
+                message: "Check the spelling or try a different name.",
+              )
+                  : Column(
+                children: _searchList.map((user) => _buildSearchListItem(user)).toList(),
+              ),
+
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: Divider(),
             ),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Divider(
-                color: Colors.grey.shade400,
-                thickness: 2,
-                height: 10,
+            Text(
+              "Friend Requests",
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
-
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text(
-                "Friend Requests",
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                ),
-              ),
-            ),
-
-            // Friend Requests List
-            Column(
-              children: _friendRequests.isEmpty
-                  ? [
-                      const SizedBox()
-                    ] // Return an empty widget if no friend requests
-                  : List.generate(
-                      _friendRequests.length,
-                      (index) =>
-                          _buildFriendRequests(index, _friendRequests[index]),
-                    ),
+            const SizedBox(height: 8),
+            _friendRequests.isEmpty
+                ? _buildEmptyState(
+              icon: Icons.notifications_none,
+              title: "No Pending Requests",
+              message: "You have no new friend requests right now.",
+            )
+                : Column(
+              children: _friendRequests.map((user) => _buildFriendRequestItem(user)).toList(),
             ),
           ],
         ),
