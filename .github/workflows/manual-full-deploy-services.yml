@@ -23,38 +23,25 @@ permissions:
 
 jobs:
   prepare:
-      runs-on: ubuntu-latest
-      outputs:
-        selected-services: ${{ steps.select.outputs.list }}
-      steps:
-        - id: select
-          shell: bash
-          run: |
-            # Define all services
-            ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+    runs-on: ubuntu-latest
+    outputs:
+      selected-services: ${{ steps.select.outputs.list }}
+    steps:
+      - id: select
+        run: |
+          ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+          INPUT="${{ github.event.inputs.services }}"
 
-            # Raw input (multi-select returns comma-separated string)
-            INPUT="${{ github.event.inputs.services }}"
-            echo "Raw input: $INPUT"
+          if [[ "$INPUT" == *"ALL"* ]]; then
+            echo "All services selected."
+            JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s . | jq -c .)
+          else
+            echo "Selected specific services: $INPUT"
+            JSON=$(echo "$INPUT" | tr ',' '\n' | jq -R . | jq -s . | jq -c .)
+          fi
 
-            # Convert input into JSON array
-            if [[ "$INPUT" == *"ALL"* ]]; then
-              echo "All services selected."
-              JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s .)
-            else
-              IFS=',' read -ra ITEMS <<< "$INPUT"
-              CLEANED=()
-              for i in "${ITEMS[@]}"; do
-                TRIMMED=$(echo "$i" | xargs)
-                if [ -n "$TRIMMED" ]; then
-                  CLEANED+=("$TRIMMED")
-                fi
-              done
-              JSON=$(printf '%s\n' "${CLEANED[@]}" | jq -R . | jq -s .)
-            fi
-
-            echo "Final selected services JSON: $JSON"
-            echo "list=$JSON" >> $GITHUB_OUTPUT
+          echo "list=$JSON" >> $GITHUB_OUTPUT
+          echo "Selected services JSON: $JSON"
 
   build-and-deploy:
     runs-on: ubuntu-latest
