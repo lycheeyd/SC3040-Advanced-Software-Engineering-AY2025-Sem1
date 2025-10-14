@@ -14,7 +14,6 @@ class ChangepasswordPage extends StatefulWidget {
 }
 
 class _ChangepasswordPageState extends State<ChangepasswordPage> {
-  // NEW: Using a Form key for robust validation.
   final _formKey = GlobalKey<FormState>();
   late final String userID;
 
@@ -22,7 +21,6 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
   final TextEditingController _newPWController = TextEditingController();
   final TextEditingController _confirmPWController = TextEditingController();
 
-  // NEW: Adding a state for toggling password visibility.
   bool _isNewPasswordObscured = true;
   bool _isConfirmPasswordObscured = true;
   bool _isCurrentPasswordObscured = true;
@@ -42,17 +40,37 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
     super.dispose();
   }
 
+  // NEW: A reusable function to show a loading spinner dialog.
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 20),
+                Text("Saving..."),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // MODIFIED: This function now shows and hides the loading spinner.
   Future<void> _handleChangePassword() async {
-    // MODIFIED: Validation is now handled by the form key.
     if (_formKey.currentState!.validate()) {
+      _showLoadingDialog(); // Show spinner
+
       final String encryptedOldPassword = AES_Encryptor.encrypt(_currentPWController.text);
       final String encryptedNewPassword = AES_Encryptor.encrypt(_newPWController.text);
-
-      // Note: The original code encrypted the confirmation password separately.
-      // Usually, you only need to send the new password once it's confirmed.
-      // I've kept the original logic to avoid changing functionality.
       final String encryptedNewConfirmPassword = AES_Encryptor.encrypt(_confirmPWController.text);
-
       final String url = "https://sc3040G5-CalowinSpringNode.hf.space/central/account/change-password";
 
       try {
@@ -67,14 +85,16 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
           }),
         );
 
-        final responseMessage = response.body;
+        if (mounted) Navigator.of(context).pop(); // Hide spinner
 
+        final responseMessage = response.body;
         if (response.statusCode == 200) {
           _showSuccessDialog(responseMessage);
         } else {
           _showErrorDialog(responseMessage);
         }
       } catch (e) {
+        if (mounted) Navigator.of(context).pop(); // Hide spinner on error
         _showErrorDialog("Network error: ${e.toString()}");
       }
     }
@@ -117,7 +137,6 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
     );
   }
 
-  // MODIFIED: The build method is completely refactored for the new UI.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,7 +164,6 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
                       style: GoogleFonts.poppins(color: Colors.black54, fontSize: 14),
                     ),
                     const SizedBox(height: 24),
-                    // MODIFIED: Using TextFormField for better validation.
                     TextFormField(
                       controller: _currentPWController,
                       obscureText: _isCurrentPasswordObscured,
