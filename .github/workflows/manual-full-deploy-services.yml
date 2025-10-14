@@ -29,25 +29,29 @@ jobs:
     steps:
       - id: select
         run: |
-          # Define all services as a shell array
-          ALL_SERVICES=(CalowinAccount CalowinFriends CalowinNotification CalowinSpringNode CalowinTrip CalowinWellnessZone)
-          
-          # Use jq to parse the JSON input directly.
-          # This is more reliable than manual string manipulation.
-          INPUT_JSON='${{ toJson(github.event.inputs.services) }}'
-          
-          if [[ "$INPUT_JSON" == *ALL* ]]; then
+          # Define all services
+          ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+
+          # Read input as single service
+          INPUT="${{ github.event.inputs.services }}"
+
+          # Default to ALL if input is empty
+          if [[ -z "$INPUT" ]]; then
+            echo "No service selected, defaulting to ALL"
+            INPUT="ALL"
+          fi
+
+          if [[ "$INPUT" == "ALL" ]]; then
             echo "All services selected."
             JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s . | jq -c .)
           else
-            echo "Selected specific services."
-            # Use jq to parse the string into a valid JSON array.
-            JSON=$(echo "$INPUT_JSON" | jq -c '.')
+            echo "Selected service: $INPUT"
+            JSON=$(echo "$INPUT" | jq -R . | jq -s . | jq -c .)
           fi
 
           # Output JSON safely
           echo "list=$JSON" >> $GITHUB_OUTPUT
-          echo "Selected services JSON: $JSON"
+          echo "Selected service JSON: $JSON"
 
   build-and-deploy:
     runs-on: ubuntu-latest
