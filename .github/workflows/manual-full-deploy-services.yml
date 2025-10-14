@@ -27,8 +27,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJSON(format('["{0}"]', github.event.inputs.services)) }}
+        all_services:
+          - CalowinAccount
+          - CalowinFriends
+          - CalowinNotification
+          - CalowinSpringNode
+          - CalowinTrip
+          - CalowinWellnessZone
         
+        service: ${{
+          github.event.inputs.services == 'ALL' &&
+          fromJSON(toJSON(strategy.matrix.all_services)) ||
+          fromJSON(format('["{0}"]', github.event.inputs.services))
+          }}
+      
     outputs:
       built-services: ${{ steps.collect.outputs.built }}
 
