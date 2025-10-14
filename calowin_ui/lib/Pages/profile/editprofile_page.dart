@@ -36,9 +36,32 @@ class _EditprofilePageState extends State<EditprofilePage> {
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
 
+  void _showLoadingDialog({String message = "Please wait..."}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(width: 20),
+                Text(message),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _handleSaveChanges() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      _showLoadingDialog(message: "Saving...");
 
       final String url = "https://sc3040G5-CalowinSpringNode.hf.space/central/account/edit-profile";
 
@@ -54,6 +77,8 @@ class _EditprofilePageState extends State<EditprofilePage> {
           }),
         );
 
+        if (mounted) Navigator.of(context).pop();
+
         final Map<String, dynamic> responseData = jsonDecode(response.body);
 
         if (response.statusCode == 200) {
@@ -68,6 +93,7 @@ class _EditprofilePageState extends State<EditprofilePage> {
           _showErrorDialog(responseData['message'] ?? 'An unknown error occurred.');
         }
       } catch (e) {
+        if (mounted) Navigator.of(context).pop();
         _showErrorDialog("Network error: ${e.toString()}");
       }
     }
@@ -79,7 +105,9 @@ class _EditprofilePageState extends State<EditprofilePage> {
         MaterialPageRoute(builder: (context) => ChangepasswordPage(userID: _profile.getUserID())));
   }
 
-  Future<void> _sendOTP() async {
+  // MODIFIED: This function now returns true on success and false on failure.
+  Future<bool> _sendOTP() async {
+    _showLoadingDialog(message: "Sending OTP...");
     try {
       final response = await http.post(
         Uri.parse('https://sc3040G5-CalowinSpringNode.hf.space/central/account/send-otp'),
@@ -89,18 +117,24 @@ class _EditprofilePageState extends State<EditprofilePage> {
           'type': ActionType.DELETE_ACCOUNT.value,
         }),
       );
-      final responseMessage = response.body;
+      if (mounted) Navigator.of(context).pop();
+
       if (response.statusCode == 200) {
-        _showsentSuccessDialog(responseMessage);
+        _showsentSuccessDialog(response.body);
+        return true;
       } else {
-        _showErrorDialog(responseMessage);
+        _showErrorDialog(response.body);
+        return false;
       }
     } catch (e) {
+      if (mounted) Navigator.of(context).pop();
       _showErrorDialog('Error: ${e.toString()}');
+      return false;
     }
   }
 
   Future<void> _handleDeleteAccount(String otpCode) async {
+    _showLoadingDialog(message: "Deleting Account...");
     final String url = "https://sc3040G5-CalowinSpringNode.hf.space/central/account/delete-account";
     try {
       final response = await http.post(
@@ -113,13 +147,15 @@ class _EditprofilePageState extends State<EditprofilePage> {
         }),
       );
 
-      final responseMessage = response.body;
+      if (mounted) Navigator.of(context).pop();
+
       if (response.statusCode == 200) {
-        _showDeleteSuccessDialog(responseMessage);
+        _showDeleteSuccessDialog(response.body);
       } else {
-        _showErrorDialog(responseMessage);
+        _showErrorDialog(response.body);
       }
     } catch (e) {
+      if (mounted) Navigator.of(context).pop();
       _showErrorDialog('Error: ${e.toString()}');
     }
   }
@@ -197,7 +233,6 @@ class _EditprofilePageState extends State<EditprofilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // The CustomScaffold wrapper is the only change needed.
     return CustomScaffold(
       body: Scaffold(
         backgroundColor: Colors.grey[100],
@@ -278,27 +313,33 @@ class _EditprofilePageState extends State<EditprofilePage> {
                       onTap: _handleChangePassword,
                     ),
                     const Divider(height: 1, indent: 16),
+                    // MODIFIED: The onTap logic is now async and awaits the OTP send before showing the next dialog.
                     ListTile(
                       title: Text("Delete Account", style: GoogleFonts.poppins(color: Colors.red)),
                       leading: const Icon(Icons.delete_forever_outlined, color: Colors.red),
-                      onTap: () {
-                        _sendOTP();
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return InputDialog(
-                                  confirmButtonColor: Colors.red,
-                                  confirmButtonText: "Delete Account",
-                                  hintText: "OTP",
-                                  title: "Delete Account",
-                                  content: "An OTP has been sent to your email to confirm your identity. This action is permanent.",
-                                  onConfirm: (inputText) {
-                                    Navigator.of(context).pop();
-                                    _handleDeleteAccount(inputText);
-                                  },
-                                  onCancel: () => Navigator.of(context).pop()
-                              );
-                            });
+                      onTap: () async {
+                        // First, await the result of sending the OTP.
+                        bool otpWasSent = await _sendOTP();
+
+                        // Only if the OTP was sent successfully, show the dialog to enter it.
+                        if (otpWasSent && mounted) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return InputDialog(
+                                    confirmButtonColor: Colors.red,
+                                    confirmButtonText: "Delete Account",
+                                    hintText: "OTP",
+                                    title: "Enter OTP",
+                                    content: "An OTP has been sent to your email to confirm your identity. This action is permanent.",
+                                    onConfirm: (inputText) {
+                                      Navigator.of(context).pop();
+                                      _handleDeleteAccount(inputText);
+                                    },
+                                    onCancel: () => Navigator.of(context).pop()
+                                );
+                              });
+                        }
                       },
                     ),
                   ],
