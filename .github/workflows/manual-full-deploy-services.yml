@@ -7,7 +7,7 @@ on:
         description: "Select one or more services to deploy"
         type: choice
         required: true
-        multiple: true
+        default: ALL
         options:
           - CalowinAccount
           - CalowinFriends
@@ -28,6 +28,7 @@ jobs:
       selected-services: ${{ steps.select.outputs.list }}
     steps:
       - id: select
+        shell: bash
         run: |
           # Define all services
           ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
@@ -37,21 +38,16 @@ jobs:
 
           # Default to ALL if input is empty
           if [[ -z "$INPUT" ]]; then
-            echo "No service selected, defaulting to ALL"
             INPUT="ALL"
           fi
 
           if [[ "$INPUT" == "ALL" ]]; then
-            echo "All services selected."
             JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s . | jq -c .)
           else
-            echo "Selected service: $INPUT"
             JSON=$(echo "$INPUT" | jq -R . | jq -s . | jq -c .)
           fi
-
-          # Output JSON safely
-          echo "list=$JSON" >> $GITHUB_OUTPUT
-          echo "Selected service JSON: $JSON"
+          
+          echo "list=$JSON" >> "$GITHUB_OUTPUT"
 
   build-and-deploy:
     runs-on: ubuntu-latest
