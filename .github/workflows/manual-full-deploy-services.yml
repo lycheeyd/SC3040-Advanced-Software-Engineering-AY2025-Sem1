@@ -29,14 +29,14 @@ jobs:
       matrix:
         service: ${{
           github.event.inputs.services == 'ALL' &&
-          toJson([
-            'CalowinAccount',
-            'CalowinFriends',
-            'CalowinNotification',
-            'CalowinSpringNode',
-            'CalowinTrip',
-            'CalowinWellnessZone'
-          ]) ||
+          fromJSON('[ 
+            "CalowinAccount",
+            "CalowinFriends",
+            "CalowinNotification",
+            "CalowinSpringNode",
+            "CalowinTrip",
+            "CalowinWellnessZone"
+          ]') ||
           fromJSON(format('["{0}"]', github.event.inputs.services))
           }}
       
