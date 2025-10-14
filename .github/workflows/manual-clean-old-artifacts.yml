@@ -24,7 +24,7 @@ jobs:
           for name in $names; do
             echo "Processing $name ..."
             ids=$(gh api repos/${{ github.repository }}/actions/artifacts \
-              --paginate --jq ".artifacts | map(select(.name==\"$name\")) | sort_by(.created_at) | reverse | .[5:] | .[].id")
+              --paginate --jq ".artifacts | map(select(.name==\"$name\")) | sort_by(.created_at) | reverse | .[3:] | .[].id")
             if [ -z "$ids" ]; then
               echo "No old artifacts for $name."
             else
