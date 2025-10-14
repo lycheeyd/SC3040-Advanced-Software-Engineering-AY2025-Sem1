@@ -12,27 +12,31 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete old artifacts
+      - name: Cleanup old artifacts
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Cleaning up artifacts for: ${{ github.event.client_payload.services }}"
-          for SERVICE in $(echo '${{ github.event.client_payload.services }}' | jq -r '.[]'); do
-            echo "Processing $SERVICE ..."
-            gh api repos/${{ github.repository }}/actions/artifacts \
-              --paginate --jq ".artifacts[] | select(.name==\"${SERVICE}-jar\") | .id + \"|\" + .created_at" > all_artifacts.txt
+          # Convert the services payload into JSON array for jq
+          SERVICES_JSON="${{ toJson(github.event.client_payload.services) }}"
+          echo "Cleaning up artifacts for services: $SERVICES_JSON"
 
-            COUNT=$(wc -l < all_artifacts.txt)
+          # Iterate over each service
+          for SERVICE in $(echo "$SERVICES_JSON" | jq -r '.[]'); do
+            echo "Processing $SERVICE ..."
+
+            # Get all artifacts for this service
+            ARTIFACTS=$(gh api repos/${{ github.repository }}/actions/artifacts \
+              --paginate --jq ".artifacts[] | select(.name==\"${SERVICE}-jar\") | [.id, .created_at] | @tsv")
+
+            COUNT=$(echo "$ARTIFACTS" | wc -l)
             if [ "$COUNT" -le 3 ]; then
               echo "Only $COUNT artifacts found for $SERVICE — nothing to clean."
               continue
             fi
 
-            # Keep latest 3 (sort newest first)
-            sort -r -t'|' -k2 all_artifacts.txt | tail -n +4 | cut -d'|' -f1 > old_ids.txt
-
-            echo "Deleting old artifacts for $SERVICE..."
-            while read -r ID; do
+            # Keep latest 3, delete older
+            echo "$ARTIFACTS" | sort -k2 -r | tail -n +4 | cut -f1 | while read -r ID; do
+              echo "Deleting artifact $ID for $SERVICE ..."
               gh api --method DELETE repos/${{ github.repository }}/actions/artifacts/$ID || true
-            done < old_ids.txt
+            done
           done
