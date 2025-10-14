@@ -2,23 +2,71 @@ name: Manual Full Deploy to Hugging Face
 
 on:
   workflow_dispatch:
+    inputs:
+      services:
+        description: "Select one or more services to deploy"
+        type: choice
+        required: true
+        multiple: true
+        options:
+          - CalowinAccount
+          - CalowinFriends
+          - CalowinNotification
+          - CalowinSpringNode
+          - CalowinTrip
+          - CalowinWellnessZone
+          - ALL
 
 permissions:
   contents: read
-  actions: read
+  actions: write
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      selected-services: ${{ steps.select.outputs.list }}
+    steps:
+      - id: select
+        run: |
+          # Define all services
+          ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+
+          # Parse input
+          INPUT="${{ github.event.inputs.services }}"
+
+          if [[ "$INPUT" == *"ALL"* ]]; then
+            echo "All services selected."
+            JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s .)
+          else
+            echo "Selected specific services: $INPUT"
+            JSON=$(echo "$INPUT" | jq -R 'split(",")')
+          fi
+
+          echo "list=$JSON" >> $GITHUB_OUTPUT
+          echo "Selected services JSON: $JSON"
+
   build-and-deploy:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        service: ["CalowinAccount", "CalowinFriends", "CalowinNotification", "CalowinSpringNode", "CalowinTrip", "CalowinWellnessZone"]
+        service: ${{ fromJson(needs.prepare.outputs.selected-services) }}
+
+    outputs:
+      built-services: ${{ steps.collect.outputs.built }}
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -27,14 +75,14 @@ jobs:
           distribution: 'temurin'
 
       - name: Build fresh JAR
+        id: build
         run: |
           cd ${{ matrix.service }}
           mvn clean package -DskipTests
-          echo "Contents of target folder:"
-          ls -lh target/
           echo "Built $(ls target/*-SNAPSHOT.jar)"
 
       - name: Upload built JAR
+        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.service }}-jar
@@ -86,3 +134,21 @@ jobs:
           else
             echo "No changes to commit for $SERVICE_DIR"
           fi
+
+      - id: collect
+        run: |
+          echo "built=[\"${{ matrix.service }}\"]" >> $GITHUB_OUTPUT
+          echo "Successfully built and deployed ${{ matrix.service }}"
+
+  dispatch-cleanup:
+    needs: build-and-deploy
+    if: needs.build-and-deploy.outputs.built-services != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: cleanup-old-artifacts
+          client-payload: |
+            { "services": ${{ needs.build-and-deploy.outputs.built-services }} }
