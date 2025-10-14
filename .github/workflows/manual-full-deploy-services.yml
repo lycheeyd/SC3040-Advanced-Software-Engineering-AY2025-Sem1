@@ -22,29 +22,61 @@ permissions:
   actions: write
 
 jobs:
-  prepare:
+Perfect catch — this happens because the workflow-dispatch multi-select input passes the selected options as a comma-separated string, and the JSON formatting step in your prepare job didn’t properly handle it when only one value was selected.
+
+Let’s fix this cleanly ✅
+
+
+---
+
+🧩 Cause
+
+The line:
+
+JSON=$(echo "$INPUT" | jq -R 'split(",")')
+
+breaks when $INPUT doesn’t contain commas — it produces invalid JSON (extra quotes and spacing).
+
+
+---
+
+✅ Fixed prepare job
+
+Replace your entire prepare job with this corrected version:
+
+prepare:
     runs-on: ubuntu-latest
     outputs:
       selected-services: ${{ steps.select.outputs.list }}
     steps:
       - id: select
+        shell: bash
         run: |
           # Define all services
           ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
 
-          # Parse input
+          # Raw input (multi-select returns comma-separated string)
           INPUT="${{ github.event.inputs.services }}"
+          echo "Raw input: $INPUT"
 
+          # Convert input into JSON array
           if [[ "$INPUT" == *"ALL"* ]]; then
             echo "All services selected."
             JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s .)
           else
-            echo "Selected specific services: $INPUT"
-            JSON=$(echo "$INPUT" | jq -R 'split(",")')
+            IFS=',' read -ra ITEMS <<< "$INPUT"
+            CLEANED=()
+            for i in "${ITEMS[@]}"; do
+              TRIMMED=$(echo "$i" | xargs)
+              if [ -n "$TRIMMED" ]; then
+                CLEANED+=("$TRIMMED")
+              fi
+            done
+            JSON=$(printf '%s\n' "${CLEANED[@]}" | jq -R . | jq -s .)
           fi
 
+          echo "Final selected services JSON: $JSON"
           echo "list=$JSON" >> $GITHUB_OUTPUT
-          echo "Selected services JSON: $JSON"
 
   build-and-deploy:
     runs-on: ubuntu-latest
