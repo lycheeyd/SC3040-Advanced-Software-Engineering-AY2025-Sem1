@@ -14,41 +14,19 @@ class RankPage extends StatefulWidget {
   State<RankPage> createState() => _RankPageState();
 }
 
+// NEW: Added an enum for clarity when toggling leaderboards.
+enum LeaderboardType { calories, carbon }
+
 class _RankPageState extends State<RankPage> {
   String userID = "";
-  bool _isCalorie = true;
+  // MODIFIED: Switched to the enum for better state management.
+  LeaderboardType _selectedType = LeaderboardType.calories;
   LeaderboardRetriever retriever = LeaderboardRetriever();
   List<LeaderboardItem> caloriesleaderBoard = [];
   List<LeaderboardItem> carbonleaderBoard = [];
   late UserProfile _profile;
   bool flag = false;
 
-  //to be retrieved from backend
-  // List<Map<String, dynamic>> caloriesleaderBoard = [
-  //   {"name": "Alice", "medal": Medals.caloriePlatinum, "points": 2000},
-  //   {"name": "Bob", "medal": Medals.caloriePlatinum, "points": 1900},
-  //   {"name": "Charlie", "medal": Medals.caloriePlatinum, "points": 1500},
-  //   {"name": "Diana", "medal": Medals.calorieGold, "points": 1300},
-  //   {"name": "Ethan", "medal": Medals.calorieGold, "points": 500},
-  //   {"name": "Fiona", "medal": Medals.calorieGold, "points": 93},
-  //   {"name": "George", "medal": Medals.calorieSilver, "points": 80},
-  //   {"name": "Hannah", "medal": Medals.calorieSilver, "points": 75},
-  //   {"name": "Ivan", "medal": Medals.calorieBronze, "points": 60},
-  //   {"name": "Jack", "medal": Medals.calorieBronze, "points": 50},
-  // ];
-
-  // List<Map<String, dynamic>> carbonleaderBoard = [
-  //   {"name": "Liam", "medal": Medals.ecoPlatinum, "points": 2102},
-  //   {"name": "Mia", "medal": Medals.ecoGold, "points": 1221},
-  //   {"name": "Noah", "medal": Medals.ecoGold, "points": 646},
-  //   {"name": "Olivia", "medal": Medals.ecoSilver, "points": 131},
-  //   {"name": "Paul", "medal": Medals.ecoSilver, "points": 121},
-  //   {"name": "Quincy", "medal": Medals.ecoBronze, "points": 93},
-  //   {"name": "Rachel", "medal": Medals.ecoBronze, "points": 79},
-  //   {"name": "Sophia", "medal": Medals.ecoBronze, "points": 60},
-  //   {"name": "Thomas", "medal": Medals.ecoBronze, "points": 51},
-  //   {"name": "Uma", "medal": null, "points": 42},
-  // ];
 
   Future<void> _retrieveLeaderboards() async {
     print("RetrieveLeaderBoards: rank page");
@@ -58,7 +36,6 @@ class _RankPageState extends State<RankPage> {
       caloriesleaderBoard = caloriesleaderBoard;
       carbonleaderBoard = carbonleaderBoard;
     });}
-    //print("Leaderboards retrieved");
   }
 
   @override
@@ -72,11 +49,11 @@ class _RankPageState extends State<RankPage> {
     super.didChangeDependencies();
     if(flag == false)
     {
-      _profile = Provider.of<UserProfile>(context, listen: true); // Listen false for initialization
+      _profile = Provider.of<UserProfile>(context, listen: true);
       _profile.addListener(_retrieveLeaderboards);
       flag = true;
       _retrieveLeaderboards();
-    } // Add listener for profile changes
+    }
   }
 
   @override
@@ -85,146 +62,232 @@ class _RankPageState extends State<RankPage> {
     super.dispose();
   }
 
-  void _toggleLeaderBoard() {
-    setState(() {
-      _isCalorie = !_isCalorie;
-    });
-  }
-
   void _onListItemTap(LeaderboardItem user) {
-    //first retrieve the user id then pass to the page navigator (logic to be considered)
     final pageNavigatorState =
-        context.findAncestorStateOfType<PageNavigatorState>();
+    context.findAncestorStateOfType<PageNavigatorState>();
 
-    //change here
     if (pageNavigatorState != null) {
-      //print("otherID: ${user.userId}, userID: $userID");
       pageNavigatorState.navigateToPage(5,
-          params: {'otherUserID': user.userId,'userID':userID}); // Navigate to Profile tab
+          params: {'otherUserID': user.userId,'userID':userID});
     }
   }
 
-  Widget _buildListItem(int index, LeaderboardItem user, Image? medal, int points) {
-    Color tileColor;
-    double fontsize = 15;
-    double medalsize = 40;
-    TextStyle fontStyle =
-        GoogleFonts.rammettoOne(fontSize: fontsize, color: Colors.black);
-    switch (index) {
-      case 0:
-        tileColor = const Color.fromARGB(255, 220, 203, 12);
-        break;
-      case 1:
-        tileColor = const Color.fromARGB(255, 225, 225, 225);
-        break;
-      case 2:
-        tileColor = const Color.fromARGB(255, 220, 131, 15);
-        break;
-      default:
-        tileColor = const Color.fromARGB(255, 214, 241, 214);
-        fontsize = 18;
-        fontStyle = GoogleFonts.aBeeZee(
-            fontSize: fontsize, fontWeight: FontWeight.bold);
-        medalsize = 30;
-        break;
-    }
+  // NEW: A dedicated widget for the top 3 podium.
+  Widget _buildPodiumItem(LeaderboardItem user, int rank) {
+    final colors = [
+      Color(0xFFFFD700), // Gold
+      Color(0xFFC0C0C0), // Silver
+      Color(0xFFCD7F32), // Bronze
+    ];
+    final color = colors[rank - 1];
+    final double elevation = rank == 1 ? 80.0 : 40.0;
+    final Image? medal = _selectedType == LeaderboardType.calories ? user.calorieMedal : user.carbonMedal;
+    final int points = _selectedType == LeaderboardType.calories ? user.caloriePoint : user.carbonPoint;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
-      child: Container(
-        decoration: BoxDecoration(
-          color: tileColor, // Rounded corners
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2), // Shadow color with opacity
-              blurRadius: 6, // Softness of the shadow
-              offset: const Offset(0, 4), // Offset in x and y direction
-            ),
-          ],
-        ),
-        child: ListTile(
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
           onTap: () => _onListItemTap(user),
-          leading: Text("${index + 1}",
-              style: fontStyle.copyWith(fontWeight: FontWeight.bold)),
-          title: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Text(
-                user.name,
-                style: fontStyle,
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: color, width: 4),
+                ),
+                child: const CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, size: 40, color: Colors.grey),
+                ),
               ),
-              const SizedBox(
-                width: 10,
+              Positioned(
+                top: 0,
+                left: 0,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$rank',
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          fontSize: 16),
+                    ),
+                  ),
+                ),
               ),
-              SizedBox(height: medalsize, width: medalsize, child: medal)
             ],
           ),
-          trailing: Text(
-            points.toString(),
-            style: fontStyle,
+        ),
+        const SizedBox(height: 8),
+        Text(user.name, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              points.toString(),
+              style: GoogleFonts.poppins(color: Colors.black54, fontSize: 14),
+            ),
+            if (medal != null)
+              SizedBox(height: 20, width: 20, child: medal),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: elevation,
+          width: 90,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
+        ),
+      ],
+    );
+  }
+
+  // NEW: A refactored list item for ranks 4 and below.
+  Widget _buildRankListItem(int index, LeaderboardItem user) {
+    final Image? medal = _selectedType == LeaderboardType.calories ? user.calorieMedal : user.carbonMedal;
+    final int points = _selectedType == LeaderboardType.calories ? user.caloriePoint : user.carbonPoint;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: ListTile(
+        onTap: () => _onListItemTap(user),
+        leading: Text(
+          "${index + 1}",
+          style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.black54),
+        ),
+        title: Text(
+          user.name,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              points.toString(),
+              style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: PrimaryColors.darkGreen),
+            ),
+            if (medal != null) ...[
+              const SizedBox(width: 8),
+              SizedBox(height: 30, width: 30, child: medal),
+            ]
+          ],
         ),
       ),
     );
   }
 
+  // MODIFIED: The main build method is completely restructured for the new UI.
   @override
   Widget build(BuildContext context) {
+    final bool isCalorie = _selectedType == LeaderboardType.calories;
+    final List<LeaderboardItem> activeLeaderboard =
+    isCalorie ? caloriesleaderBoard : carbonleaderBoard;
+
+    final List<LeaderboardItem> topThree =
+    activeLeaderboard.length > 3 ? activeLeaderboard.sublist(0, 3) : activeLeaderboard;
+    final List<LeaderboardItem> restOfList =
+    activeLeaderboard.length > 3 ? activeLeaderboard.sublist(3) : [];
+
     return Scaffold(
-      backgroundColor: PrimaryColors.dullGreen,
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        leadingWidth: 300,
-        backgroundColor: PrimaryColors.logoGreen,
-        leading: Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: Text(
-              "${_isCalorie ? "Calorie Points" : "Carbon Saved"} LeaderBoard",
-              style: GoogleFonts.aBeeZee(
-                  fontSize: 18,
-                  color: Colors.black,
-                  fontStyle: FontStyle.italic),
+        centerTitle: true,
+        backgroundColor: PrimaryColors.darkGreen,
+        foregroundColor: Colors.white,
+        title: Text(
+          "Leaderboard",
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
+      ),
+      body: Column(
+        children: [
+          // NEW: A segmented control for switching leaderboards.
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            color: PrimaryColors.darkGreen,
+            child: SegmentedButton<LeaderboardType>(
+              segments: const [
+                ButtonSegment(
+                    value: LeaderboardType.calories,
+                    label: Text('Calories'),
+                    icon: Icon(Icons.local_fire_department)),
+                ButtonSegment(
+                    value: LeaderboardType.carbon,
+                    label: Text('Carbon'),
+                    icon: Icon(Icons.eco)),
+              ],
+              selected: {_selectedType},
+              onSelectionChanged: (Set<LeaderboardType> newSelection) {
+                setState(() {
+                  _selectedType = newSelection.first;
+                });
+              },
+              style: SegmentedButton.styleFrom(
+                backgroundColor: PrimaryColors.dullGreen,
+                foregroundColor: Colors.white,
+                selectedForegroundColor: Colors.white,
+                selectedBackgroundColor: PrimaryColors.brightGreen,
+              ),
             ),
           ),
-        ),
-        actions: [
-          IconButton(
-              onPressed: _toggleLeaderBoard,
-              icon: const Icon(
-                Icons.swap_horiz_outlined,
-                size: 35,
-              ))
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-        child: SizedBox.expand(
-          child: ListView.builder(
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            itemCount: _isCalorie
-                ? caloriesleaderBoard.length
-                : carbonleaderBoard.length,
-            itemBuilder: (context, index) {
-              final LeaderboardItem currentItem;
-              final int points;
-              final Image? medal;
-              if(_isCalorie){
-                  currentItem = caloriesleaderBoard[index];
-                  points = currentItem.caloriePoint;
-                  medal = currentItem.calorieMedal;
-              }
-              else{
-                currentItem = carbonleaderBoard[index];
-                  points = currentItem.carbonPoint;
-                  medal = currentItem.carbonMedal;
-              }
-              return _buildListItem(index, currentItem,
-                  medal, points);
-            },
+          const SizedBox(height: 20),
+          // NEW: The podium section for the top 3.
+          if (topThree.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (topThree.length > 1) _buildPodiumItem(topThree[1], 2),
+                if (topThree.length > 0) _buildPodiumItem(topThree[0], 1),
+                if (topThree.length > 2) _buildPodiumItem(topThree[2], 3),
+              ],
+            ),
+          const SizedBox(height: 20),
+          const Divider(indent: 20, endIndent: 20),
+          // NEW: The ListView for ranks 4 and below.
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.only(bottom: 16),
+              itemCount: restOfList.length,
+              itemBuilder: (context, index) {
+                final user = restOfList[index];
+                // The index for ranking needs to start from 4.
+                return _buildRankListItem(index + 3, user);
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

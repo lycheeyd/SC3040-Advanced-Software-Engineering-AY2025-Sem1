@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:calowin/Pages/success_page.dart';
+import 'package:calowin/common/custom_scaffold.dart';
 import 'package:calowin/common/dualbutton_dialog.dart';
 import 'package:calowin/common/singlebutton_dialog.dart';
 import 'package:calowin/common/user_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:calowin/common/colors_and_fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../control/location.dart';
 import '../control/current_location.dart';
@@ -12,6 +14,7 @@ import 'package:http/http.dart' as http;
 import '../control/apiService.dart';
 import '../control/autocomplate_prediction.dart';
 import '../control/place_auto_complate_response.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
 
 // ignore: must_be_immutable
 class MapcalcPage extends StatefulWidget {
@@ -49,15 +52,13 @@ class _MapcalcPageState extends State<MapcalcPage> {
   String? apiMapKey;
   String? apiDirectionKey;
   String? resultMessage;
-  String? selectedLocationName; // Added to hold the name of the selected location
-  final TextEditingController _searchController = TextEditingController(); // Added controller for TextField
+  String? selectedLocationName;
+  final TextEditingController _searchController = TextEditingController();
   Map<String,dynamic>? metrics;
 
-  // to set the location passed from wellness zone
   Location? targetLocation;
-
   bool _tripStarted = false;
-  late int _currentIndex = 99;
+  int _currentIndex = -1;
 
   Marker? selectedLocationMarker;
   Marker? currentLocationMarker;
@@ -70,20 +71,78 @@ class _MapcalcPageState extends State<MapcalcPage> {
     _retrievePlacesKey();
     _retrieveMapKey();
     _retrieveDirectionsKey();
-    _initializeLocation();
-    //this is the directing from wellness zone
+  }
+
+  Future<void> _handleMapTap(LatLng tappedPoint) async {
+    try {
+      List<geocoding.Placemark> placemarks = await geocoding.placemarkFromCoordinates(
+        tappedPoint.latitude,
+        tappedPoint.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        geocoding.Placemark place = placemarks.first;
+        String locationName = place.street ?? place.name ?? 'Unnamed Location';
+
+        setState(() {
+          selectedLocation = Location(
+            name: locationName,
+            latitude: tappedPoint.latitude,
+            longitude: tappedPoint.longitude,
+          );
+          _searchController.text = locationName;
+
+          selectedLocationMarker = Marker(
+            markerId: MarkerId(tappedPoint.toString()),
+            position: tappedPoint,
+            infoWindow: InfoWindow(title: locationName),
+          );
+
+          placePredictions.clear();
+        });
+
+        _getDirections(
+          LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
+          tappedPoint,
+        );
+      }
+    } catch (e) {
+      print("Error getting location from tap: $e");
+    }
   }
 
   @override
   void didUpdateWidget(MapcalcPage oldWidget){
     super.didUpdateWidget(oldWidget);
-    if(oldWidget.targetName != widget.targetName && widget.targetName != "" && widget.targetName != null){
-      _initializeLocation();
+    if(widget.targetName != null && widget.targetName != oldWidget.targetName){
+
+      final destinationLocation = Location(
+        name: widget.targetName!,
+        latitude: widget.targetLat!,
+        longitude: widget.targetLong!,
+      );
+
+      final destinationLatLng = LatLng(destinationLocation.latitude, destinationLocation.longitude);
+
       setState(() {
-        _searchController.text = widget.targetName ?? "";
-        if(widget.targetName!=null) _handleSearch(_searchController.text);
-        targetLocation = Location(name: widget.targetName ?? "", latitude: widget.targetLat ?? 1.3521, longitude:widget.targetLong ?? 103.8198);
+        selectedLocation = destinationLocation;
+        _searchController.text = destinationLocation.name;
+        selectedLocationMarker = Marker(
+          markerId: MarkerId(destinationLocation.name),
+          position: destinationLatLng,
+          infoWindow: InfoWindow(title: destinationLocation.name),
+        );
+        placePredictions.clear();
       });
+
+      mapController.animateCamera(
+        CameraUpdate.newLatLngZoom(destinationLatLng, 15),
+      );
+
+      _getDirections(
+        LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
+        destinationLatLng,
+      );
     }
   }
 
@@ -92,9 +151,8 @@ class _MapcalcPageState extends State<MapcalcPage> {
     try {
       apiDirectionKey = await apiService.fetchApiKey('Directions API');
       setState(() {});
-      //print('API Key retrieved: $apiDirectionKey');
     } catch (e) {
-      //print("Error retrieving API Key: $e");
+      print("Error retrieving API Key: $e");
     }
   }
 
@@ -102,9 +160,8 @@ class _MapcalcPageState extends State<MapcalcPage> {
     try {
       apiKey = await apiService.fetchApiKey('Places API');
       setState(() {});
-      //print('API Key retrieved: $apiKey');
     } catch (e) {
-      //print("Error retrieving API Key: $e");
+      print("Error retrieving API Key: $e");
     }
   }
 
@@ -113,9 +170,8 @@ class _MapcalcPageState extends State<MapcalcPage> {
       apiMapKey = await apiService.fetchApiKey('Maps SDK Android API');
       print(apiMapKey);
       setState(() {});
-      //print('API Key retrieved: $apiMapKey');
     } catch (e) {
-      //print("Error retrieving API Key: $e");
+      print("Error retrieving API Key: $e");
     }
   }
 
@@ -124,7 +180,7 @@ class _MapcalcPageState extends State<MapcalcPage> {
       travelMethods = await apiService.fetchTravelMethods();
       setState(() {});
     } catch (e) {
-      //print('Error fetching travel methods: $e');
+      print('Error fetching travel methods: $e');
     }
   }
 
@@ -132,36 +188,19 @@ class _MapcalcPageState extends State<MapcalcPage> {
     try {
       await userCurrentLocation.getCurrentLocation();
       setState(() {
-        //default address 1.3521,103.8198
         currentLocationMarker = Marker(
           markerId: MarkerId('currentLocation'),
           position: LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
           infoWindow: InfoWindow(title: 'Current Location'),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen), // Set the color
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         );
       });
-      //print("Initial location: ${userCurrentLocation.name}");
-      mapController.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
-          15,
-        ),
-      );
-
     } catch (e) {
       print('Error initializing location: $e');
     }
   }
 
   void placeAutocomplete(String query) async {
-    // Uri uri = Uri.https(
-    //   "maps.googleapis.com",
-    //   'maps/api/place/autocomplete/json',
-    //   {
-    //     "input": query,
-    //     "key": apiKey!,
-    //   },
-    // );
     Uri uri = Uri.parse('https://sc3040G5-CalowinTrip.hf.space/trips/places/autocomplete?input=$query');
 
     String? response = await ApiService.fetchUrl(uri);
@@ -191,7 +230,6 @@ class _MapcalcPageState extends State<MapcalcPage> {
 
       LatLng destination = LatLng(latitude, longitude);
 
-
       mapController.animateCamera(
         CameraUpdate.newLatLng(LatLng(latitude, longitude)),
       );
@@ -203,22 +241,20 @@ class _MapcalcPageState extends State<MapcalcPage> {
           infoWindow: InfoWindow(title: json['result']['name']),
         );
         placePredictions.clear();
-        selectedLocationName = json['result']['name']; // Store the selected location name
-        _searchController.text = selectedLocationName!; // Update the TextField with the selected location name
+        selectedLocationName = json['result']['name'];
+        _searchController.text = selectedLocationName!;
         selectedLocation = Location(
           name: selectedLocationName!,
           latitude: latitude,
           longitude: longitude,
-        ); // Create a Location object
+        );
       });
       FocusScope.of(context).unfocus();
       _getDirections(
-        //default address 1.3521,103.8198
         LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
         destination,
       );
     }
-
   }
 
   void _showSelectionWarning() {
@@ -229,6 +265,29 @@ class _MapcalcPageState extends State<MapcalcPage> {
           title: "Select Location and Travel Method",
           content: "Please select both a location and a travel method before starting the trip.",
           onConfirm: Navigator.of(context).pop,
+        );
+      },
+    );
+  }
+
+  // NEW: A reusable function to show a loading spinner dialog.
+  void _showLoadingDialog({String message = "Loading..."}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(width: 20),
+                Text(message),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -264,16 +323,12 @@ class _MapcalcPageState extends State<MapcalcPage> {
     return points;
   }
 
-
   Future<void> _getDirections(LatLng origin, LatLng destination) async {
     final String baseUrl = "https://sc3040G5-CalowinTrip.hf.space";
-
-    // CONSTRUCT THE URL TO YOUR OWN BACKEND
     final directionsUrl = Uri.parse(
         '$baseUrl/trips/directions?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}'
     );
 
-    // The API key is no longer exposed here. The call is now safe.
     final response = await http.get(directionsUrl);
 
     if (response.statusCode == 200) {
@@ -282,19 +337,17 @@ class _MapcalcPageState extends State<MapcalcPage> {
       polylineCoordinates = _decodePolyline(polylinePoints);
 
       setState(() {
-        // Create the thicker polyline for the border
         routePolylineBorder = Polyline(
           polylineId: PolylineId("routeBorder"),
-          color: Colors.black, // Border color
-          width: 8, // Border thickness (should be larger)
+          color: Color.fromARGB(255, 33, 87, 168),
+          width: 8,
           points: polylineCoordinates,
         );
 
-        // Create the main polyline for the inner color
         routePolylineMain = Polyline(
           polylineId: PolylineId("routeMain"),
-          color: Colors.blue, // Main line color
-          width: 5, // Main line thickness (should be smaller)
+          color: Color.fromARGB(255, 69, 146, 255),
+          width: 5,
           points: polylineCoordinates,
         );
       });
@@ -305,54 +358,43 @@ class _MapcalcPageState extends State<MapcalcPage> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    _initializeLocation();
+    mapController.animateCamera(
+      CameraUpdate.newLatLngZoom(
+        LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
+        15,
+      ),
+    );
   }
 
   void _handleSearch(String query) {
-    placeAutocomplete(query);
-    //print("Now searching for: $query");
-  }
-
-  void _retrieveMerics() async {
-    // setState(() {
-    //   metrics = {};
-    //   metrics!['caloriesBurnt'] = 300;
-    //   metrics!['carbonSaved'] = 20;
-    //   metrics!['distance'] = 3.2;
-    // });
-    //call and retrive metrics from backend
-    if(selectedLocation != null && selectedMethod != null){
-      try {
-        metrics = await apiService.retrieveMetrics(selectedLocation!, selectedMethod!, profile.getUserID(), userCurrentLocation);
-        //print('Metrics received: $metrics');
-        setState(() {
-          resultMessage =
-          'Calories burned: ${metrics!['caloriesBurnt']}, Carbon saved: ${metrics!['carbonSaved']} kg, Distance: ${metrics!['distance'].toStringAsFixed(2)} km';
-          _tripStarted = true;
-        });
-      } catch (e) {
-        print('Error starting trip: $e');
-      }
+    if (query.isNotEmpty) {
+      placeAutocomplete(query);
     } else {
-      _showSelectionWarning();
+      setState(() {
+        placePredictions.clear();
+      });
     }
   }
 
+  // MODIFIED: _startTrip now shows a loading spinner.
   Future<void> _startTrip() async {
-
-    if(selectedLocation != null && selectedMethod != null){
+    if (selectedLocation != null && selectedMethod != null) {
+      _showLoadingDialog(message: "Starting Trip..."); // Show spinner
       try {
         metrics = await apiService.startTrip(selectedLocation!, selectedMethod!, profile.getUserID(), userCurrentLocation);
-        //print('Metrics received: $metrics');
+        if (mounted) Navigator.of(context).pop(); // Hide spinner
 
-        if(metrics == null) {throw("Metrics not retrieved");}
-        else {
+        if (metrics == null) {
+          throw("Metrics not retrieved");
+        } else {
           setState(() {
-            resultMessage =
-            'Calories burned: ${metrics!['caloriesBurnt']}, Carbon saved: ${metrics!['carbonSaved']} g, Distance: ${metrics!['distance'].toStringAsFixed(2)} km';
+            resultMessage = 'Calories burned: ${metrics!['caloriesBurnt']}, Carbon saved: ${metrics!['carbonSaved']} g, Distance: ${metrics!['distance'].toStringAsFixed(2)} km';
             _tripStarted = true;
           });
         }
       } catch (e) {
+        if (mounted) Navigator.of(context).pop(); // Hide spinner on error
         print('Error starting trip: $e');
       }
     } else {
@@ -360,44 +402,32 @@ class _MapcalcPageState extends State<MapcalcPage> {
     }
   }
 
-  // This method will be called when the user selects a travel method
-  Future<void> _retrieveMetrics() async {// Update with the actual user ID
-
-    // Ensure both location and method are selected
+  Future<void> _retrieveMetrics() async {
     if (selectedLocation != null && selectedMethod != null) {
       try {
-        // Call the API service to send data to the backend
         metrics = await apiService.retrieveMetrics(
             selectedLocation!,
-            selectedMethod!,  // The travel method being selected
+            selectedMethod!,
             profile.getUserID(),
             userCurrentLocation
         );
-
-        // Handle the response and display metrics
         if (metrics != null) {
           setState(() {
-            resultMessage =
-            'Calories burned: ${metrics?['caloriesBurnt']}, Carbon saved: ${metrics?['carbonSaved']} kg, Distance: ${metrics?['distance'].toStringAsFixed(2)} km';
-            _tripStarted = false; // No need to start a trip for this calculation
+            resultMessage = 'Calories burned: ${metrics?['caloriesBurnt']}, Carbon saved: ${metrics?['carbonSaved']} kg, Distance: ${metrics?['distance'].toStringAsFixed(2)} km';
+            _tripStarted = false;
           });
         } else {
-          // Handle case if no metrics were returned
           throw Exception('Failed to retrieve metrics');
         }
       } catch (e) {
         print('Error retrieving metrics: $e');
       }
-    } else {
-      _showSelectionWarning(); // Show a warning if no location or method is selected
     }
   }
 
-
   void _handleCancel() {
     setState(() {
-      _resetState(); // Reset state when coming back to home screen
-
+      _resetState();
     });
   }
 
@@ -409,8 +439,8 @@ class _MapcalcPageState extends State<MapcalcPage> {
             title: 'End the trip and earn your rewards?',
             content: "We don't encourage cheating!",
             onConfirm: () {
-              Navigator.of(context).pop(); // Close the pop-up
-              _navigateToAchievement(); // Go to achievement screen
+              Navigator.of(context).pop();
+              _navigateToAchievement();
             },
             onCancel: Navigator.of(context).pop
         );
@@ -418,44 +448,49 @@ class _MapcalcPageState extends State<MapcalcPage> {
     );
   }
 
+  // MODIFIED: _navigateToAchievement now shows a loading spinner.
   void _navigateToAchievement() async {
     if (selectedLocation != null &&
         selectedMethod != null &&
         userCurrentLocation != null) {
+      _showLoadingDialog(message: "Ending Trip..."); // Show spinner
+
       final distance = metrics?['distance'];
       final caloriesBurnt = metrics?['caloriesBurnt'];
       final carbonSaved = metrics?['carbonSaved'];
 
       try {
-        // Send trip metrics to the backend
-        await apiService.addTripMetrics(carbonSaved, caloriesBurnt,profile.getUserID());
-        //print('Trip metrics sent successfully.');
-        if(mounted)
-        {FocusScope.of(context).unfocus();
-        // Navigate to AchievementScreen and pass metrics
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SuccessPage(
-              userId: profile.getUserID(),
-              caloriesBurnt: caloriesBurnt,
-              carbonSaved: carbonSaved,
-              distance: distance,
-              destination: selectedLocation!.name,
-              currentLocation: "Gy",
-              tripMethod: selectedMethod!,
+        await apiService.addTripMetrics(carbonSaved, caloriesBurnt, profile.getUserID());
+        if(mounted) {
+          Navigator.of(context).pop(); // Hide spinner
+          FocusScope.of(context).unfocus();
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SuccessPage(
+                userId: profile.getUserID(),
+                caloriesBurnt: caloriesBurnt,
+                carbonSaved: carbonSaved,
+                distance: distance,
+                destination: selectedLocation!.name,
+                currentLocation: "Gy",
+                tripMethod: selectedMethod!,
+              ),
             ),
-          ),
-        ).then((_) {
-          _resetState(); // Reset state when coming back to home screen
-        });}
+          ).then((_) {
+            _resetState();
+          });
+        }
       } catch (e) {
+        if (mounted) Navigator.of(context).pop(); // Hide spinner on error
         print('Error sending trip metrics: $e');
       }
     }
   }
 
   void _onItemTapped(int index) {
+    if (_tripStarted) return;
     setState(() {
       _currentIndex = index;
       selectedMethod = travelMethods[index];
@@ -463,227 +498,274 @@ class _MapcalcPageState extends State<MapcalcPage> {
     });
   }
 
-//default address 1.3521,103.8198
   void _resetState() {
     setState(() {
       widget.targetName = null;
       metrics = null;
-      _tripStarted = false; // Reset trip state
-      selectedLocation = null; // Reset location
-      selectedMethod = null; // Reset method
-      _currentIndex = -1; // Reset transport method selection
-      resultMessage = null; // Clear result message
-      _searchController.clear(); // Clear the search field
+      _tripStarted = false;
+      selectedLocation = null;
+      selectedMethod = null;
+      _currentIndex = -1;
+      resultMessage = null;
+      _searchController.clear();
       selectedLocationMarker = null;
-      polylineCoordinates = [];
+      polylineCoordinates.clear();
       routePolylineBorder = null;
       routePolylineMain = null;
-      mapController.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
-          15,
-        ),
-      );
+      placePredictions.clear();
+      if(mapController != null) {
+        mapController.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
+            15,
+          ),
+        );
+      }
     });
-
-    FocusScope.of(context).unfocus(); // Unfocus the search field
+    FocusScope.of(context).unfocus();
   }
 
   Widget _transportIconBuilder(IconData icon, String title, int index) {
+    bool isSelected = _currentIndex == index;
+    return GestureDetector(
+      onTap: () => _onItemTapped(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? PrimaryColors.darkGreen : Colors.grey[200],
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            )
+          ] : [],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.white : Colors.black,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? Colors.white : Colors.black),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetricsDisplay() {
+    if (metrics == null) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            )
+          ]
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _metricItem(Icons.local_fire_department, "${metrics!['caloriesBurnt']}", "kcal", Colors.orange),
+          _metricItem(Icons.eco, "${metrics!['carbonSaved']}", "g Saved", Colors.green),
+          _metricItem(Icons.straighten, "${metrics!['distance'].toStringAsFixed(2)}", "km", Colors.blue),
+        ],
+      ),
+    );
+  }
+
+  Widget _metricItem(IconData icon, String value, String unit, Color color) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        IconButton(
-          onPressed: () => _onItemTapped(index),
-          icon: Icon(
-            icon,
-            color: _currentIndex == index ? Colors.black : Colors.grey.shade700,
-          ),
-        ),
-        Text(
-          title,
-          style: TextStyle(
-              fontSize: 10,
-              color: _currentIndex == index ? Colors.black : Colors.grey.shade700),
-        ),
+        Icon(icon, color: color, size: 28),
+        const SizedBox(height: 4),
+        Text(value, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(unit, style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: PrimaryColors.dullGreen,
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _handleSearch,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-                    labelText: 'Search for a location',
-                    prefixIcon: const Icon(Icons.search),
-                  ),
-                  enabled: !_tripStarted, // Disable search field if trip has started
-
-                ),
+    return CustomScaffold(
+      body: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          children: [
+            GoogleMap(
+              onTap:_handleMapTap,
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.3),
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
+              mapType: MapType.terrain,
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
+                zoom: 15,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _transportIconBuilder(Icons.directions_walk, "Walk", 0),
-                  _transportIconBuilder(Icons.pedal_bike, "Bicycle", 1),
-                  _transportIconBuilder(Icons.directions_bus, "Bus", 2),
-                  _transportIconBuilder(Icons.directions_car, "Car", 3),
-                ],
-              ),
-              const SizedBox(height: 15),
-              SizedBox(
-                height: 400,
-                child: Stack(
-                  children: [
-                    GoogleMap(
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: true,
-                      mapType: MapType.terrain,
-                      onMapCreated: _onMapCreated,
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(userCurrentLocation.latitude ?? 1.3521, userCurrentLocation.longitude ?? 103.8198),
-                        zoom: 15,
-                      ),
-                      markers: {
-                        if (currentLocationMarker != null) currentLocationMarker!,
-                        if (selectedLocationMarker != null) selectedLocationMarker!,
-                      },
-                      polylines: {
-                        if (routePolylineBorder != null) routePolylineBorder!,
-                        if (routePolylineMain != null) routePolylineMain!,
-                      },
-                    ),
-                    Align(
-                        alignment: Alignment.topLeft,
-                        child: IconButton(onPressed: _initializeLocation, icon: Icon(Icons.refresh),iconSize: 30,)
-                    ),
-                    if(metrics != null && _currentIndex<4 && _currentIndex >=0) Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: Color.fromARGB(149, 90, 232, 125),
-                                border: Border.all()
-                            ),
-                            height: 150,
-                            width: 140,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Calories burned:',style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500)),
-                                Text("${metrics!['caloriesBurnt']} kcal",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15)),
-                                const SizedBox(height: 7),
-                                Text("Carbon saved:",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500)),
-                                Text("${metrics!['carbonSaved']} g",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15)),
-                                const SizedBox(height: 7),
-                                Text("Distance:",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500)),
-                                Text("${metrics!['distance'].toStringAsFixed(2)} km",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15))
-                              ],
-                            ),
-                          ),
-                        )
-                    )
-                  ],
-                ),
-              ),
-              const SizedBox(height: 15),
-              if (_tripStarted)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    SizedBox(
-                      height: 40,
-                      width: 150,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          foregroundColor: Colors.white,
-                          backgroundColor: Colors.red,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.circular(10), // Rounded corners
-                          ),
-                        ),
-                        onPressed: _handleCancel,
-                        child: const Text("Cancel Trip"),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 40,
-                      width: 150,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          foregroundColor: Colors.white,
-                          backgroundColor: PrimaryColors.brightGreen,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.circular(10), // Rounded corners
-                          ),
-                        ),
-                        onPressed: _endTrip,
-                        child: const Text("End Trip"),
-                      ),
-                    ),
-                  ],
-                )
-              else
-                SizedBox(
-                  height: 40,
-                  width: 170,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      foregroundColor: Colors.white,
-                      backgroundColor: PrimaryColors.darkGreen,
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                        BorderRadius.circular(10), // Rounded corners
-                      ),
-                    ),
-                    onPressed: _startTrip,
-                    child: const Text("Start"),
-                  ),
-                ),
-            ],
-          ),
-
-          if (placePredictions.isNotEmpty)
-            Positioned(
-              top: 100,
-              left: 20,
-              right: 20,
-              child: Container(
-                padding: const EdgeInsets.all(8.0),
-                color: Colors.white,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: placePredictions.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(placePredictions[index].description ?? ''),
-                      onTap: () {
-                        getPlaceDetails(placePredictions[index].placeId!);
-                      },
-                    );
-                  },
-                ),
-              ),
+              markers: {
+                if (currentLocationMarker != null) currentLocationMarker!,
+                if (selectedLocationMarker != null) selectedLocationMarker!,
+              },
+              polylines: {
+                if (routePolylineBorder != null) routePolylineBorder!,
+                if (routePolylineMain != null) routePolylineMain!,
+              },
             ),
-        ],
+            if (placePredictions.isNotEmpty)
+              SafeArea(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  color: Colors.white.withOpacity(0.95),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    itemCount: placePredictions.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(placePredictions[index].description ?? ''),
+                        onTap: () {
+                          getPlaceDetails(placePredictions[index].placeId!);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            DraggableScrollableSheet(
+              initialChildSize: 0.3,
+              minChildSize: 0.15,
+              maxChildSize: 0.6,
+              builder: (BuildContext context, ScrollController scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(16.0),
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _searchController,
+                        onChanged: _handleSearch,
+                        enabled: !_tripStarted,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          labelText: 'Search for a location',
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(icon: const Icon(Icons.clear), onPressed: _resetState)
+                              : null,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _transportIconBuilder(Icons.directions_walk, "Walk", 0),
+                            const SizedBox(width: 8),
+                            _transportIconBuilder(Icons.pedal_bike, "Bicycle", 1),
+                            const SizedBox(width: 8),
+                            _transportIconBuilder(Icons.directions_bus, "Bus", 2),
+                            const SizedBox(width: 8),
+                            _transportIconBuilder(Icons.directions_car, "Car", 3),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      if (metrics != null) _buildMetricsDisplay(),
+                      const SizedBox(height: 20),
+                      if (_tripStarted)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              onPressed: _handleCancel,
+                              icon: const Icon(Icons.cancel),
+                              label: const Text("Cancel Trip"),
+                            ),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: PrimaryColors.brightGreen,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              onPressed: _endTrip,
+                              icon: const Icon(Icons.flag),
+                              label: const Text("End Trip"),
+                            ),
+                          ],
+                        )
+                      else
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: PrimaryColors.darkGreen,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onPressed: (selectedLocation != null && selectedMethod != null) ? _startTrip : null,
+                            child: Text("Start Trip", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

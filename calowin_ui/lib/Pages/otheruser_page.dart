@@ -2,6 +2,7 @@ import 'package:calowin/common/colors_and_fonts.dart';
 import 'package:calowin/common/dualbutton_dialog.dart';
 import 'package:calowin/common/singlebutton_dialog.dart';
 import 'package:calowin/control/friends_controller.dart';
+import 'package:flutter/foundation.dart';
 import 'package:calowin/control/user_retriever.dart';
 import 'package:calowin/control/page_navigator.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,26 +22,24 @@ class OtheruserPage extends StatefulWidget {
 }
 
 class _OtheruserPageState extends State<OtheruserPage> {
-  //define retrieve logic here
   late UserProfile _selfProfileNotifier;
   late String? _otherUserID;
   late UserProfile _profile = UserProfile(name: "NA", userID: "NA");
   late List<Image?> _badges = [];
   late UserStatus _userStatus;
-  bool _userFound = false;
+
+  bool? _userFound;
+  bool _isLoading = true;
+
   final UserRetriever _userRetriever = UserRetriever();
   final FriendsController _friendsController = FriendsController();
 
-  //Need to set the state of this user, such as requested or friend or pending for approve etc
-  //currently only taking in the userid for testing
   @override
   void initState() {
-    super.initState(); //change this to retrieve from database
+    super.initState();
     _selfProfileNotifier = widget.profile;
     _otherUserID = widget.otherUserID;
     getUserProfile(_selfProfileNotifier.getUserID(),_otherUserID);
-    _userStatus = _profile.getStatus() ?? UserStatus.STRANGER;
-    //print(_userStatus);
   }
 
   @override
@@ -49,553 +48,412 @@ class _OtheruserPageState extends State<OtheruserPage> {
     _selfProfileNotifier = Provider.of<UserProfile>(context,listen: false);
   }
 
-  // to check for any change in the userid passed into this page
   @override
   void didUpdateWidget(OtheruserPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.otherUserID != oldWidget.otherUserID) {
       _otherUserID = widget.otherUserID;
+      setState(() {
+        _isLoading = true;
+        _userFound = null;
+      });
       getUserProfile(_selfProfileNotifier.getUserID(),_otherUserID);
-      //print(_userStatus);
-      //print("User ID passed: $_selfProfileNotifier.getUserID(), OtherUserID passed: $_otherUserID");
-      // Fetch the new profile
     }
   }
 
-  //the setting user's state can be handled here
   Future<void> getUserProfile(String? user, String? otherUser) async {
     if(user == null  || otherUser == null) {
-      //print("user id not passed");
       if(mounted){
         setState(() {
-        _userFound = false;
-    });
+          _isLoading = false;
+          _userFound = false;
+        });
+      }
+      return;
     }
-    return;
-    }
-    _profile = await _userRetriever.retrieveFriend(user, otherUser);
-    //print("Profile of : ${_profile.getEmail()}");
-    setState(() {
-      _profile = _profile;
+
+    try {
+      _profile = await _userRetriever.retrieveFriend(user, otherUser);
+      if (_profile.getUserID() == "Error retrieving user" || _profile.getUserID() == "Unable to connect to server") {
+        setState(() {
+          _userFound = false;
+        });
+        return;
+      }
       _userStatus = _profile.getStatus() ?? UserStatus.STRANGER;
-      if(_profile.getBadges().isNotEmpty)
-      {
-        _badges = [];
+      _badges = [];
+      if(_profile.getBadges().isNotEmpty) {
         for (int i = 0; i < _profile.getBadges().length; i++) {
           if (Words2widgetConverter.convert(_profile.getBadges()[i]) != null) {
-            _badges
-                .add(Words2widgetConverter.convert(_profile.getBadges()[i]));
+            _badges.add(Words2widgetConverter.convert(_profile.getBadges()[i]));
           }
         }
-        }
-      _userFound = true;
-    });
+      }
+      setState(() {
+        _userFound = true;
+      });
+    } finally {
+      if(mounted){
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _handleBack() {
     final pageNavigatorState =
-        context.findAncestorStateOfType<PageNavigatorState>();
-    //change here
+    context.findAncestorStateOfType<PageNavigatorState>();
     if (pageNavigatorState != null) {
       FocusScope.of(context).unfocus();
-      pageNavigatorState.navigateToPage(3); // Navigate to AddFriendsPage
+      pageNavigatorState.navigateToPage(3);
     }
   }
 
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 20),
+                Text("Please wait..."),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // MODIFIED: Each function now handles its own loading and state update for immediate UI feedback.
   Future<void> _handleRequestFriend() async {
-    bool success = await _friendsController.requestFriend(_selfProfileNotifier.getUserID(),_otherUserID!);
-    setState(() {
-      if(success){
-        getUserProfile(_selfProfileNotifier.getUserID(), _otherUserID);
-        showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Success", content: "Request sent successfully", onConfirm: ()=>Navigator.pop(context));
-            }); 
-        _userStatus = UserStatus.REQUESTSENT;
-        _selfProfileNotifier.updateProfile(); //notify other pages that user relationships has been changed
+    _showLoadingDialog();
+    bool success = await _friendsController.requestFriend(_selfProfileNotifier.getUserID(), _otherUserID!);
+    if (mounted) {
+      Navigator.of(context).pop(); // Hide spinner
+      if (success) {
+        setState(() => _userStatus = UserStatus.REQUESTSENT); // Optimistic UI update
+        _selfProfileNotifier.updateProfile();
+      } else {
+        showDialog(context: context, builder: (_) => SinglebuttonDialog(title: "Failed", content: "Failed to send request.", onConfirm: () => Navigator.pop(context)));
       }
-      else{
-        showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Failed", content: "Failed to send request, please try again later", onConfirm: ()=>Navigator.pop(context));
-            });
-      }
-    });
+    }
   }
 
   Future<void> _handleUnrequestFriend() async {
-    bool success = await _friendsController.cancelRequest(_selfProfileNotifier.getUserID(),_otherUserID!);
-    setState(() {
-      if(success){
-        getUserProfile(_selfProfileNotifier.getUserID(), _otherUserID);
-        showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Success", content: "Request cancelled successfully", onConfirm: ()=>Navigator.pop(context));
-            }); 
-        _userStatus = UserStatus.REQUESTSENT;
-        _selfProfileNotifier.updateProfile(); //notify other pages that user relationships has been changed
+    _showLoadingDialog();
+    bool success = await _friendsController.cancelRequest(_selfProfileNotifier.getUserID(), _otherUserID!);
+    if (mounted) {
+      Navigator.of(context).pop();
+      if (success) {
+        setState(() => _userStatus = UserStatus.STRANGER); // Optimistic UI update
+        _selfProfileNotifier.updateProfile();
+      } else {
+        showDialog(context: context, builder: (_) => SinglebuttonDialog(title: "Failed", content: "Failed to cancel request.", onConfirm: () => Navigator.pop(context)));
       }
-      else{
-        showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Failed", content: "Failed to cancel request, please try again later", onConfirm: ()=>Navigator.pop(context));
-            });
-      }
-    });
+    }
   }
 
   Future<void> _handleRemoveFriend() async {
-    bool success = await _friendsController.removeFriend(_selfProfileNotifier.getUserID(),_otherUserID!);
-    setState(() {
-      if(success){
-        getUserProfile(_selfProfileNotifier.getUserID(), _otherUserID);
-        showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Success", content: "Friend removed successfully", onConfirm: ()=>Navigator.pop(context));
-            }); 
-        _userStatus = UserStatus.STRANGER;
-        _selfProfileNotifier.updateProfile(); //notify other pages that user relationships has been changed
+    _showLoadingDialog();
+    bool success = await _friendsController.removeFriend(_selfProfileNotifier.getUserID(), _otherUserID!);
+    if (mounted) {
+      Navigator.of(context).pop();
+      if (success) {
+        setState(() => _userStatus = UserStatus.STRANGER); // Optimistic UI update
+        _selfProfileNotifier.updateProfile();
+      } else {
+        showDialog(context: context, builder: (_) => SinglebuttonDialog(title: "Failed", content: "Failed to remove friend.", onConfirm: () => Navigator.pop(context)));
       }
-      else{
-        showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Failed", content: "Failed to remove friend, please try again later", onConfirm: ()=>Navigator.pop(context));
-            });
-      }
-    });
+    }
   }
 
   Future<void> _handleAccept() async {
-    bool success = await _friendsController.acceptFriend(_selfProfileNotifier.getUserID(),_otherUserID!);
-    setState(() {
-      if(success){
-        getUserProfile(_selfProfileNotifier.getUserID(), _otherUserID);
-        showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Success", content: "Friend added successfully", onConfirm: ()=>Navigator.pop(context));
-            }); 
-        _userStatus = UserStatus.FRIEND;
-        _selfProfileNotifier.updateProfile(); //notify other pages that user relationships has been changed
+    _showLoadingDialog();
+    bool success = await _friendsController.acceptFriend(_selfProfileNotifier.getUserID(), _otherUserID!);
+    if (mounted) {
+      Navigator.of(context).pop();
+      if (success) {
+        setState(() => _userStatus = UserStatus.FRIEND); // Optimistic UI update
+        _selfProfileNotifier.updateProfile();
+      } else {
+        showDialog(context: context, builder: (_) => SinglebuttonDialog(title: "Failed", content: "Failed to accept request.", onConfirm: () => Navigator.pop(context)));
       }
-      else{
-        showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Failed", content: "Failed to add friend, please try again later", onConfirm: ()=>Navigator.pop(context));
-            });
-      }
-    });
+    }
   }
 
   Future<void> _handleReject() async {
-    bool success = await _friendsController.rejectFriend(_selfProfileNotifier.getUserID(),_otherUserID!);
-    setState(() {
-      if(success){
-        getUserProfile(_selfProfileNotifier.getUserID(), _otherUserID);
-        showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Success", content: "Request rejected successfully", onConfirm: ()=>Navigator.pop(context));
-            }); 
-        _userStatus = UserStatus.STRANGER;
-        _selfProfileNotifier.updateProfile(); //notify other pages that user relationships has been changed
+    _showLoadingDialog();
+    bool success = await _friendsController.rejectFriend(_selfProfileNotifier.getUserID(), _otherUserID!);
+    if (mounted) {
+      Navigator.of(context).pop();
+      if (success) {
+        setState(() => _userStatus = UserStatus.STRANGER); // Optimistic UI update
+        _selfProfileNotifier.updateProfile();
+      } else {
+        showDialog(context: context, builder: (_) => SinglebuttonDialog(title: "Failed", content: "Failed to reject request.", onConfirm: () => Navigator.pop(context)));
       }
-      else{
-        showDialog(
-          context: context, 
-          builder: (BuildContext context) {
-            return SinglebuttonDialog(title: "Failed", content: "Failed to reject request, please try again later", onConfirm: ()=>Navigator.pop(context));
-            });
-      }
-    });
+    }
   }
 
-  Widget fieldBuilder(String title, String content) {
-    return SizedBox(
-      height: 47,
-      width: 400,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                SizedBox(
-                  width: 100,
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                        fontStyle: FontStyle.italic, color: Colors.black),
-                  ),
-                ),
-                const SizedBox(
-                  width: 30,
-                ),
-                SizedBox(
-                    width: 200,
-                    child: Text(
-                      content,
-                      style: const TextStyle(color: Colors.black),
-                    )),
-              ],
-            ),
-            Divider(
-              thickness: 0.3,
-              color: Colors.grey.shade600,
-            )
-          ],
-        ),
+  Widget _buildStatTile(String title, String value, String unit) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: GoogleFonts.poppins(fontSize: 15)),
+          Text(
+            "$value $unit",
+            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }
 
-  Widget fieldInContainerBuilder(String title, String content, String unit) {
-    return SizedBox(
-      height: 35,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildActionButtons() {
+    switch (_userStatus) {
+      case UserStatus.FRIEND:
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.person_remove),
+            onPressed: () => showDialog(
+                context: context,
+                builder: (BuildContext context) => DualbuttonDialog(
+                    title: "Remove Friend?",
+                    content: "You will not see them on your leaderboard anymore.",
+                    onConfirm: () {
+                      Navigator.of(context).pop();
+                      _handleRemoveFriend();
+                    },
+                    onCancel: () => Navigator.of(context).pop)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            label: const Text("Remove Friend", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        );
+
+      case UserStatus.STRANGER:
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+              icon: const Icon(Icons.person_add),
+              onPressed: _handleRequestFriend,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: PrimaryColors.darkGreen,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              label: const Text("Send Friend Request", style: TextStyle(fontWeight: FontWeight.bold))),
+        );
+
+      case UserStatus.REQUESTRECIEVED:
+        return Row(
           children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: SizedBox(
-                child: Text(
-                  textAlign: TextAlign.start,
-                  title,
-                  style: const TextStyle(
-                      fontStyle: FontStyle.italic, color: Colors.black),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _handleReject,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
+                child: const Text("Reject", style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                  child: Text(
-                textAlign: TextAlign.right,
-                "$content $unit",
-                style: const TextStyle(color: Colors.black),
-              )),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _handleAccept,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: PrimaryColors.brightGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text("Accept", style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
             ),
           ],
-        ),
-      ),
-    );
+        );
+
+      case UserStatus.REQUESTSENT:
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+              icon: const Icon(Icons.undo),
+              onPressed: _handleUnrequestFriend,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              label: const Text("Cancel Request", style: TextStyle(fontWeight: FontWeight.bold))),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget getPage() {
-      switch (_userStatus) {
-        case UserStatus.FRIEND:
-          return Align(
-            alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              width: 150,
-              height: 40,
-              child: ElevatedButton(
-                  onPressed: () => showDialog(
-                      context: context,
-                      builder: (BuildContext context) => DualbuttonDialog(
-                          title: "Remove Friend?",
-                          content:
-                              "You will not see him on your leaderboard anymore",
-                          onConfirm: () {
-                            Navigator.of(context).pop();
-                            _handleRemoveFriend();
-                          },
-                          onCancel: Navigator.of(context).pop)),
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: Colors.red,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(10), // Rounded corners
-                    ),
-                  ),
-                  child: Text(
-                    "Remove Friend",
-                    style:
-                        GoogleFonts.roboto(fontSize: 16, color: Colors.white),
-                  )),
-            ),
-          );
-
-        case UserStatus.STRANGER:
-          return Align(
-            alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              height: 40,
-              width: 150,
-              child: ElevatedButton(
-                  onPressed: _handleRequestFriend,
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: PrimaryColors.darkGreen,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(10), // Rounded corners
-                    ),
-                  ),
-                  child: Text(
-                    "Request",
-                    style:
-                        GoogleFonts.roboto(fontSize: 16, color: Colors.white),
-                  )),
-            ),
-          );
-
-        case UserStatus.REQUESTRECIEVED:
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: SizedBox(
-                  width: 150,
-                  height: 40,
-                  child: ElevatedButton(
-                      onPressed: _handleReject,
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Rounded corners
-                        ),
-                      ),
-                      child: Text(
-                        "Reject",
-                        style: GoogleFonts.roboto(
-                            fontSize: 16, color: Colors.white),
-                      )),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: SizedBox(
-                  width: 150,
-                  height: 40,
-                  child: ElevatedButton(
-                      onPressed: _handleAccept,
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: PrimaryColors.brightGreen,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Rounded corners
-                        ),
-                      ),
-                      child: Text(
-                        "Accept",
-                        style: GoogleFonts.roboto(
-                            fontSize: 16, color: Colors.white),
-                      )),
-                ),
-              )
-            ],
-          );
-        case UserStatus.REQUESTSENT:
-          return Align(
-            alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              height: 40,
-              width: 150,
-              child: ElevatedButton(
-                  onPressed: _handleUnrequestFriend,
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: PrimaryColors.darkGreen,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(10), // Rounded corners
-                    ),
-                  ),
-                  child: Text(
-                    "Requested",
-                    style:
-                        GoogleFonts.roboto(fontSize: 16, color: Colors.white),
-                  )),
-            ),
-          ); // Replace with actual user ID logic
-        default:
-          return const Center(child: Text('Something went wrong'));
-      }
-    }
-
     return Scaffold(
-      backgroundColor: PrimaryColors.dullGreen,
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: PrimaryColors.dullGreen,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _handleBack,
         ),
+        backgroundColor: PrimaryColors.dullGreen,
+        foregroundColor: Colors.white,
       ),
-      body: _userFound
-          ? Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-              child: Column(
-                children: [
-                  fieldBuilder("Name", _profile.getName()),
-                  fieldBuilder("User ID", _profile.getUserID()),
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                    child: SizedBox(
-                      height: 120,
-                      width: 400,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _userFound == false
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.person_off, size: 80, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              "User Not Found",
+              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      )
+          : Column(
+        children: [
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(top: 20, bottom: 20),
+                  decoration: const BoxDecoration(
+                    color: PrimaryColors.dullGreen,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      const CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.white,
+                        child: Icon(Icons.person, size: 60, color: PrimaryColors.dullGreen),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _profile.getName(),
+                        style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      Text(
+                        "User ID: ${_profile.getUserID()}",
+                        style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Align(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              textAlign: TextAlign.left,
-                              "Bio",
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 18),
-                            ),
+                          Text("Bio", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 8),
+                          Text(
+                            _profile.getBio().isNotEmpty ? _profile.getBio() : "No bio available.",
+                            style: GoogleFonts.poppins(fontSize: 15, color: Colors.black54, height: 1.5),
                           ),
-                          Container(
-                            height: 80,
-                            width: 400,
-                            decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 233, 243, 233),
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 20),
-                              child: Text(_profile.getBio(),
-                                  style: PrimaryFonts.systemFont.copyWith(
-                                      color: Colors.black, fontSize: 14)),
-                            ),
-                          )
                         ],
                       ),
                     ),
                   ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                    child: SizedBox(
-                      height: 130,
-                      width: 400,
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                          child: Text("Stats", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+                        ),
+                        _buildStatTile("Carbon Saved", _profile.getCarbonSaved().toString(), "g"),
+                        const Divider(indent: 16, endIndent: 16, height: 1),
+                        _buildStatTile("Calories Burned", _profile.getCalorieBurn().toString(), "kcal"),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Align(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              textAlign: TextAlign.left,
-                              "Stats",
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 18),
-                            ),
+                          Text("Badges", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 12),
+                          _badges.isEmpty
+                              ? const Text("No badges earned yet.", style: TextStyle(color: Colors.black54))
+                              : Wrap(
+                            spacing: 16.0,
+                            runSpacing: 16.0,
+                            children: _badges.map((badge) => SizedBox(
+                              height: 50,
+                              width: 50,
+                              child: badge,
+                            )).toList(),
                           ),
-                          Container(
-                            height: 90,
-                            decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 153, 240, 152),
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 10),
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    fieldInContainerBuilder(
-                                        "Total Carbon Saved",
-                                        _profile.getCarbonSaved().toString(),
-                                        "g"),
-                                    fieldInContainerBuilder(
-                                        "Total Calorie Burned",
-                                        _profile.getCalorieBurn().toString(),
-                                        "kcal")
-                                  ],
-                                )),
-                          )
                         ],
                       ),
                     ),
                   ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                    child: SizedBox(
-                      height: 100,
-                      width: 400,
-                      child: Column(
-                        children: [
-                          const Align(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              textAlign: TextAlign.left,
-                              "Badges",
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 18),
-                            ),
-                          ),
-                          Container(
-                            height: 60,
-                            width: 400,
-                            decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 153, 240, 152),
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 2, horizontal: 17),
-                                child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  shrinkWrap: true,
-                                  itemCount: _badges.length,
-                                  itemBuilder: (context, index) {
-                                    return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 4, horizontal: 5),
-                                        child: SizedBox(
-                                          height: 30,
-                                          width: 30,
-                                          child: _badges[index],
-                                        ));
-                                  },
-                                )),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 100,
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 2),
-                          child: getPage()),
-                    ),
-                  )
-                ],
-              ),
-            )
-          : const Center(child: Text("User not found")),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            color: Colors.white,
+            child: _buildActionButtons(),
+          ),
+        ],
+      ),
     );
   }
 }
