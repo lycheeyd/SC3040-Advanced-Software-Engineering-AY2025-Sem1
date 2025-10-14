@@ -36,7 +36,7 @@ jobs:
             'CalowinSpringNode',
             'CalowinTrip',
             'CalowinWellnessZone'
-          ) ||
+          )) ||
           fromJSON(format('["{0}"]', github.event.inputs.services))
           }}
       
