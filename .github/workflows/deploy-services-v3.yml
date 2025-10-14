@@ -73,9 +73,8 @@ jobs:
         with:
           path: |
             ~/.m2/repository
-          key: maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-
+          key: maven-${{ matrix.service }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-${{ matrix.service }}-
 
       - name: Set up JDK
         if: ${{ fromJson(needs.detect-changes.outputs.src-changes)[matrix.service] }}
