@@ -1,132 +1,75 @@
 package com.client;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 @Service
 public class NParkApiClient {
-    private String datasetId = ""; // d_77d7ec97be83d44f61b85454f844382f for this specific data
-    private String initiateUrl = "";
 
-    public NParkApiClient(@Value("${np.park.datasetId}") String datasetId) {
-        this.datasetId = datasetId;
-        this.initiateUrl = "https://api-open.data.gov.sg/v1/public/api/datasets/" + datasetId + "/initiate-download";
-    }
+    private final String datasetId;
+    private final String initiateUrl;
+    private final String pollUrl;
+    private final HttpClient client;
 
     private String responseData = "";
     private String errorMessage = "";
 
+    public NParkApiClient(@Value("${np.park.datasetId}") String datasetId) {
+        this.datasetId = datasetId;
+        this.initiateUrl = "https://api-open.data.gov.sg/v1/public/api/datasets/" + datasetId + "/initiate-download";
+        this.pollUrl = "https://api-open.data.gov.sg/v1/public/api/datasets/" + datasetId + "/poll-download";
+        this.client = HttpClient.newHttpClient();
+    }
+
     public void initiateDownload() {
         try {
-            HttpURLConnection connection = setupConnection(initiateUrl, "GET");
+            // Step 1: Initiate the download
+            HttpRequest initialRequest = HttpRequest.newBuilder().uri(URI.create(initiateUrl)).build();
 
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_CREATED) { // Status code 201
-                String response = readResponse(connection);
-                JSONObject initiateData = new JSONObject(response);
+            client.sendAsync(initialRequest, HttpResponse.BodyHandlers.ofString())
+                    // Step 2: Poll for the download URL
+                    .thenCompose(initiateResponse -> {
+                        if (initiateResponse.statusCode() != 201) {
+                            throw new RuntimeException("Failed to initiate download. Status: " + initiateResponse.statusCode());
+                        }
+                        HttpRequest pollRequest = HttpRequest.newBuilder().uri(URI.create(pollUrl)).build();
+                        return client.sendAsync(pollRequest, HttpResponse.BodyHandlers.ofString());
+                    })
+                    // Step 3: Download the actual data
+                    .thenCompose(pollResponse -> {
+                        if (pollResponse.statusCode() != 201) {
+                            throw new RuntimeException("Failed to poll for download URL. Status: " + pollResponse.statusCode());
+                        }
+                        JSONObject jsonResponse = new JSONObject(pollResponse.body());
+                        if (jsonResponse.getInt("code") != 0) {
+                            throw new RuntimeException("API Error: " + jsonResponse.getString("errMsg"));
+                        }
+                        String finalDataUrl = jsonResponse.getJSONObject("data").getString("url");
+                        HttpRequest dataRequest = HttpRequest.newBuilder().uri(URI.create(finalDataUrl)).build();
+                        return client.sendAsync(dataRequest, HttpResponse.BodyHandlers.ofString());
+                    })
+                    .whenComplete((dataResponse, error) -> {
+                        if (error != null) {
+                            this.errorMessage = "Failed to retrieve data: " + error.getMessage();
+                            this.responseData = "";
+                        } else if (dataResponse.statusCode() != 200) {
+                            this.errorMessage = "Error downloading data: HTTP status " + dataResponse.statusCode();
+                            this.responseData = "";
+                        } else {
+                            this.responseData = dataResponse.body();
+                            this.errorMessage = "";
+                        }
+                    }).join(); // .join() waits for the async process to complete
 
-                // Check if the initiation was successful
-                if (initiateData.getInt("code") == 0) {
-                    pollDownload(datasetId);
-                } else {
-                    errorMessage = initiateData.getString("errMsg");
-                    responseData = "";
-                }
-            } else {
-                errorMessage = "Error initiating download: HTTP status " + responseCode;
-                responseData = "";
-            }
-
-        } catch (MalformedURLException e) {
-            errorMessage = "Malformed URL: " + e.getMessage();
-        } catch (IOException e) {
-            errorMessage = "I/O Error during initiation: " + e.getMessage();
-        } catch (JSONException e) {
-            errorMessage = "JSON Parsing Error: " + e.getMessage();
         } catch (Exception e) {
-            errorMessage = "Unexpected error: " + e.getMessage();
-        }
-    }
-
-    private void pollDownload(String datasetId) {
-        String pollUrl = "https://api-open.data.gov.sg/v1/public/api/datasets/" + datasetId + "/poll-download";
-        try {
-            HttpURLConnection connection = setupConnection(pollUrl, "GET");
-
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_CREATED) { // Status code 201
-                String response = readResponse(connection);
-                JSONObject pollData = new JSONObject(response);
-
-                // Check if the data is ready
-                if (pollData.getInt("code") == 0) {
-                    String downloadUrl = pollData.getJSONObject("data").getString("url");
-                    downloadData(downloadUrl);
-                } else {
-                    errorMessage = pollData.getString("errMsg");
-                    responseData = "";
-                }
-            } else {
-                errorMessage = "Error polling download: HTTP status " + responseCode;
-                responseData = "";
-            }
-
-        } catch (MalformedURLException e) {
-            errorMessage = "Malformed URL in polling: " + e.getMessage();
-        } catch (IOException e) {
-            errorMessage = "I/O Error during polling: " + e.getMessage();
-        } catch (JSONException e) {
-            errorMessage = "JSON Parsing Error in polling response: " + e.getMessage();
-        } catch (Exception e) {
-            errorMessage = "Unexpected error during polling: " + e.getMessage();
-        }
-    }
-
-    private void downloadData(String url) {
-        try {
-            HttpURLConnection connection = setupConnection(url, "GET");
-
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) { // Status code 200
-                responseData = readResponse(connection);
-                errorMessage = "";
-            } else {
-                errorMessage = "Error downloading data: HTTP status " + responseCode;
-                responseData = "";
-            }
-
-        } catch (MalformedURLException e) {
-            errorMessage = "Malformed URL in download: " + e.getMessage();
-        } catch (IOException e) {
-            errorMessage = "I/O Error during download: " + e.getMessage();
-        } catch (Exception e) {
-            errorMessage = "Unexpected error during download: " + e.getMessage();
-        }
-    }
-
-    private HttpURLConnection setupConnection(String urlString, String requestMethod) throws IOException {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod(requestMethod);
-        return connection;
-    }
-
-    private String readResponse(HttpURLConnection connection) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            return response.toString();
+            this.errorMessage = "Unexpected error during download: " + e.getMessage();
+            this.responseData = "";
         }
     }
 
