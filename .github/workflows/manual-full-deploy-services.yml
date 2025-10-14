@@ -29,10 +29,8 @@ jobs:
     steps:
       - id: select
         run: |
-          # Define all services
           ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
 
-          # Read input
           INPUT="${{ github.event.inputs.services }}"
           echo "Selected input: $INPUT"
 
@@ -42,6 +40,8 @@ jobs:
           else
             JSON="[\"$INPUT\"]"
           fi
+          
+          JSON=$(echo "$JSON" | tr -d '\n' | tr -d '[:space:]')
 
           echo "list=$JSON" >> $GITHUB_OUTPUT
           echo "Selected services JSON: $JSON"
