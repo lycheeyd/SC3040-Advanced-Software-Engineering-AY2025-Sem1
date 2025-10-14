@@ -52,8 +52,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: maven-
+          key: maven-${{ matrix.service }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: maven-${{ matrix.service }}-
 
       - name: Set up JDK
         uses: actions/setup-java@v4
