@@ -38,7 +38,7 @@ jobs:
             JSON=$(printf '"%s",' "${ALL_SERVICES[@]}" | sed 's/,$//')
             JSON="[$JSON]"
           else
-            JSON="[\"$INPUT\"]"
+            JSON=$INPUT
           fi
           
           JSON=$(echo "$JSON" | tr -d '\n' | tr -d '[:space:]')
