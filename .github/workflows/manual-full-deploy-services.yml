@@ -34,15 +34,12 @@ jobs:
 
           # Read input and remove spaces
           INPUT="${{ github.event.inputs.services }}"
-          echo "$INPUT"
-          INPUT="${INPUT// /}"  # Remove all spaces
 
           if [[ "$INPUT" == "ALL" ]]; then
-            # Compact JSON for all services, no spaces
-            JSON=$(IFS=, ; echo "[${ALL_SERVICES[*]}]")
+            JSON=$(IFS=, ; echo "(${ALL_SERVICES[*]})")
           else
             # Single service, compact JSON
-            JSON="[\"$INPUT\"]"
+            JSON=("\"$INPUT\"")
           fi
 
           # Output to GitHub Actions
