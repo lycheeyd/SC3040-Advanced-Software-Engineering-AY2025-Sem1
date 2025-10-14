@@ -22,16 +22,26 @@ permissions:
   actions: write
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.set.outputs.services }}
+    steps:
+      - id: set
+        run: |
+          if [[ "${{ github.event.inputs.services }}" == "ALL" ]]; then
+            echo '["CalowinAccount","CalowinFriends","CalowinNotification","CalowinSpringNode","CalowinTrip","CalowinWellnessZone"]' > services.json
+          else
+            echo "[\"${{ github.event.inputs.services//,/\",\"}}\"]" > services.json
+          fi
+          echo "services=$(cat services.json)" >> $GITHUB_OUTPUT
+
   build-and-deploy:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ 
-          contains(github.event.inputs.services, 'ALL') &&
-          fromJSON('[\"CalowinAccount\", \"CalowinFriends\", \"CalowinNotification\", \"CalowinSpringNode\", \"CalowinTrip\", \"CalowinWellnessZone\"]') ||
-          fromJSON(format('[\"{0}\"]', join(split(github.event.inputs.services, ','), '\",\"')))
-          }}
+        service: ${{ fromJson(needs.prepare.outputs.list) }}
 
     outputs:
       built-services: ${{ steps.collect.outputs.built }}
