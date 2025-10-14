@@ -28,25 +28,25 @@ jobs:
       selected-services: ${{ steps.select.outputs.list }}
     steps:
       - id: select
-        shell: bash
         run: |
-          # Read input as single service
+          # Define all services
+          ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+
+          # Read input and remove spaces
           INPUT="${{ github.event.inputs.services }}"
+          INPUT="${INPUT// /}"  # Remove all spaces
 
-          # Default to ALL if input is empty
-          if [[ -z "$INPUT" ]]; then
-            INPUT="ALL"
-          fi
-
-          # Prepare JSON array
           if [[ "$INPUT" == "ALL" ]]; then
-            JSON='["CalowinAccount","CalowinFriends","CalowinNotification","CalowinSpringNode","CalowinTrip","CalowinWellnessZone"]'
+            # Compact JSON for all services, no spaces
+            JSON=$(IFS=, ; echo "[${ALL_SERVICES[*]}]" | sed 's/ /","/g; s/\[/\[\"/; s/\]/\"\]/')
           else
+            # Single service, compact JSON
             JSON="[\"$INPUT\"]"
           fi
 
-          # Output JSON to GitHub Actions
-          echo "list=$JSON" >> "$GITHUB_OUTPUT"
+          # Output to GitHub Actions
+          echo "list=$JSON" >> $GITHUB_OUTPUT
+          echo "Selected services JSON: $JSON"
 
   build-and-deploy:
     runs-on: ubuntu-latest
