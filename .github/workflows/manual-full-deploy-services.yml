@@ -38,7 +38,7 @@ jobs:
 
           if [[ "$INPUT" == "ALL" ]]; then
             # Compact JSON for all services, no spaces
-            JSON=$(IFS=, ; echo "[${ALL_SERVICES[*]}]" | sed 's/ /","/g; s/\[/\[\"/; s/\]/\"\]/')
+            JSON=$(IFS=, ; echo "[${ALL_SERVICES[*]}]")
           else
             # Single service, compact JSON
             JSON="[\"$INPUT\"]"
