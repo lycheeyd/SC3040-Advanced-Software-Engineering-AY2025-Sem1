@@ -22,36 +22,16 @@ permissions:
   actions: write
 
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    outputs:
-      selected-services: ${{ steps.select.outputs.list }}
-    steps:
-      - id: select
-        run: |
-          ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
-
-          INPUT="${{ github.event.inputs.services }}"
-          echo "Selected input: $INPUT"
-
-          if [[ "$INPUT" == "ALL" ]]; then
-            JSON=$(printf '"%s",' "${ALL_SERVICES[@]}" | sed 's/,$//')
-            JSON="[$JSON]"
-          else
-            JSON=$INPUT
-          fi
-          
-          JSON=$(echo "$JSON" | tr -d '\n' | tr -d '[:space:]')
-
-          echo "list=$JSON" >> $GITHUB_OUTPUT
-          echo "Selected services JSON: $JSON"
-
   build-and-deploy:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJson(needs.prepare.outputs.selected-services) }}
+        service: ${{
+          contains(github.event.inputs.services, 'ALL') &&
+          fromJSON('["CalowinAccount", "CalowinFriends", "CalowinNotification", "CalowinSpringNode", "CalowinTrip", "CalowinWellnessZone"]') ||
+          fromJSON(github.event.inputs.services)
+          }}
 
     outputs:
       built-services: ${{ steps.collect.outputs.built }}
