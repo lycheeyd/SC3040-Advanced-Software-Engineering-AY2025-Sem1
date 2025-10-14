@@ -1,0 +1,38 @@
+name: Manual Cleanup Old Artifacts
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0" # runs weekly on Sunday midnight UTC
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old artifacts (keep latest 5 per service)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Fetching artifact list..."
+          artifacts=$(gh api repos/${{ github.repository }}/actions/artifacts --paginate --jq '.artifacts')
+          # Extract unique artifact names
+          names=$(echo "$artifacts" | jq -r '.[].name' | sort -u)
+          echo "Services found:"
+          echo "$names"
+          for name in $names; do
+            echo "Processing $name ..."
+            ids=$(gh api repos/${{ github.repository }}/actions/artifacts \
+              --paginate --jq ".artifacts | map(select(.name==\"$name\")) | sort_by(.created_at) | reverse | .[5:] | .[].id")
+            if [ -z "$ids" ]; then
+              echo "No old artifacts for $name."
+            else
+              for id in $ids; do
+                echo "Deleting artifact $id ($name)"
+                gh api repos/${{ github.repository }}/actions/artifacts/$id -X DELETE
+              done
+            fi
+          done
