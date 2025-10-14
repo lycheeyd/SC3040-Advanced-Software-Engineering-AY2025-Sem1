@@ -1,7 +1,5 @@
 import 'package:calowin/common/AES_Encryptor.dart';
 import 'package:calowin/common/colors_and_fonts.dart';
-import 'package:calowin/common/custom_scaffold.dart';
-import 'package:calowin/common/input_field.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -16,19 +14,19 @@ class ChangepasswordPage extends StatefulWidget {
 }
 
 class _ChangepasswordPageState extends State<ChangepasswordPage> {
+  // NEW: Using a Form key for robust validation.
+  final _formKey = GlobalKey<FormState>();
   late final String userID;
-
-  bool _wrongPW = false;
-  bool _wrongNewPW = false;
-  bool _newPWNotSame = false;
 
   final TextEditingController _currentPWController = TextEditingController();
   final TextEditingController _newPWController = TextEditingController();
   final TextEditingController _confirmPWController = TextEditingController();
 
-  String? _currentPasswordError;
-  String? _passwordError;
-  String? _confirmPasswordError;
+  // NEW: Adding a state for toggling password visibility.
+  bool _isNewPasswordObscured = true;
+  bool _isConfirmPasswordObscured = true;
+  bool _isCurrentPasswordObscured = true;
+
 
   @override
   void initState() {
@@ -36,62 +34,28 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
     userID = widget.userID;
   }
 
-  void _checkCurrentPassword() {     
-    setState(() {
-      if (_currentPWController.text.isEmpty) {
-        _currentPasswordError = "Enter current password";
-      } else {
-        _currentPasswordError = null;
-      }
-    });
-  }
-
-  void _checkPasswordMatch() {     
-    setState(() {
-      if (_confirmPWController.text.isEmpty) {
-        _confirmPasswordError = "Confirm your new password";
-      } else if (_newPWController.text != _confirmPWController.text) {
-        _confirmPasswordError = "Passwords do not match";
-      } else {
-        _confirmPasswordError = null;
-      }
-    });
-  }
-
-  void _checkPasswordValid() {
-    final passwordPattern = r'^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[@#$%^&+=!])(?=.{8,60}).*$';    
-    setState(() {
-      if (_newPWController.text.isEmpty) {
-        _passwordError = "New password is required";
-      } else if (_newPWController.text.length > 60) {
-        _passwordError = "Password cannot exceed 60 characters";
-      } else if (!RegExp(passwordPattern).hasMatch(_newPWController.text)) {
-        _passwordError =
-            "Password must be at least 8 characters long and contain at least 1 digit, 1 uppercase, 1 lowercase, 1 special character.";
-      } else {
-        _passwordError = null;
-      }
-    });
+  @override
+  void dispose() {
+    _currentPWController.dispose();
+    _newPWController.dispose();
+    _confirmPWController.dispose();
+    super.dispose();
   }
 
   Future<void> _handleChangePassword() async {
-    // Handle change password logic
-    _checkPasswordValid();
-    _checkPasswordMatch();
-    _checkCurrentPassword();
-
-    if (_confirmPasswordError == null &&
-        _currentPasswordError == null &&
-        _passwordError == null) {
-      
+    // MODIFIED: Validation is now handled by the form key.
+    if (_formKey.currentState!.validate()) {
       final String encryptedOldPassword = AES_Encryptor.encrypt(_currentPWController.text);
       final String encryptedNewPassword = AES_Encryptor.encrypt(_newPWController.text);
+
+      // Note: The original code encrypted the confirmation password separately.
+      // Usually, you only need to send the new password once it's confirmed.
+      // I've kept the original logic to avoid changing functionality.
       final String encryptedNewConfirmPassword = AES_Encryptor.encrypt(_confirmPWController.text);
 
       final String url = "https://sc3040G5-CalowinSpringNode.hf.space/central/account/change-password";
 
       try {
-        print("called");
         final response = await http.post(
           Uri.parse(url),
           headers: {"Content-Type": "application/json"},
@@ -106,7 +70,6 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
         final responseMessage = response.body;
 
         if (response.statusCode == 200) {
-          // Signup successful
           _showSuccessDialog(responseMessage);
         } else {
           _showErrorDialog(responseMessage);
@@ -122,14 +85,12 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(message),
-          //content: Text(message),
+          title: const Text("Error"),
+          content: Text(message),
           actions: <Widget>[
             TextButton(
               child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ],
         );
@@ -141,169 +102,131 @@ class _ChangepasswordPageState extends State<ChangepasswordPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(message),
-        //content: Text(message),
+        title: const Text("Success"),
+        content: Text(message),
         actions: [
           TextButton(
-            onPressed: (){Navigator.pop(context);Navigator.pop(context);},
+            onPressed: (){
+              Navigator.of(context).pop(); // Close dialog
+              Navigator.of(context).pop(); // Go back from this page
+            },
             child: const Text('OK'),
           ),
         ],
       ),
     );
-    if(mounted)
-    {
-      Navigator.pop(context);
-      Navigator.pop(context);
-    }
   }
 
+  // MODIFIED: The build method is completely refactored for the new UI.
   @override
   Widget build(BuildContext context) {
-    return CustomScaffold(
-      body: Scaffold(
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        title: Text("Change Password", style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         backgroundColor: PrimaryColors.dullGreen,
-        appBar: AppBar(
-          backgroundColor: PrimaryColors.dullGreen,
-        ),
-        resizeToAvoidBottomInset:
-            false, // Prevent resizing when keyboard pops up
-        body: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          "Change Password",
-                          style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 30),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          "Your password must:\n  * Be at least 8 characters long\n  * Contain at least 1 special character\n  * Contain at least 1 upper case letter",
-                          style: GoogleFonts.poppins(
-                              fontSize: 15, color: Colors.white),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      InputField(
-                        obscureText: true,
-                        inputController: _currentPWController,
-                        title: "Current Password",
-                        inputHint: "Enter Your Current Password",
-                        errorText: "Wrong Password!",
-                        hasError: _wrongPW,
-                      ),
-                      if(_currentPasswordError != null)
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 20.0), // Adjust padding as needed
-                            child: Text(
-                              _currentPasswordError!,
-                              style: GoogleFonts.roboto(
-                                fontSize: 11,
-                                color: Colors.redAccent.shade400,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      InputField(
-                        obscureText: true,
-                        inputController: _newPWController,
-                        title: "New Password",
-                        inputHint: "Enter Your New Password",
-                        errorText: "Invalid Password!",
-                        hasError: _wrongNewPW,
-                      ),
-                      if(_passwordError != null)
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 20.0), // Adjust padding as needed
-                            child: Text(
-                              _passwordError!,
-                              style: GoogleFonts.roboto(
-                                fontSize: 11,
-                                color: Colors.redAccent.shade400,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      InputField(
-                        obscureText: true,
-                        inputController: _confirmPWController,
-                        title: "Confirm Password",
-                        inputHint: "Re-enter New Password",
-                        errorText:
-                            "Please make sure you entered the same as above!",
-                        hasError: _newPWNotSame,
-                      ),
-                      if(_confirmPasswordError != null)
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 20.0), // Adjust padding as needed
-                            child: Text(
-                              _confirmPasswordError!,
-                              style: GoogleFonts.roboto(
-                                fontSize: 11,
-                                color: Colors.redAccent.shade400,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(
-                width: double.infinity,
-                height: 45,
-                child: ElevatedButton(
-                  onPressed: _handleChangePassword,
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: PrimaryColors.darkGreen,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(10), // Rounded corners
+        foregroundColor: Colors.white,
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Your password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character.",
+                      style: GoogleFonts.poppins(color: Colors.black54, fontSize: 14),
                     ),
-                  ),
-                  child: Text(
-                    "Change Password",
-                    style:
-                        GoogleFonts.roboto(fontSize: 16, color: Colors.white),
-                  ),
+                    const SizedBox(height: 24),
+                    // MODIFIED: Using TextFormField for better validation.
+                    TextFormField(
+                      controller: _currentPWController,
+                      obscureText: _isCurrentPasswordObscured,
+                      decoration: InputDecoration(
+                          labelText: "Current Password",
+                          border: const OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(_isCurrentPasswordObscured ? Icons.visibility_off : Icons.visibility),
+                            onPressed: () => setState(() => _isCurrentPasswordObscured = !_isCurrentPasswordObscured),
+                          )
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Enter your current password";
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _newPWController,
+                      obscureText: _isNewPasswordObscured,
+                      decoration: InputDecoration(
+                          labelText: "New Password",
+                          border: const OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(_isNewPasswordObscured ? Icons.visibility_off : Icons.visibility),
+                            onPressed: () => setState(() => _isNewPasswordObscured = !_isNewPasswordObscured),
+                          )
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "New password is required";
+                        }
+                        final passwordPattern = r'^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[@#$%^&+=!])(?=.{8,60}).*$';
+                        if (!RegExp(passwordPattern).hasMatch(value)) {
+                          return "Password does not meet requirements";
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _confirmPWController,
+                      obscureText: _isConfirmPasswordObscured,
+                      decoration: InputDecoration(
+                          labelText: "Confirm New Password",
+                          border: const OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(_isConfirmPasswordObscured ? Icons.visibility_off : Icons.visibility),
+                            onPressed: () => setState(() => _isConfirmPasswordObscured = !_isConfirmPasswordObscured),
+                          )
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Confirm your new password";
+                        }
+                        if (_newPWController.text != value) {
+                          return "Passwords do not match";
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(
-                height: 40,
-              )
-            ],
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ElevatedButton(
+          onPressed: _handleChangePassword,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: PrimaryColors.darkGreen,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
+          child: Text("Change Password", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold)),
         ),
       ),
     );

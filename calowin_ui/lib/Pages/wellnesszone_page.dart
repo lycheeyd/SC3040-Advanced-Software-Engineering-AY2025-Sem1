@@ -35,6 +35,7 @@ class _WellnessZonePageState extends State<WellnessZonePage> {
   double _sliderValue = 5;
   final ParkRetriever _parkRetriever = ParkRetriever();
   final WeatherRetriever _weatherRetriever = WeatherRetriever();
+  // MODIFIED: This boolean is now used to expand the list item instead of showing a map overlay.
   bool _showWeather = false;
   late String _selectedPark;
   bool _loading = true;
@@ -61,13 +62,13 @@ class _WellnessZonePageState extends State<WellnessZonePage> {
         );
       });
 
-        _mapController.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(_userCurrentLocation.latitude ?? 0, _userCurrentLocation.longitude ?? 0),
-            15,
-          ),
-        );
-      
+      _mapController.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(_userCurrentLocation.latitude ?? 0, _userCurrentLocation.longitude ?? 0),
+          15,
+        ),
+      );
+
       _retrieveWellnessZones();
     } catch (e) {
       print('Error initializing location: $e');
@@ -84,90 +85,6 @@ class _WellnessZonePageState extends State<WellnessZonePage> {
 
     // uncomment when the server can run
     _wellnessZones = await _parkRetriever.retrievePark(_userCurrentLocation.latitude ?? 1.3521, _userCurrentLocation.longitude ?? 103.8198);
-
-    //for testing purposes
-//     _wellnessZones =[
-//   Park(
-//     name: "East Coast Park",
-//     distance: 5.2,
-//     closestPoint: {
-//       "Lat": 1.3012,
-//       "Lon": 103.9123,
-//     },
-//   ),
-//   Park(
-//     name: "MacRitchie Reservoir Park",
-//     distance: 8.1,
-//     closestPoint: {
-//       "Lat": 1.3427,
-//       "Lon": 103.8205,
-//     },
-//   ),
-//   Park(
-//     name: "Bishan-Ang Mo Kio Park",
-//     distance: 6.5,
-//     closestPoint: {
-//       "Lat": 1.3725,
-//       "Lon": 103.8446,
-//     },
-//   ),
-//   Park(
-//     name: "Gardens by the Bay",
-//     distance: 4.0,
-//     closestPoint: {
-//       "Lat": 1.2816,
-//       "Lon": 103.8636,
-//     },
-//   ),
-//   Park(
-//     name: "Bukit Timah Nature Reserve",
-//     distance: 10.3,
-//     closestPoint: {
-//       "Lat": 1.3483,
-//       "Lon": 103.7767,
-//     },
-//   ),
-//   Park(
-//     name: "Singapore Botanic Gardens",
-//     distance: 3.7,
-//     closestPoint: {
-//       "Lat": 1.3138,
-//       "Lon": 103.8159,
-//     },
-//   ),
-//   Park(
-//     name: "Fort Canning Park",
-//     distance: 2.5,
-//     closestPoint: {
-//       "Lat": 1.2956,
-//       "Lon": 103.8454,
-//     },
-//   ),
-//   Park(
-//     name: "Pasir Ris Park",
-//     distance: 12.0,
-//     closestPoint: {
-//       "Lat": 1.3837,
-//       "Lon": 103.9465,
-//     },
-//   ),
-//   Park(
-//     name: "Sembawang Park",
-//     distance: 15.0,
-//     closestPoint: {
-//       "Lat": 1.4581,
-//       "Lon": 103.8262,
-//     },
-//   ),
-//   Park(
-//     name: "Labrador Nature Reserve",
-//     distance: 7.0,
-//     closestPoint: {
-//       "Lat": 1.2686,
-//       "Lon": 103.8029,
-//     },
-//   ),
-// ];
 
     //disable loading screen after finished loading
     setState(() {
@@ -202,41 +119,50 @@ class _WellnessZonePageState extends State<WellnessZonePage> {
       case 'Fair (Night)':
       case 'Fair and Warm':
         icon = const Icon(Icons.wb_sunny, color: Colors.yellow);
+        break;
 
       case 'Partly Cloudy':
       case 'Partly Cloudy (Day)':
       case 'Partly Cloudy (Night)':
-        icon = const Icon(Icons.cloud, color: Colors.blueGrey);
+        icon = const Icon(Icons.wb_cloudy_outlined, color: Colors.white);
+        break;
 
       case 'Cloudy':
         icon =  Icon(Icons.cloud, color: Colors.grey.shade300);
+        break;
 
       case 'Hazy':
       case 'Slightly Hazy':
         icon = const Icon(Icons.deblur, color: Colors.orange);
+        break;
 
       case 'Windy':
         icon = const Icon(Icons.air, color: Colors.blue);
+        break;
 
       case 'Mist':
       case 'Fog':
         icon =  Icon(Icons.blur_on, color: Colors.grey.shade300);
+        break;
 
       case 'Light Rain':
       case 'Moderate Rain':
       case 'Heavy Rain':
         icon = const Icon(Icons.grain, color: Colors.blueAccent);
+        break;
 
       case 'Passing Showers':
       case 'Light Showers':
       case 'Showers':
       case 'Heavy Showers':
         icon = const Icon(Icons.grain, color: Colors.blue);
+        break;
 
       case 'Thundery Showers':
       case 'Heavy Thundery Showers':
       case 'Heavy Thundery Showers with Gusty Winds':
         icon = const Icon(Icons.flash_on, color: Colors.purple);
+        break;
 
       default:
         icon =  Icon(Icons.help_outline, color: Colors.grey.shade300);
@@ -261,9 +187,10 @@ class _WellnessZonePageState extends State<WellnessZonePage> {
       int index, double? lat, double? lon, String selectedPark) {
     setState(() {
       if (_currentIndex == index) {
-        _showWeather = false;
+        // This allows collapsing the item if tapped again
         _currentIndex = -1;
         _selectedLocationMarker = null;
+        _showWeather = false;
       } else {
         _currentIndex = index;
         _showWeather = true;
@@ -271,7 +198,7 @@ class _WellnessZonePageState extends State<WellnessZonePage> {
         _selectedLocationMarker = lat!=null && lon!=null ? Marker(
           markerId: MarkerId('SelectedLocation'),
           position: LatLng(lat, lon),
-          infoWindow: InfoWindow(title: 'Selected Location'),
+          infoWindow: InfoWindow(title: selectedPark),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed), // Set the color
         ) : null;
 
@@ -281,89 +208,127 @@ class _WellnessZonePageState extends State<WellnessZonePage> {
             12,
           ),
         );
+        if (lat == null || lon == null) {
+          _weatherForecast = "Weather Not Available";
+          _weatherIcon = const Icon(Icons.error_outline_rounded);
+        } else {
+          _setWeather(lat, lon);
+        }
       }
     });
-    if (lat == null || lon == null) {
-      setState(() {
-        _weatherForecast = "Weather Not Available";
-        _weatherIcon = const Icon(Icons.error_outline_rounded);
-      });
-    } else {
-      _setWeather(lat, lon);
-    }
   }
 
   void _handleGO(Park zone) {
     final pageNavigatorState =
-        context.findAncestorStateOfType<PageNavigatorState>();
+    context.findAncestorStateOfType<PageNavigatorState>();
     //change here
     if (pageNavigatorState != null) {
       pageNavigatorState.navigateToPage(0,params: {'targetName': zone.name , 'targetLat':zone.closestPoint['Lat'], 'targetLong':zone.closestPoint['Lon']}); // Navigate to AddFriendsPage
     }
   }
 
+  // NEW: Refactored build method for list items to improve UI/UX.
   Widget _buildListItem(int index, Park zone) {
-    Color tileColor = const Color.fromARGB(10, 0, 0, 0);
-    Color selectedColor = const Color.fromARGB(255, 232, 231, 253);
-    return Padding(
-      padding: const EdgeInsets.only(top: 5, bottom: 5, left: 10, right: 3),
-      child: Container(
-        height: 60,
-        width: 400,
-        decoration: BoxDecoration(
-          color: index == _currentIndex ? selectedColor : tileColor,
-          borderRadius: BorderRadius.circular(10),
-          border: const Border(
-            bottom: BorderSide(
-              color: Colors.grey,
-              width: 2,
-            ),
-          ),
-        ),
-        child: ListTile(
-          title: Text(
-            zone.name,
-            style:
-                GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15),
-          ),
-          trailing: SizedBox(
-            width: 130,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  "${zone.distance.toStringAsFixed(1)} km",
-                  style: GoogleFonts.poppins(
-                      fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                SizedBox(
-                  width: 60,
-                  height: 30,
-                  child: ElevatedButton(
-                      onPressed: () => _handleGO(zone),
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: Colors.purple,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(50), // Rounded corners
-                        ),
+    bool isSelected = _currentIndex == index;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      elevation: isSelected ? 6.0 : 2.0,
+      color: isSelected ? Color.fromARGB(255, 179, 219, 179) : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: InkWell(
+        onTap: () => _onListItemTap(index, zone.closestPoint['Lat'],
+            zone.closestPoint['Lon'], zone.name),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      zone.name,
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Row(
+                    children: [
+                      Text(
+                        "${zone.distance.toStringAsFixed(1)} km",
+                        style: GoogleFonts.poppins(
+                            fontSize: 14, fontWeight: FontWeight.w600),
                       ),
-                      child: const Text(
-                        "Go",
-                        style: TextStyle(fontSize: 12, color: Colors.white),
-                      )),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        width: 60,
+                        height: 35,
+                        child: ElevatedButton(
+                            onPressed: () => _handleGO(zone),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.purple,
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            child: const Text(
+                              "Go",
+                              style: TextStyle(fontSize: 14, color: Colors.white),
+                            )),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+              // NEW: Animated visibility for the weather forecast section.
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: isSelected && _showWeather
+                    ? Container(
+                    padding: const EdgeInsets.only(top: 12.0),
+                    child: Column(
+                      children: [
+                        const Divider(color: Colors.black26),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: Transform.scale(
+                                  scale: 1.5, child: _weatherIcon),
+                            ),
+                            const SizedBox(width: 15),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "2-hour Forecast",
+                                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                                ),
+                                Text(
+                                  _weatherForecast,
+                                  style: GoogleFonts.poppins(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                      ],
+                    )
                 )
-              ],
-            ),
+                    : const SizedBox.shrink(),
+              ),
+            ],
           ),
-          onTap: () => _onListItemTap(index, zone.closestPoint['Lat'],
-              zone.closestPoint['Lon'], zone.name),
         ),
       ),
     );
@@ -376,191 +341,80 @@ class _WellnessZonePageState extends State<WellnessZonePage> {
     _setUserLocation();
   }
 
+  // MODIFIED: Entire build method is updated for a cleaner UI.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PrimaryColors.dullGreen,
+      backgroundColor: Colors.grey[200], // Use a lighter background for contrast
       body: Column(
         children: [
           SizedBox(
-            height: 400,
-            child: Stack(
+            height: 350, // Slightly reduced map height
+            child: GoogleMap(
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: LatLng(_userCurrentLocation.latitude ?? 1.3521, _userCurrentLocation.longitude ?? 103.8198),
+                zoom: 10,
+              ),
+              myLocationButtonEnabled: false,
+              myLocationEnabled: true,
+              mapType: MapType.terrain,
+              markers: {
+                if (_currentLocationMarker != null) _currentLocationMarker!,
+                if (_selectedLocationMarker != null) _selectedLocationMarker!,
+              },
+            ),
+          ),
+          // NEW: Moved the slider to a dedicated container.
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            color: Colors.white,
+            child: Column(
               children: [
-                  GoogleMap(
-                      onMapCreated: _onMapCreated,
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(_userCurrentLocation.latitude ?? 1.3521, _userCurrentLocation.longitude ?? 103.8198),
-                        zoom: 10,
-                      ),
-                      myLocationButtonEnabled: false,
-                      myLocationEnabled: true,
-                      liteModeEnabled: false,
-                      mapType: MapType.terrain,
-                      markers: {
-                        if (_currentLocationMarker != null) _currentLocationMarker!,
-                        if (_selectedLocationMarker != null) _selectedLocationMarker!,
-                      },
-                    ),
-                if (!_showWeather)
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: const Color.fromARGB(150, 0, 0, 0),
-                            borderRadius: BorderRadius.circular(10)),
-                        height: 45,
-                        width: 300,
-                        child: Column(
-                          children: [
-                            const Padding(
-                              padding:
-                                  EdgeInsets.only(left: 20, top: 3, bottom: 0),
-                              child: Align(
-                                  alignment: Alignment.topLeft,
-                                  child: Text(
-                                    "Search Radius",
-                                    style: TextStyle(color: Colors.white),
-                                  )),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  height: 18,
-                                  width: 240,
-                                  child: SliderTheme(
-                                    data: SliderTheme.of(context).copyWith(
-                                      thumbShape: const RoundSliderThumbShape(
-                                          pressedElevation: 0,
-                                          enabledThumbRadius:
-                                              7.0), // Change thumb size here
-                                      overlayShape:
-                                          const RoundSliderOverlayShape(
-                                              overlayRadius:
-                                                  8.0), // Change overlay size
-                                    ),
-                                    child: Slider(
-                                      activeColor: Colors.black,
-                                      overlayColor:
-                                          const WidgetStatePropertyAll(
-                                              Colors.black),
-                                      value: _sliderValue,
-                                      min: _sliderMin,
-                                      max: _sliderMax,
-                                      divisions: 200,
-                                      onChanged: (double value) {
-                                        _filterWellnessZones(value);
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 7,
-                                ),
-                                Align(
-                                    alignment: Alignment.bottomRight,
-                                    child: Text(_sliderValue.toStringAsFixed(1),
-                                        style: const TextStyle(
-                                            color: Colors.white))),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                if (_showWeather)
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: Container(
-                        height: 65,
-                        width: 270,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: const Color.fromARGB(150, 0, 0, 0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 2, horizontal: 2),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    "Next 2-hr forecast",
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.grey.shade200),
-                                  ),
-                                  Text(
-                                    _weatherForecast,
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 12),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 100,
-                                    child: Text(
-                                      _selectedPark,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          fontSize: 9,
-                                          color: Colors.grey.shade100),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 30,
-                                    height: 30,
-                                    child: Transform.scale(
-                                        scale: 1.5, child: _weatherIcon),
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Search Radius", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    Text("${_sliderValue.toStringAsFixed(1)} km", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: PrimaryColors.darkGreen)),
+                  ],
+                ),
+                Slider(
+                  activeColor: PrimaryColors.darkGreen,
+                  inactiveColor: PrimaryColors.dullGreen.withOpacity(0.5),
+                  value: _sliderValue,
+                  min: _sliderMin,
+                  max: _sliderMax,
+                  divisions: 190,
+                  onChanged: (double value) {
+                    _filterWellnessZones(value);
+                  },
+                ),
               ],
             ),
           ),
+          // NEW: A cleaner header for the list section.
           Container(
-            color: PrimaryColors.grey,
-            height: 40,
-            child: Stack(
+            color: PrimaryColors.dullGreen,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Use Expanded to take all the available space for the text
-                const Center(
-                  child: Text(
-                    "Wellness Zones",
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold),
+                Text(
+                  "Nearby Wellness Zones",
+                  style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16
                   ),
                 ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    iconSize: 20,
-                    onPressed: _setUserLocation,
-                    icon: const Icon(
-                      Icons.refresh,
-                      color: Colors.black,
-                    ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  iconSize: 24,
+                  onPressed: _setUserLocation,
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -569,18 +423,17 @@ class _WellnessZonePageState extends State<WellnessZonePage> {
           Expanded(
             child: Stack(
               children: [
-                SizedBox.expand(
-                  child: Container(
-                    color: Colors.white,
-                    child: ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      itemCount: _filteredZones.length,
-                      itemBuilder: (context, index) {
-                        Park currentItem = _filteredZones[index];
-                        return _buildListItem(index, currentItem);
-                      },
-                    ),
+                Container(
+                  color: Colors.grey[200],
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(top: 5, bottom: 5),
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: _filteredZones.length,
+                    itemBuilder: (context, index) {
+                      Park currentItem = _filteredZones[index];
+                      return _buildListItem(index, currentItem);
+                    },
                   ),
                 ),
                 if (_loading)
