@@ -29,17 +29,27 @@ jobs:
     steps:
       - id: select
         run: |
+          # Define all services
           ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+          
+          # Read input
           INPUT="${{ github.event.inputs.services }}"
+
+          # Default to ALL if empty
+          if [ -z "$INPUT" ]; then
+            echo "No services selected, defaulting to ALL"
+            INPUT="ALL"
+          fi
 
           if [[ "$INPUT" == *"ALL"* ]]; then
             echo "All services selected."
             JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s . | jq -c .)
           else
             echo "Selected specific services: $INPUT"
-            JSON=$(echo "$INPUT" | tr ',' '\n' | jq -R . | jq -s . | jq -c .)
+            JSON=$(echo "$INPUT" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | jq -R . | jq -s . | jq -c .)
           fi
 
+          # Output JSON safely
           echo "list=$JSON" >> $GITHUB_OUTPUT
           echo "Selected services JSON: $JSON"
 
