@@ -25,23 +25,32 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      list: ${{ steps.set.outputs.services }}
+      selected-services: ${{ steps.select.outputs.list }}
     steps:
-      - id: set
+      - id: select
         run: |
-          if [[ "${{ github.event.inputs.services }}" == "ALL" ]]; then
-            echo '["CalowinAccount","CalowinFriends","CalowinNotification","CalowinSpringNode","CalowinTrip","CalowinWellnessZone"]' > services.json
+          # Define all possible services
+          ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
+
+          INPUT="${{ github.event.inputs.services }}"
+          echo "Selected service input: $INPUT"
+
+          if [[ "$INPUT" == "ALL" ]]; then
+            JSON=$(printf '"%s",' "${ALL_SERVICES[@]}" | sed 's/,$//')
+            JSON="[$JSON]"
           else
-            echo "[\"${{ github.event.inputs.services//,/\",\"}}\"]" > services.json
+            JSON="[\"$INPUT\"]"
           fi
-          echo "services=$(cat services.json)" >> $GITHUB_OUTPUT
+
+          echo "list=$JSON" >> $GITHUB_OUTPUT
+          echo "Selected services JSON: $JSON"
 
   build-and-deploy:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        service: ${{ fromJson(needs.prepare.outputs.list) }}
+        service: ${{ fromJson(needs.prepare.outputs.selected-services) }}
 
     outputs:
       built-services: ${{ steps.collect.outputs.built }}
