@@ -41,21 +41,20 @@ class _LoginpageState extends State<Loginpage> {
     super.dispose();
   }
 
-  // NEW: A reusable function to show a loading spinner dialog.
-  void _showLoadingDialog() {
+  void _showLoadingDialog({String message = "Loading..."}) {
     showDialog(
       context: context,
-      barrierDismissible: false, // User must not close dialog manually
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return const Dialog(
+        return Dialog(
           child: Padding(
-            padding: EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(20.0),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 20),
-                Text("Loading..."),
+                const CircularProgressIndicator(),
+                const SizedBox(width: 20),
+                Text(message),
               ],
             ),
           ),
@@ -64,10 +63,9 @@ class _LoginpageState extends State<Loginpage> {
     );
   }
 
-  // MODIFIED: _handleLogin now shows and hides the loading dialog.
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      _showLoadingDialog(); // Show spinner
+      _showLoadingDialog();
 
       final email = _inputEmail.text;
       final password = _inputPassword.text;
@@ -81,7 +79,7 @@ class _LoginpageState extends State<Loginpage> {
           body: json.encode({"email": email, "password": encryptedPassword}),
         );
 
-        Navigator.of(context).pop(); // Hide spinner
+        if(mounted) Navigator.of(context).pop();
 
         if (response.statusCode == 200) {
           final Map<String, dynamic> responseData = jsonDecode(response.body);
@@ -98,21 +96,21 @@ class _LoginpageState extends State<Loginpage> {
           _showErrorDialog(response.body);
         }
       } catch (e) {
-        if(mounted) Navigator.of(context).pop(); // Hide spinner on error
+        if(mounted) Navigator.of(context).pop();
         _showErrorDialog("Network error: ${e.toString()}");
       }
     }
   }
 
-  // The rest of your login_page.dart file remains the same...
-  // (_handleForgetPW, _showErrorDialog, build method, etc.)
-  // ...
+  // MODIFIED: This function now shows a loading spinner.
   Future<void> _handleForgetPW(String emailText) async {
     final email = emailText.trim();
     if (email.isEmpty || !email.contains('@')) {
       _showErrorDialog("Please enter a valid email address.");
       return;
     }
+
+    _showLoadingDialog(message: "Sending OTP...");
 
     try {
       final response = await http.post(
@@ -122,6 +120,8 @@ class _LoginpageState extends State<Loginpage> {
             {'email': email, 'type': ActionType.FORGOT_PASSWORD.value}),
       );
 
+      if(mounted) Navigator.of(context).pop();
+
       final responseMessage = response.body;
       if (response.statusCode == 200) {
         if (mounted) _handleOTPWindow(email);
@@ -129,6 +129,7 @@ class _LoginpageState extends State<Loginpage> {
         _showErrorDialog(responseMessage);
       }
     } catch (e) {
+      if(mounted) Navigator.of(context).pop();
       _showErrorDialog('Error: ${e.toString()}');
     }
   }
@@ -151,7 +152,10 @@ class _LoginpageState extends State<Loginpage> {
         });
   }
 
+  // MODIFIED: This function now shows a loading spinner.
   Future<void> _handlePwdSending(String email, String otpCode) async {
+    _showLoadingDialog(message: "Verifying...");
+
     final String url = "https://sc3040G5-CalowinSpringNode.hf.space/central/account/forgot-password";
     try {
       final response = await http.post(
@@ -159,6 +163,9 @@ class _LoginpageState extends State<Loginpage> {
         headers: {"Content-Type": "application/json"},
         body: json.encode({"email": email, "otpCode": otpCode}),
       );
+
+      if(mounted) Navigator.of(context).pop();
+
       final responseMessage = response.body;
       if (response.statusCode == 200) {
         _showSuccessDialog(responseMessage);
@@ -166,6 +173,7 @@ class _LoginpageState extends State<Loginpage> {
         _showErrorDialog(responseMessage);
       }
     } catch (e) {
+      if(mounted) Navigator.of(context).pop();
       _showErrorDialog("Network error: ${e.toString()}");
     }
   }
@@ -180,7 +188,7 @@ class _LoginpageState extends State<Loginpage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Login Failed"),
+          title: const Text("Action Failed"),
           content: Text(message),
           actions: <Widget>[
             TextButton(
