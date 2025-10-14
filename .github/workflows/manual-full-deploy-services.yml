@@ -34,6 +34,7 @@ jobs:
 
           # Read input and remove spaces
           INPUT="${{ github.event.inputs.services }}"
+          echo "$INPUT"
           INPUT="${INPUT// /}"  # Remove all spaces
 
           if [[ "$INPUT" == "ALL" ]]; then
