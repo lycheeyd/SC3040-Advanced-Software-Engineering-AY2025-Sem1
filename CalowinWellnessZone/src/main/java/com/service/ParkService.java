@@ -36,7 +36,9 @@ public class ParkService {
         }
     }
 
+    // In ParkService.java
     private List<NPark> extractParks(String jsonData, Map<String, Double> userCoordinate) {
+        List<NPark> localParks = new ArrayList<>();
         JSONObject jsonObject = new JSONObject(jsonData);
         JSONArray featuresArray = jsonObject.getJSONArray("features");
 
@@ -44,21 +46,24 @@ public class ParkService {
             JSONObject feature = featuresArray.getJSONObject(i);
             JSONObject properties = feature.getJSONObject("properties");
 
-            // Extract the park or nature reserve name from the properties
-            String description = properties.getString("Description");
-            String name = extractParkName(description);
+            // --- THIS IS THE FIX ---
+            // Get the name directly from the "NAME" key instead of "Description"
+            String name = properties.optString("NAME");
 
-            // Extract coordinates from the geometry section
+            // Skip if the entry has no name
+            if (name.isEmpty()) {
+                continue;
+            }
+
             JSONObject geometry = feature.getJSONObject("geometry");
             List<Map<String, Double>> coordinates = extractCoordinates(geometry);
 
-            // Create a new NPark instance and add it to the list
             if (!coordinates.isEmpty()) {
                 NPark park = new NPark(coordinates, userCoordinate, name);
-                parks.add(park);
+                localParks.add(park);
             }
         }
-        return parks;
+        return localParks;
     }
 
     private String extractParkName(String description) {
