@@ -29,22 +29,20 @@ jobs:
     steps:
       - id: select
         run: |
-          # Define all services
-          ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
-
-          # Read input
-          INPUT="${{ toJson(github.event.inputs.services) }}"  # Convert input to JSON string
-
-          # Remove quotes and brackets if necessary
-          INPUT=$(echo "$INPUT" | sed 's/^\[//;s/\]$//;s/"//g')
-
-          if [[ "$INPUT" == *"ALL"* ]] || [[ -z "$INPUT" ]]; then
+          # Define all services as a shell array
+          ALL_SERVICES=(CalowinAccount CalowinFriends CalowinNotification CalowinSpringNode CalowinTrip CalowinWellnessZone)
+          
+          # Use jq to parse the JSON input directly.
+          # This is more reliable than manual string manipulation.
+          INPUT_JSON='${{ toJson(github.event.inputs.services) }}'
+          
+          if [[ "$INPUT_JSON" == *ALL* ]]; then
             echo "All services selected."
             JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s . | jq -c .)
           else
-            echo "Selected specific services: $INPUT"
-            # Split by comma and remove spaces
-            JSON=$(echo "$INPUT" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | jq -R . | jq -s . | jq -c .)
+            echo "Selected specific services."
+            # Use jq to parse the string into a valid JSON array.
+            JSON=$(echo "$INPUT_JSON" | jq -c '.')
           fi
 
           # Output JSON safely
