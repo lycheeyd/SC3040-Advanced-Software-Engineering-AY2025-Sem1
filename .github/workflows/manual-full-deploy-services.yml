@@ -31,21 +31,19 @@ jobs:
         run: |
           # Define all services
           ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
-          
+
           # Read input
-          INPUT="${{ github.event.inputs.services }}"
+          INPUT="${{ toJson(github.event.inputs.services) }}"  # Convert input to JSON string
 
-          # Default to ALL if empty
-          if [ -z "$INPUT" ]; then
-            echo "No services selected, defaulting to ALL"
-            INPUT="ALL"
-          fi
+          # Remove quotes and brackets if necessary
+          INPUT=$(echo "$INPUT" | sed 's/^\[//;s/\]$//;s/"//g')
 
-          if [[ "$INPUT" == *"ALL"* ]]; then
+          if [[ "$INPUT" == *"ALL"* ]] || [[ -z "$INPUT" ]]; then
             echo "All services selected."
             JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s . | jq -c .)
           else
             echo "Selected specific services: $INPUT"
+            # Split by comma and remove spaces
             JSON=$(echo "$INPUT" | tr ',' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | jq -R . | jq -s . | jq -c .)
           fi
 
