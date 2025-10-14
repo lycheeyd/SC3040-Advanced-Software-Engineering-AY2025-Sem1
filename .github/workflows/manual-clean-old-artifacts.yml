@@ -2,8 +2,6 @@ name: Manual Cleanup Old Artifacts
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * 0" # runs weekly on Sunday midnight UTC
 
 permissions:
   actions: write
