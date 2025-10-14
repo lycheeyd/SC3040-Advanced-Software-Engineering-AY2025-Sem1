@@ -37,6 +37,7 @@ jobs:
           else
             echo "matrix_output=[\"$input_target\"]" >> $GITHUB_OUTPUT
           fi
+          echo ${{ fromJSON(needs.set-matrix.outputs.target_matrix) }}
 
   build-and-deploy:
     needs: set-matrix
