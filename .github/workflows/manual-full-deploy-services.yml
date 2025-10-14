@@ -30,9 +30,6 @@ jobs:
       - id: select
         shell: bash
         run: |
-          # Define all services
-          ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
-
           # Read input as single service
           INPUT="${{ github.event.inputs.services }}"
 
@@ -41,12 +38,14 @@ jobs:
             INPUT="ALL"
           fi
 
+          # Prepare JSON array
           if [[ "$INPUT" == "ALL" ]]; then
-            JSON=$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -s . | jq -c .)
+            JSON='["CalowinAccount","CalowinFriends","CalowinNotification","CalowinSpringNode","CalowinTrip","CalowinWellnessZone"]'
           else
-            JSON=$(echo "$INPUT" | jq -R . | jq -s . | jq -c .)
+            JSON="[\"$INPUT\"]"
           fi
-          
+
+          # Output JSON to GitHub Actions
           echo "list=$JSON" >> "$GITHUB_OUTPUT"
 
   build-and-deploy:
