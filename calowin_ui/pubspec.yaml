@@ -47,6 +47,7 @@ dependencies:
   flutter_svg: ^2.0.13
   shared_preferences: ^2.0.6
   provider: ^6.1.2
+  confetti: ^0.7.0
 
 
 
