@@ -32,17 +32,17 @@ jobs:
           # Define all services
           ALL_SERVICES=("CalowinAccount" "CalowinFriends" "CalowinNotification" "CalowinSpringNode" "CalowinTrip" "CalowinWellnessZone")
 
-          # Read input and remove spaces
+          # Read input
           INPUT="${{ github.event.inputs.services }}"
+          echo "Selected input: $INPUT"
 
           if [[ "$INPUT" == "ALL" ]]; then
-            JSON=$(IFS=, ; echo "(${ALL_SERVICES[*]})")
+            JSON=$(printf '"%s",' "${ALL_SERVICES[@]}" | sed 's/,$//')
+            JSON="[$JSON]"
           else
-            # Single service, compact JSON
-            JSON=("\"$INPUT\"")
+            JSON="[\"$INPUT\"]"
           fi
 
-          # Output to GitHub Actions
           echo "list=$JSON" >> $GITHUB_OUTPUT
           echo "Selected services JSON: $JSON"
 
