@@ -29,8 +29,8 @@ jobs:
       matrix:
         service: ${{ 
           contains(github.event.inputs.services, 'ALL') &&
-          fromJSON('["CalowinAccount", "CalowinFriends", "CalowinNotification", "CalowinSpringNode", "CalowinTrip", "CalowinWellnessZone"]') ||
-          fromJSON(format('["{0}"]', join(split(github.event.inputs.services, ","), '","')))
+          fromJSON('[\"CalowinAccount\", \"CalowinFriends\", \"CalowinNotification\", \"CalowinSpringNode\", \"CalowinTrip\", \"CalowinWellnessZone\"]') ||
+          fromJSON(format('[\"{0}\"]', join(split(github.event.inputs.services, ','), '\",\"')))
           }}
 
     outputs:
