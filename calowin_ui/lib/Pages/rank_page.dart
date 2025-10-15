@@ -14,28 +14,40 @@ class RankPage extends StatefulWidget {
   State<RankPage> createState() => _RankPageState();
 }
 
-// NEW: Added an enum for clarity when toggling leaderboards.
 enum LeaderboardType { calories, carbon }
 
 class _RankPageState extends State<RankPage> {
   String userID = "";
-  // MODIFIED: Switched to the enum for better state management.
   LeaderboardType _selectedType = LeaderboardType.calories;
   LeaderboardRetriever retriever = LeaderboardRetriever();
   List<LeaderboardItem> caloriesleaderBoard = [];
   List<LeaderboardItem> carbonleaderBoard = [];
   late UserProfile _profile;
   bool flag = false;
+  // NEW: A state variable to manage the loading spinner.
+  bool _isLoading = true;
 
 
+  // MODIFIED: This function now manages the loading state.
   Future<void> _retrieveLeaderboards() async {
-    print("RetrieveLeaderBoards: rank page");
-    caloriesleaderBoard = await retriever.retrieveCalorieLeaderboard(userID);
-    carbonleaderBoard = await retriever.retrieveCarbonLeaderboard(userID);
-    if(mounted) {setState(() {
-      caloriesleaderBoard = caloriesleaderBoard;
-      carbonleaderBoard = carbonleaderBoard;
-    });}
+    // Show spinner when this function is called.
+    if(mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
+
+    try {
+      caloriesleaderBoard = await retriever.retrieveCalorieLeaderboard(userID);
+      carbonleaderBoard = await retriever.retrieveCarbonLeaderboard(userID);
+    } finally {
+      // Hide spinner when done, whether it succeeded or failed.
+      if(mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -72,7 +84,6 @@ class _RankPageState extends State<RankPage> {
     }
   }
 
-  // NEW: A dedicated widget for the top 3 podium.
   Widget _buildPodiumItem(LeaderboardItem user, int rank) {
     final colors = [
       Color(0xFFFFD700), // Gold
@@ -163,7 +174,6 @@ class _RankPageState extends State<RankPage> {
     );
   }
 
-  // NEW: A refactored list item for ranks 4 and below.
   Widget _buildRankListItem(int index, LeaderboardItem user) {
     final Image? medal = _selectedType == LeaderboardType.calories ? user.calorieMedal : user.carbonMedal;
     final int points = _selectedType == LeaderboardType.calories ? user.caloriePoint : user.carbonPoint;
@@ -205,7 +215,6 @@ class _RankPageState extends State<RankPage> {
     );
   }
 
-  // MODIFIED: The main build method is completely restructured for the new UI.
   @override
   Widget build(BuildContext context) {
     final bool isCalorie = _selectedType == LeaderboardType.calories;
@@ -228,10 +237,17 @@ class _RankPageState extends State<RankPage> {
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
         elevation: 0,
+        // NEW: An action button to refresh the leaderboard.
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            // Disable the button while loading to prevent multiple requests.
+            onPressed: _isLoading ? null : _retrieveLeaderboards,
+          ),
+        ],
       ),
       body: Column(
         children: [
-          // NEW: A segmented control for switching leaderboards.
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16.0),
@@ -261,30 +277,36 @@ class _RankPageState extends State<RankPage> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          // NEW: The podium section for the top 3.
-          if (topThree.isNotEmpty)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (topThree.length > 1) _buildPodiumItem(topThree[1], 2),
-                if (topThree.length > 0) _buildPodiumItem(topThree[0], 1),
-                if (topThree.length > 2) _buildPodiumItem(topThree[2], 3),
-              ],
-            ),
-          const SizedBox(height: 20),
-          const Divider(indent: 20, endIndent: 20),
-          // NEW: The ListView for ranks 4 and below.
+          // NEW: The body now shows a spinner while loading.
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.only(bottom: 16),
-              itemCount: restOfList.length,
-              itemBuilder: (context, index) {
-                final user = restOfList[index];
-                // The index for ranking needs to start from 4.
-                return _buildRankListItem(index + 3, user);
-              },
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+              children: [
+                const SizedBox(height: 20),
+                if (topThree.isNotEmpty)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (topThree.length > 1) _buildPodiumItem(topThree[1], 2),
+                      if (topThree.length > 0) _buildPodiumItem(topThree[0], 1),
+                      if (topThree.length > 2) _buildPodiumItem(topThree[2], 3),
+                    ],
+                  ),
+                const SizedBox(height: 20),
+                const Divider(indent: 20, endIndent: 20),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    itemCount: restOfList.length,
+                    itemBuilder: (context, index) {
+                      final user = restOfList[index];
+                      return _buildRankListItem(index + 3, user);
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],
