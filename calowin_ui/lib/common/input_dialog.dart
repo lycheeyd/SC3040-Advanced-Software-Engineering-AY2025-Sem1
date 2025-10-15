@@ -36,99 +36,103 @@ class InputDialog extends StatelessWidget {
       elevation: 16,
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              title,
-              style: GoogleFonts.roboto(
-                  color: PrimaryColors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Text(
-              content,
-              style:
-                  GoogleFonts.roboto(color: Colors.grey.shade800, fontSize: 14),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            SizedBox(
-                height: 40,
-                child: TextField(
-                  controller: inputController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-                    hintText: hintText,
-                    hintStyle: GoogleFonts.roboto(
-                        fontSize: 16, color: PrimaryColors.grey),
-                    enabledBorder: inputBorder,
-                    border: inputBorder,
-                    focusedBorder: inputBorder,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.roboto(
+                    color: PrimaryColors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Text(
+                content,
+                style:
+                GoogleFonts.roboto(color: Colors.grey.shade800, fontSize: 14),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              SizedBox(
+                  height: 40,
+                  child: TextField(
+                    controller: inputController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding:
+                      const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                      hintText: hintText,
+                      hintStyle: GoogleFonts.roboto(
+                          fontSize: 16, color: PrimaryColors.grey),
+                      enabledBorder: inputBorder,
+                      border: inputBorder,
+                      focusedBorder: inputBorder,
+                    ),
+                  )),
+              const SizedBox(
+                height: 15,
+              ),
+              // MODIFIED: Replaced fixed-width SizedBoxes with Expanded widgets.
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 40,
+                      child: ElevatedButton(
+                          onPressed: onCancel,
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                              BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            "Cancel",
+                            style: GoogleFonts.roboto(
+                                fontSize: 16, color: Colors.black),
+                          )),
+                    ),
                   ),
-                )),
-            const SizedBox(
-              height: 15,
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SizedBox(
-                  width: 130,
-                  height: 40,
-                  child: ElevatedButton(
-                      onPressed: onCancel,
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Rounded corners
-                        ),
-                      ),
-                      child: Text(
-                        "Cancel",
-                        style: GoogleFonts.roboto(
-                            fontSize: 16, color: Colors.black),
-                      )),
-                ),
-                SizedBox(
-                  width: 130,
-                  height: 40,
-                  child: ElevatedButton(
-                      onPressed: () {
-                        onConfirm(inputController.text);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: confirmButtonColor ?? Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // Rounded corners
-                        ),
-                      ),
-                      child: Text(
-                        confirmButtonText ?? "Confirm",
-                        style: GoogleFonts.roboto(
-                            fontSize: 16, color: Colors.white),
-                      )),
-                )
-              ],
-            )
-          ],
+                  const SizedBox(width: 10), // Gap between buttons
+                  Expanded(
+                    child: SizedBox(
+                      height: 40,
+                      child: ElevatedButton(
+                          onPressed: () {
+                            onConfirm(inputController.text);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: confirmButtonColor ?? Colors.black,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                              BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            confirmButtonText ?? "Confirm",
+                            style: GoogleFonts.roboto(
+                                fontSize: 16, color: Colors.white),
+                          )),
+                    ),
+                  )
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
