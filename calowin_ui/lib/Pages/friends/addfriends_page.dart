@@ -25,6 +25,8 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
   bool flag = false;
   bool _searchPerformed = false;
   bool _isSearching = false;
+  // NEW: State for the friend requests loading spinner.
+  bool _isLoadingRequests = true;
 
   @override
   void didChangeDependencies() {
@@ -51,13 +53,28 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
     _profile = widget.profile;
   }
 
+  // MODIFIED: _getRequesters now handles a loading state.
   Future<void> _getRequesters() async {
-    print("getRequester: AddFriendsPage");
-    _friendRequests = await _friendsController.retrieveRequesterList(_profile.getUserID());
-    if(mounted)
-    { setState(() {
-      _friendRequests = _friendRequests;
-    });}
+    if(mounted) {
+      setState(() {
+        _isLoadingRequests = true;
+      });
+    }
+
+    try {
+      final requests = await _friendsController.retrieveRequesterList(_profile.getUserID());
+      if(mounted) {
+        setState(() {
+          _friendRequests = requests;
+        });
+      }
+    } finally {
+      if(mounted) {
+        setState(() {
+          _isLoadingRequests = false;
+        });
+      }
+    }
   }
 
   void _handleBack() {
@@ -104,7 +121,6 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
     }
   }
 
-  // NEW: A reusable function to show a loading spinner dialog.
   void _showLoadingDialog() {
     showDialog(
       context: context,
@@ -127,12 +143,11 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
     );
   }
 
-  // MODIFIED: _handleAccept now shows a loading spinner.
   void _handleAccept(String id) async {
-    _showLoadingDialog(); // Show spinner
+    _showLoadingDialog();
     try {
       bool success = await _friendsController.acceptFriend(_profile.getUserID(),id);
-      if(mounted) Navigator.of(context).pop(); // Hide spinner
+      if(mounted) Navigator.of(context).pop();
 
       if(success){
         _getRequesters();
@@ -151,16 +166,15 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
             });
       }
     } catch (e) {
-      if(mounted) Navigator.of(context).pop(); // Hide spinner on error
+      if(mounted) Navigator.of(context).pop();
     }
   }
 
-  // MODIFIED: _handleReject now shows a loading spinner.
   void _handleReject(String id) async {
-    _showLoadingDialog(); // Show spinner
+    _showLoadingDialog();
     try {
       bool success = await _friendsController.rejectFriend(_profile.getUserID(),id);
-      if(mounted) Navigator.of(context).pop(); // Hide spinner
+      if(mounted) Navigator.of(context).pop();
 
       if(success){
         _getRequesters();
@@ -179,7 +193,7 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
             });
       }
     } catch (e) {
-      if(mounted) Navigator.of(context).pop(); // Hide spinner on error
+      if(mounted) Navigator.of(context).pop();
     }
   }
 
@@ -309,15 +323,29 @@ class _AddfriendsPageState extends State<AddfriendsPage> {
               child: Divider(),
             ),
 
-            Text(
-              "Friend Requests",
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+            // MODIFIED: Added a Row with a title and a refresh button.
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Friend Requests",
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: _isLoadingRequests ? null : _getRequesters,
+                )
+              ],
             ),
             const SizedBox(height: 8),
-            _friendRequests.isEmpty
+
+            // MODIFIED: This section now shows a spinner while loading requests.
+            _isLoadingRequests
+                ? const Center(child: Padding(padding: EdgeInsets.all(32.0), child: CircularProgressIndicator()))
+                : _friendRequests.isEmpty
                 ? _buildEmptyState(
               icon: Icons.notifications_none,
               title: "No Pending Requests",

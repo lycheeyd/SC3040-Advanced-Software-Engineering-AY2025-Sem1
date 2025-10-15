@@ -20,6 +20,8 @@ class _FriendsPageState extends State<FriendsPage> {
   List<UserProfile> _friendlist = [];
   late UserProfile _notifier;
   bool flag = false;
+  // NEW: A state variable to manage the loading spinner.
+  bool _isLoading = true;
 
   @override
   void didChangeDependencies() {
@@ -45,13 +47,28 @@ class _FriendsPageState extends State<FriendsPage> {
     _userID = widget.userID;
   }
 
+  // MODIFIED: This function now manages the loading state.
   Future<void> _getFriends() async {
-    print("Get friends: Friends Page");
-    _friendlist = await friendListRetriever.retrieveFriendList(_userID);
-    if(mounted)
-    {setState(() {
-      _friendlist = _friendlist;
-    });}
+    if(mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
+
+    try {
+      final friends = await friendListRetriever.retrieveFriendList(_userID);
+      if(mounted) {
+        setState(() {
+          _friendlist = friends;
+        });
+      }
+    } finally {
+      if(mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _redirectToAddFriendsPage() {
@@ -72,7 +89,6 @@ class _FriendsPageState extends State<FriendsPage> {
     }
   }
 
-  // MODIFIED: Updated list item to use a Card and a cleaner design.
   Widget _buildListItem(int index, UserProfile friend) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -93,7 +109,6 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  // NEW: A dedicated widget for the empty state.
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -120,7 +135,6 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  // MODIFIED: Build method is refactored for a flexible layout and to show the new empty state.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,13 +149,20 @@ class _FriendsPageState extends State<FriendsPage> {
               fontWeight: FontWeight.bold
           ),
         ),
-        actions: [IconButton(onPressed: _getFriends, icon: const Icon(Icons.refresh, color: Colors.white,))],
+        actions: [
+          IconButton(
+              onPressed: _isLoading ? null : _getFriends,
+              icon: const Icon(Icons.refresh, color: Colors.white,)
+          )
+        ],
       ),
       body: Column(
         children: [
-          // MODIFIED: Replaced fixed-height SizedBox with Expanded for a flexible layout.
+          // MODIFIED: The body now shows a spinner while loading.
           Expanded(
-            child: _friendlist.isEmpty
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _friendlist.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -151,7 +172,6 @@ class _FriendsPageState extends State<FriendsPage> {
               },
             ),
           ),
-          // MODIFIED: Button is placed outside the list and styled for prominence.
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             color: Colors.grey[100],
