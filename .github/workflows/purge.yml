@@ -1,0 +1,40 @@
+name: Purge All Artifacts
+
+on:
+  workflow_dispatch: 
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete all artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Fetching all artifacts from $REPO..."
+
+          # Paginate through all artifacts (100 per page)
+          page=1
+          while true; do
+            echo "Fetching page $page..."
+            artifacts=$(gh api repos/$REPO/actions/artifacts --paginate -q '.artifacts[]?.id')
+            
+            if [ -z "$artifacts" ]; then
+              echo "No more artifacts found."
+              break
+            fi
+
+            echo "$artifacts" | while read -r artifact_id; do
+              echo "Deleting artifact ID: $artifact_id"
+              gh api --method DELETE repos/$REPO/actions/artifacts/$artifact_id || true
+            done
+
+            ((page++))
+          done
+
+          echo "All artifacts deleted."
