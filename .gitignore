@@ -1,22 +1,57 @@
-# Java/Maven
+# ===================================================
+# Java / Maven
+# ===================================================
 target/
-
 **/*.class
 *.jar
 *.war
 *.ear
 .mvn/wrapper/maven-wrapper.jar
 
-# OS/IDE
+
+# ===================================================
+# OS / IDE
+# ===================================================
+# macOS
 .DS_Store
+
+# JetBrains (IntelliJ, Android Studio)
 .idea/
-.vscode/
+.run/
 *.iml
 
-# Logs
+# Visual Studio Code
+.vscode/
+
+
+# ===================================================
+# Logs and Temp Files
+# ===================================================
 *.log
 
-# Flutter/Dart (app)
+
+# ===================================================
+# Flutter / Dart
+# ===================================================
+# General
 calowin_ui/build/
 calowin_ui/.dart_tool/
 calowin_ui/.packages
+
+# Android
+android/build/
+android/.gradle/
+*.keystore
+
+# iOS
+ios/build/
+ios/.symlinks/
+ios/Pods/
+
+
+# ===================================================
+# Secrets - CRITICAL
+# ===================================================
+# Ignore environment variables files
+.env
+.env.*
