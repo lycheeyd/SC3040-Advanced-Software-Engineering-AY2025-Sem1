@@ -83,6 +83,14 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Run JUnit Tests
+        if: ${{ fromJson(needs.detect-changes.outputs.src-changes)[matrix.service] }}
+        run: |
+          cd ${{ matrix.service }}
+          echo "Running JUnit tests for ${{ matrix.service }}..."
+          mvn test --batch-mode
+          echo "JUnit tests completed successfully for ${{ matrix.service }}"
+
       - name: Build JAR
         if: ${{ fromJson(needs.detect-changes.outputs.src-changes)[matrix.service] }}
         run: |
