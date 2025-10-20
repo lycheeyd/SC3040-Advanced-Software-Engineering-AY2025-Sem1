@@ -62,7 +62,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Run JUnit Tests
-        if: ${{ fromJson(needs.detect-changes.outputs.src-changes)[matrix.service] }}
+        id: test
         run: |
           cd ${{ matrix.service }}
           echo "Running JUnit tests for ${{ matrix.service }}..."
