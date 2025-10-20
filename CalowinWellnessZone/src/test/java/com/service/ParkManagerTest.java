@@ -35,8 +35,7 @@ class ParkServiceTest {
         double userLon = 103.8198;
 
         // A sample GeoJSON response from the API
-        String fakeJsonData = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{\"Description\":\"<table><tr><th>NAME</th> <td>Bishan - Ang Mo Kio Park</td></tr></table>\"},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[103.83,1.37],[103.84,1.37],[103.83,1.36],[103.83,1.37]]]}}]}";
-
+        String fakeJsonData = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{\"NAME\":\"Bishan - Ang Mo Kio Park\"},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[103.83,1.37],[103.84,1.37],[103.83,1.36],[103.83,1.37]]]}}]}";
         // Configure the mock client to return the fake data
         when(parkApiClient.getResponseData()).thenReturn(fakeJsonData);
         when(parkApiClient.getErrorMessage()).thenReturn(""); // No error
