@@ -111,6 +111,8 @@ class _MapcalcPageState extends State<MapcalcPage> {
     }
   }
 
+
+
   @override
   void didUpdateWidget(MapcalcPage oldWidget){
     super.didUpdateWidget(oldWidget);
@@ -270,7 +272,6 @@ class _MapcalcPageState extends State<MapcalcPage> {
     );
   }
 
-  // NEW: A reusable function to show a loading spinner dialog.
   void _showLoadingDialog({String message = "Loading..."}) {
     showDialog(
       context: context,
@@ -377,13 +378,12 @@ class _MapcalcPageState extends State<MapcalcPage> {
     }
   }
 
-  // MODIFIED: _startTrip now shows a loading spinner.
   Future<void> _startTrip() async {
     if (selectedLocation != null && selectedMethod != null) {
-      _showLoadingDialog(message: "Starting Trip..."); // Show spinner
+      _showLoadingDialog(message: "Starting Trip...");
       try {
         metrics = await apiService.startTrip(selectedLocation!, selectedMethod!, profile.getUserID(), userCurrentLocation);
-        if (mounted) Navigator.of(context).pop(); // Hide spinner
+        if (mounted) Navigator.of(context).pop();
 
         if (metrics == null) {
           throw("Metrics not retrieved");
@@ -394,7 +394,7 @@ class _MapcalcPageState extends State<MapcalcPage> {
           });
         }
       } catch (e) {
-        if (mounted) Navigator.of(context).pop(); // Hide spinner on error
+        if (mounted) Navigator.of(context).pop();
         print('Error starting trip: $e');
       }
     } else {
@@ -425,10 +425,26 @@ class _MapcalcPageState extends State<MapcalcPage> {
     }
   }
 
+  // MODIFIED: This function now shows a confirmation dialog.
   void _handleCancel() {
-    setState(() {
-      _resetState();
-    });
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return DualbuttonDialog(
+          title: "Cancel Trip?",
+          content: "Are you sure you want to cancel this trip? Your progress will be lost.",
+          onConfirm: () {
+            Navigator.of(context).pop(); // Close the dialog
+            setState(() {
+              _resetState(); // Reset the state if confirmed
+            });
+          },
+          onCancel: () {
+            Navigator.of(context).pop(); // Just close the dialog if not confirmed
+          },
+        );
+      },
+    );
   }
 
   void _endTrip() {
@@ -448,12 +464,11 @@ class _MapcalcPageState extends State<MapcalcPage> {
     );
   }
 
-  // MODIFIED: _navigateToAchievement now shows a loading spinner.
   void _navigateToAchievement() async {
     if (selectedLocation != null &&
         selectedMethod != null &&
         userCurrentLocation != null) {
-      _showLoadingDialog(message: "Ending Trip..."); // Show spinner
+      _showLoadingDialog(message: "Ending Trip...");
 
       final distance = metrics?['distance'];
       final caloriesBurnt = metrics?['caloriesBurnt'];
@@ -462,7 +477,7 @@ class _MapcalcPageState extends State<MapcalcPage> {
       try {
         await apiService.addTripMetrics(carbonSaved, caloriesBurnt, profile.getUserID());
         if(mounted) {
-          Navigator.of(context).pop(); // Hide spinner
+          Navigator.of(context).pop();
           FocusScope.of(context).unfocus();
 
           Navigator.push(
@@ -483,7 +498,7 @@ class _MapcalcPageState extends State<MapcalcPage> {
           });
         }
       } catch (e) {
-        if (mounted) Navigator.of(context).pop(); // Hide spinner on error
+        if (mounted) Navigator.of(context).pop();
         print('Error sending trip metrics: $e');
       }
     }
