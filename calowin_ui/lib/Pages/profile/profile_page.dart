@@ -66,17 +66,47 @@ class _ProfilePageState extends State<ProfilePage> {
         _profile.setName(updatedProfile.getName());
         _profile.setBio(updatedProfile.getBio());
         _profile.setWeight(updatedProfile.getWeight());
-        _profile.updateProfile(); //notify other pages about this change
+        _profile.updateProfile();
       });
     }
   }
 
-  void _handleLogOut() {
-    FocusScope.of(context).unfocus();
-    Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
+  // NEW: A reusable function to show a loading spinner dialog.
+  void _showLoadingDialog({String message = "Logging out..."}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(width: 20),
+                Text(message),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
-  // NEW: Helper widget for stat items to reduce code duplication.
+  // MODIFIED: This function now shows a loading spinner before navigating.
+  void _handleLogOut() {
+    _showLoadingDialog(); // Show spinner
+    FocusScope.of(context).unfocus();
+
+    // Adding a small delay to ensure the dialog has time to appear before navigation.
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if(mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
+      }
+    });
+  }
+
   Widget _buildStatTile(String title, String value, String unit) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -93,15 +123,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // MODIFIED: Entire build method is updated for the new card-based UI.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100], // A neutral background color
-      body: ListView( // Changed to ListView to prevent overflow on smaller screens
+      backgroundColor: Colors.grey[100],
+      body: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // NEW: Profile Header section
           Container(
             padding: const EdgeInsets.only(top: 40, bottom: 20),
             decoration: BoxDecoration(
@@ -136,7 +164,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 20),
 
-          // NEW: Card for Bio
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Card(
@@ -160,7 +187,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 16),
 
-          // NEW: Card for Stats
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Card(
@@ -184,7 +210,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 16),
 
-          // NEW: Card for Badges
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Card(
@@ -215,7 +240,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 24),
 
-          // MODIFIED: Buttons are updated for better visual hierarchy.
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
