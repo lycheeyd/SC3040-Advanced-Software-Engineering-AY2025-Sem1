@@ -149,7 +149,7 @@ jobs:
             GITHUB_BUILD_ID="$(gh variable get "LAST_BUILD_ID_$SERVICE_DIR" --repo $GITHUB_REPO --json value -q ".value")"
           fi
 
-          echo "Deploying $SERVICE_DIR using build ID: $GITHUB_BUILD_ID
+          echo "Deploying $SERVICE_DIR using build ID: $GITHUB_BUILD_ID"
 
           git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$SERVICE_DIR hf_upload/$SERVICE_DIR
 
