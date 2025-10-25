@@ -146,7 +146,24 @@ Create a HF space following the specified **naming convention** with the followi
   <details markdown="1"><summary>Tables(s)</summary>
     
   - **UserInfo:** user_id | name | weight | bio
-  - **Trips:** trip_id | start_location | end_location | start_longitude | start_latitude | end_longitude | end_latitude | distance | calories_burnt | carbon_saved | trip_time | travel_method | status | user_id
+  - **Trips:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    trip_id | nvarchar(10)
+    start_location | nvarchar(255)
+    end_location | nvarchar(255)
+    start_longitude | decimal(18, 7)
+    start_latitude | decimal(18, 7)
+    end_longitude | decimal(18, 7)
+    end_latitude | decimal(18, 7)
+    distance | decimal(5, 3)
+    calories_burnt | int
+    carbon_saved | int
+    trip_time | datetime2(7)
+    travel_method | nvarchar(20)
+    status | nvarchar(20)
+    user_id | nchar(8)
+
   - **Achievement:** user_id | total_carbon_saved | total_calories_burnt | carbon_medal | calorie_medal
   - **FriendRelationship:** Unique_ID | Friend_Unique_ID | Friended On | status
 
