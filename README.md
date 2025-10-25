@@ -81,6 +81,8 @@ Create a HF space following the specified **naming convention** with the followi
 
 <img width="1026" height="428" alt="image" src="https://github.com/user-attachments/assets/1b513921-dfae-429c-8f23-d2ac215bc253" />
 
+- Erase the Artifact Library: purge.yml
+
 ## Frontend Setup
 - Emulator (Android / IOS)
 - Direct installation
