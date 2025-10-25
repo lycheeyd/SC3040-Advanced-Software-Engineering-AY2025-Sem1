@@ -47,6 +47,8 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 - Flutter SDK 3.0+
 - HuggingFace Space (HF) [Docker Build]
 - Git
+- Microsoft SQL Server 2022
+- SQL Server Management Studio
 
 ## Architecture
 - **Backend**: 5 Spring Boot microservices + 1 Spring Boot API Gateway (Hosted on HuggingFace)
@@ -92,7 +94,7 @@ Create a HF space following the specified **naming convention** with the followi
 
 ### 6. Extra notes
 - Email generation uses Google OAuth + Gmail API instead of Gmail SMTP, while both are available due to SMTP port restriction by HuggingFace.
-- A Bastlion Server is setup to bypass VPN wall for establishing connection to the Virtual Machine hosting the database
+- A Bastlion Server is setup to bypass VPN wall by SSH tunneling for establishing connection to the Virtual Machine hosting the database
 
 </details>
 
@@ -136,6 +138,30 @@ Create a HF space following the specified **naming convention** with the followi
 
 </details>
 
+## Database Setup
+
+### 1. Databases
+- **CalowinDB:** Stores application level data
+  
+  <details markdown="1"><summary>Tables(s)</summary>
+    
+  - **UserInfo:** user_id | name | weight | bio
+  - **Trips:** trip_id | start_location | end_location | start_longitude | start_latitude | end_longitude | end_latitude | distance | calories_burnt | carbon_saved | trip_time | travel_method | status | user_id
+  - **Achievement:** user_id | total_carbon_saved | total_calories_burnt | carbon_medal | calorie_medal
+  - **FriendRelationship:** Unique_ID | Friend_Unique_ID | Friended On | status
+
+  </details>
+    
+- **CalowinSecureDB:** Stores user's confidential data with security implementations
+
+  <details markdown="1"><summary>Tables(s)</summary>
+    
+  - **OTPRegister:** email | otp_code | expires_at | otp_type
+  - **SecureUserInfo:** userid | email_address | password
+  - **ApiKeys:** KeyId | KeyName | ApiKey
+
+  </details>
+    
 ## Frontend Setup
 - **Manual:** Emulator (Android / IOS)
 - **Recommended:** Direct installation
