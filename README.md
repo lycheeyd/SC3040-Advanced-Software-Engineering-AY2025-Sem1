@@ -35,15 +35,44 @@
 
 ### 4. MicroService Naming Convention
 This naming convention must be followed through for naming Service Folders in GitHub and creating Spaces on HuggingFace
-- HF Staging Environment (UAT Branch): Calowin{SERVICENAME}
-- HF Production Environment (Main Branch): Calowin{SERVICENAME}Live
-- GitHub Folder: {SERVICENAME} (Placed in Root Directory)
+- HF Staging Environments (UAT Branch): Calowin{SERVICENAME}
+- HF Production Environments (Main Branch): Calowin{SERVICENAME}Live
+- GitHub Folders: {SERVICENAME} (Placed in Root Directory)
 
-- Horizontal Scale Out (Future): {EnvironmentName}-N (where N is integer with increment of 1)
+- Horizontal Scale Out (Future): {EnvironmentName}-N (where N is integer with increment of 1) [E.g. CalowinAccount-1]
+
+### 5. HuggingFace Space Setup
+Create a HF space following the specified **naming convention** with the following options:
+- Docker SDK
+- Blank template
+- Public
 
 ## GitHub Deployment Setup
 
-### 1. CI/CD Pipeline Workflows
+### 1. GitHub Secrets
+- Github fine grained PAT:
+  - Read access to metadata
+  - Read and Write access to actions variables and code
+    
+- HuggingFace Access Token
+- HuggingFace Username
+
+### 2. GitHub Environments
+- UAT
+- Production
+
+### 3. GitHub Variables (Automated by CI/CD)
+#### 1. UAT Environment
+ - List of successful Build_ID(s) for version based deployment on HuggingFace and tracking
+ - **Variable Name Generation Convention**:
+   - BUILD_ID_{SERVICENAME}_{short_commit_SHA}
+
+#### 2. Production Environment
+ - Tracks the current version (Build_ID) deployed on HF production environments
+ - **Variable Name Generation Convention**:
+   - LAST_BUILD_ID_{SERVICENAME}
+
+### 4. CI/CD Pipeline Workflows
 - Automatic Deployment: deploy-services-v3.yml
   - Triggered On pull-request completion into UAT branch and main branch
     
