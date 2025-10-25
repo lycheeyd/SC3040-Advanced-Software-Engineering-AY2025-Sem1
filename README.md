@@ -15,7 +15,7 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 
 ## Contributors
 | Name | GitHub Account |
-| :---         |     :---:      |
+| :---:         |     :---:      |
 | Anthony Chua Yong Tai   | anthonycyt     |
 | Liu Cong     | liuconggg       |
 | Yi Da     | lycheeyd       |
