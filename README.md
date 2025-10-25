@@ -5,6 +5,12 @@
 We decided to create Calowin to fill a critical gap in the market. While existing navigation apps ignore environmental impact and fitness apps do not include navigation capabilities, there is no single platform that connects them. Hence, Calowin bridges this gap by empowering users to track both the calories they burn and the carbon emissions they save during their trips. 
 Ultimately, the app aims to motivate individuals to make healthier, more eco-friendly choices, turning everyday travel into a rewarding experience for both personal well-being and the environment. 
 
+### Calowin Application DEMO Video
+
+<details markdown="1"><summary>Click to open video</summary>
+  
+</details>
+
 ## Contributors
 | Name | GitHub Account |
 | :---         |     :---:      |
@@ -14,6 +20,24 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 | Ali   | ali-adi     |
 | Yu Pei     |   FAN0020     |
 | Yu Jia     |        |
+
+## Repository Layout
+
+<details markdown="1"><summary>...</summary>
+  
+- **CalowinAcount:**       Account Microservice
+- **CalowinFriends:**      Friends Microservice
+- **CalowinNotification:** Notification Microservice
+- **CalowinSpringNode:**   API Gateway Microservice
+- **CalowinTrip:**         Trip Microservice
+- **CalowinWellnessZone:** WellnessZone Microservice
+- **calowin_ui:**          Flutter Frontend Application
+- **HF_setup_obsolete:**   Obsoleted initial non-CI/CD deployment setup structure (Record Keeping Purpose)
+- **atomikos-logs:**       Backend Microservice logging destination for local development
+
+</details>
+
+# System Overview and Setup Details
 
 ## Prerequisites
 - Java 21
@@ -114,24 +138,3 @@ Create a HF space following the specified **naming convention** with the followi
 - Emulator (Android / IOS)
 - Direct installation
 
-## Repository Layout
-
-<details markdown="1"><summary>...</summary>
-  
-- **CalowinAcount:**       Account Microservice
-- **CalowinFriends:**      Friends Microservice
-- **CalowinNotification:** Notification Microservice
-- **CalowinSpringNode:**   API Gateway Microservice
-- **CalowinTrip:**         Trip Microservice
-- **CalowinWellnessZone:** WellnessZone Microservice
-- **calowin_ui:**          Flutter Frontend Application
-- **HF_setup_obsolete:**   Obsoleted initial non-CI/CD deployment setup structure (Record Keeping Purpose)
-- **atomikos-logs:**       Backend Microservice logging destination for local development
-
-</details>
-
-## Calowin Application DEMO Video
-
-<details markdown="1"><summary>...</summary>
-  
-</details>
