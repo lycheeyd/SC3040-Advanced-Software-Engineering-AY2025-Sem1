@@ -145,7 +145,14 @@ Create a HF space following the specified **naming convention** with the followi
   
   <details markdown="1"><summary>Tables(s)</summary>
     
-  - **UserInfo:** user_id | name | weight | bio
+  - **UserInfo:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    user_id	| nchar(8)
+    name | nvarchar(50)
+    weight | float
+    bio	| nvarchar(250)
+	
   - **Trips:**
     | Column Name | Data Type |
     | :---:       |     :---:      |
@@ -164,19 +171,51 @@ Create a HF space following the specified **naming convention** with the followi
     status | nvarchar(20)
     user_id | nchar(8)
 
-  - **Achievement:** user_id | total_carbon_saved | total_calories_burnt | carbon_medal | calorie_medal
-  - **FriendRelationship:** Unique_ID | Friend_Unique_ID | Friended On | status
-
+  - **Achievement:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    user_id	| nchar(8)
+    total_carbon_saved	| int
+    total_calorie_burnt	| int
+    carbon_medal	| nvarchar(50)
+    calorie_medal	| nvarchar(50)
+	
+  - **FriendRelationship:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    Unique_ID	| nvarchar(8)
+    Friend_Unique_ID	| nvarchar(8)
+    [Friended On]	| datetime2(7)
+    status	| varchar(20)
+	
   </details>
     
 - **CalowinSecureDB:** Stores user's confidential data with security implementations
 
   <details markdown="1"><summary>Tables(s)</summary>
     
-  - **OTPRegister:** email | otp_code | expires_at | otp_type
+  - **OTPRegister:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    email	| nchar(255)
+    otp_code	| nchar(6)
+    expires_at	| datetime2(7)
+    otp_type	| nchar(20)
+    
   - **SecureUserInfo:** userid | email_address | password
-  - **ApiKeys:** KeyId | KeyName | ApiKey
-
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    user_id	| nchar(8)
+    email_address	| nchar(255)
+    password	| nvarchar(255)
+	
+  - **ApiKeys:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    KeyId	| int
+    KeyName	| nvarchar(100)
+    ApiKey	| nvarchar(MAX)
+	
   </details>
     
 ## Frontend Setup
