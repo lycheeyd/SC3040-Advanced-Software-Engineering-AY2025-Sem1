@@ -141,3 +141,23 @@ Create a HF space following the specified **naming convention** with the followi
 - **Recommended:** Direct installation
   - Download and Install Calowin using the APK or IPA file provided
 
+## External API(s)
+
+<details markdown="1"><summary>Click to open</summary>
+  
+- **Googl Cloud API(s):**
+  - Google OAuth2
+  - Gmail API
+  - Gmail SMTP
+  - Google Maps JavaScript API
+  - Google Maps SDK for Android
+  - Google Maps SDK for IOS
+  - Directions API
+  - Places API
+  - Places API (New)
+
+**data.gov.sg API(s):**
+- NEA Weather API (https://data.gov.sg/collections/1459/view)
+- NPARKS Parks API (https://data.gov.sg/datasets/d_0542d48f0991541706b58059381a6eca/view)
+
+</details>
