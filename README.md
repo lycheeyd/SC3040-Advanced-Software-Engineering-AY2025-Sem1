@@ -2,7 +2,9 @@
 
 ## About
 **Calowin** is a mobile application designed to promote personal fitness and environmental sustainability by integrating active travel tracking with carbon savings quantification.
+
 We decided to create Calowin to fill a critical gap in the market. While existing navigation apps ignore environmental impact and fitness apps do not include navigation capabilities, there is no single platform that connects them. Hence, Calowin bridges this gap by empowering users to track both the calories they burn and the carbon emissions they save during their trips. 
+
 Ultimately, the app aims to motivate individuals to make healthier, more eco-friendly choices, turning everyday travel into a rewarding experience for both personal well-being and the environment. 
 
 ### Calowin Application DEMO Video
