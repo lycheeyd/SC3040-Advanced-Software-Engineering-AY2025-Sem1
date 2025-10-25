@@ -8,7 +8,7 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 ### Calowin Application DEMO Video
 
 <details markdown="1"><summary>Click to open video</summary>
-  
+  INSERT VIDEO EMBED AWAITING YUPEI
 </details>
 
 ## Contributors
@@ -21,9 +21,11 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 | Yu Pei     |   FAN0020     |
 | Yu Jia     |        |
 
+GUYS FILL IN YOUR DETAILS
+
 ## Repository Layout
 
-<details markdown="1"><summary>...</summary>
+<details markdown="1"><summary>click to open</summary>
   
 - **CalowinAcount:**       Account Microservice
 - **CalowinFriends:**      Friends Microservice
@@ -53,7 +55,7 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 
 ## Backend Setup
 
-<details markdown="1"><summary>...</summary>
+<details markdown="1"><summary>Click to open</summary>
 
 ### 1. HuggingFace Requirements
 **IMPORTANT**: 
@@ -96,7 +98,7 @@ Create a HF space following the specified **naming convention** with the followi
 
 ## GitHub Deployment Setup
 
-<details markdown="1"><summary>...</summary>
+<details markdown="1"><summary>click to open</summary>
   
 ### 1. GitHub Secrets
 - Github fine grained PAT:
