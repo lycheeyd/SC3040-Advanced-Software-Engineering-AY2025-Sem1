@@ -10,7 +10,9 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 ### Calowin Application Demo Video
 
 <details markdown="1"><summary>Demo Video</summary>
-  INSERT VIDEO EMBED AWAITING YUPEI
+
+https://youtu.be/u8qhtj0_VHI
+  
 </details>
 
 ## Contributors
