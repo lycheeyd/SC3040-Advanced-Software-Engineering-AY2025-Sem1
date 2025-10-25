@@ -25,7 +25,7 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 
 ## Repository Layout
 
-<details markdown="1"><summary>click to open</summary>
+<details markdown="1"><summary>Repository Layout</summary>
   
 - **CalowinAcount:**       Account Microservice
 - **CalowinFriends:**      Friends Microservice
@@ -55,7 +55,7 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 
 ## Backend Setup
 
-<details markdown="1"><summary>Click to open</summary>
+<details markdown="1"><summary>Backend Setup</summary>
 
 ### 1. HuggingFace Requirements
 **IMPORTANT**: 
@@ -98,7 +98,7 @@ Create a HF space following the specified **naming convention** with the followi
 
 ## GitHub Deployment Setup
 
-<details markdown="1"><summary>click to open</summary>
+<details markdown="1"><summary>GitHub Deployment Setup</summary>
   
 ### 1. GitHub Secrets
 - Github fine grained PAT:
@@ -143,7 +143,7 @@ Create a HF space following the specified **naming convention** with the followi
 
 ## External API(s)
 
-<details markdown="1"><summary>Click to open</summary>
+<details markdown="1"><summary>External API(s)</summary>
   
 - **Googl Cloud API(s):**
   - Google OAuth2
