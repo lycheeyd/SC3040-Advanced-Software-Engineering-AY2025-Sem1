@@ -1,5 +1,19 @@
 # SC3040-Advanced-Software-Engineering
 
+## About
+**Calowin** is a mobile application designed to promote personal fitness and environmental sustainability by integrating active travel tracking with carbon savings quantification.
+We decided to create Calowin to fill a critical gap in the market. While existing navigation apps ignore environmental impact and fitness apps do not include navigation capabilities, there is no single platform that connects them. Hence, Calowin bridges this gap by empowering users to track both the calories they burn and the carbon emissions they save during their trips. Ultimately, the app aims to motivate individuals to make healthier, more eco-friendly choices, turning everyday travel into a rewarding experience for both personal well-being and the environment. 
+
+## Contributors
+| Name | GitHub Account |
+| :---         |     :---:      |
+| Anthony Chua Yong Tai   | anthonycyt     |
+| Liu Cong     | liuconggg       |
+| Yi Da     | lycheeyd       |
+| Ali   | ali-adi     |
+| Yu Pei     |   FAN0020     |
+| Yu Jia     |        |
+
 ## Prerequisites
 - Java 21
 - Maven 3.6+
@@ -13,6 +27,8 @@
 - **Database**: Microsoft SQL Server 2022 (Hosted on NTU's Virtual Machine behind a VPN)
 
 ## Backend Setup
+
+<details markdown="1"><summary>...</summary>
 
 ### 1. HuggingFace Requirements
 **IMPORTANT**: 
@@ -51,8 +67,12 @@ Create a HF space following the specified **naming convention** with the followi
 - Email generation uses Google OAuth + Gmail API instead of Gmail SMTP, while both are available due to SMTP port restriction by HuggingFace.
 - A Bastlion Server is setup to bypass VPN wall for establishing connection to the Virtual Machine hosting the database
 
+</details>
+
 ## GitHub Deployment Setup
 
+<details markdown="1"><summary>...</summary>
+  
 ### 1. GitHub Secrets
 - Github fine grained PAT:
   - Read access to metadata
@@ -87,11 +107,16 @@ Create a HF space following the specified **naming convention** with the followi
 
 <img width="1026" height="428" alt="image" src="https://github.com/user-attachments/assets/1b513921-dfae-429c-8f23-d2ac215bc253" />
 
+</details>
+
 ## Frontend Setup
 - Emulator (Android / IOS)
 - Direct installation
 
 ## Repository Layout
+
+<details markdown="1"><summary>...</summary>
+  
 - **CalowinAcount:**       Account Microservice
 - **CalowinFriends:**      Friends Microservice
 - **CalowinNotification:** Notification Microservice
@@ -102,4 +127,10 @@ Create a HF space following the specified **naming convention** with the followi
 - **HF_setup_obsolete:**   Obsoleted initial non-CI/CD deployment setup structure (Record Keeping Purpose)
 - **atomikos-logs:**       Backend Microservice logging destination for local development
 
+</details>
+
 ## Calowin Application DEMO Video
+
+<details markdown="1"><summary>...</summary>
+  
+</details>
