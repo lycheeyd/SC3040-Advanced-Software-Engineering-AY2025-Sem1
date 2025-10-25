@@ -195,7 +195,7 @@ Create a HF space following the specified **naming convention** with the followi
 	
   </details>
     
-- **CalowinSecureDB:** Stores user's confidential data with security implementations
+- **CalowinSecureDB:** Stores user and system confidential data with security implementations
 
   <details markdown="1"><summary>Tables(s)</summary>
     
