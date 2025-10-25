@@ -202,7 +202,7 @@ Create a HF space following the specified **naming convention** with the followi
     expires_at	| datetime2(7)
     otp_type	| nchar(20)
     
-  - **SecureUserInfo:** userid | email_address | password
+  - **SecureUserInfo:**
     | Column Name | Data Type |
     | :---:       |     :---:      |
     user_id	| nchar(8)
