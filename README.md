@@ -55,6 +55,11 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 - **Frontend**: Flutter Based Mobile & Web application
 - **Database**: Microsoft SQL Server 2022 (Hosted on NTU's Virtual Machine behind a VPN)
 
+## Frontend Setup
+- **Manual:** Emulator (Android / IOS)
+- **Recommended:** Direct installation
+  - Download and Install Calowin using the APK or IPA file provided
+
 ## Backend Setup
 
 <details markdown="1"><summary>Backend Setup</summary>
@@ -217,11 +222,6 @@ Create a HF space following the specified **naming convention** with the followi
     ApiKey	| nvarchar(MAX)
 	
   </details>
-    
-## Frontend Setup
-- **Manual:** Emulator (Android / IOS)
-- **Recommended:** Direct installation
-  - Download and Install Calowin using the APK or IPA file provided
 
 ## External API(s)
 
