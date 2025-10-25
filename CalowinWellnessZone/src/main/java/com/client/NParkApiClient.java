@@ -1,6 +1,7 @@
 package com.client;
 
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class NParkApiClient {
     private String responseData = "";
     private String errorMessage = "";
 
+    @Autowired // <-- 2. ADD THIS ANNOTATION
     public NParkApiClient(@Value("${np.park.datasetId}") String datasetId) {
         this.datasetId = datasetId;
         this.initiateUrl = "https://api-open.data.gov.sg/v1/public/api/datasets/" + datasetId + "/initiate-download";
