@@ -18,8 +18,8 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 | Liu Cong     | liuconggg       |
 | Yi Da     | lycheeyd       |
 | Ali   | ali-adi     |
-| Yu Pei     |   FAN0020     |
-| Yu Jia     |        |
+| Fan Yu Pei     |   FAN0020     |
+| Yu Jia     |  jiahuiyue      |
 
 GUYS FILL IN YOUR DETAILS
 
