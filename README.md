@@ -137,7 +137,7 @@ Create a HF space following the specified **naming convention** with the followi
 </details>
 
 ## Frontend Setup
-- Manual: Emulator (Android / IOS)
-- Recommended: Direct installation
+- **Manual:** Emulator (Android / IOS)
+- **Recommended:** Direct installation
   - Download and Install Calowin using the APK or IPA file provided
 
