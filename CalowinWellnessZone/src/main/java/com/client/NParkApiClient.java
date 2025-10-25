@@ -27,6 +27,12 @@ public class NParkApiClient {
         this.client = HttpClient.newHttpClient();
     }
 
+    public NParkApiClient(String datasetId, String testInitiateUrl, String testPollUrl) {
+        this.datasetId = datasetId;
+        this.initiateUrl = testInitiateUrl;
+        this.pollUrl = testPollUrl;
+        this.client = HttpClient.newHttpClient();
+    }
     public void initiateDownload() {
         try {
             // Step 1: Initiate the download
