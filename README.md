@@ -7,9 +7,9 @@ We decided to create Calowin to fill a critical gap in the market. While existin
 
 Ultimately, the app aims to motivate individuals to make healthier, more eco-friendly choices, turning everyday travel into a rewarding experience for both personal well-being and the environment. 
 
-### Calowin Application DEMO Video
+### Calowin Application Demo Video
 
-<details markdown="1"><summary>Click to open video</summary>
+<details markdown="1"><summary>Demo Video</summary>
   INSERT VIDEO EMBED AWAITING YUPEI
 </details>
 
