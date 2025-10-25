@@ -47,6 +47,10 @@ Create a HF space following the specified **naming convention** with the followi
 - Blank template
 - Public
 
+### 6. Extra notes
+- Email generation uses Google OAuth + Gmail API instead of Gmail SMTP, while both are available due to SMTP port restriction by HuggingFace.
+- A Bastlion Server is setup to bypass VPN wall for establishing connection to the Virtual Machine hosting the database
+
 ## GitHub Deployment Setup
 
 ### 1. GitHub Secrets
