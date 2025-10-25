@@ -92,14 +92,14 @@ Create a HF space following the specified **naming convention** with the followi
 - Direct installation
 
 ## Repository Layout
-- CalowinAcount:       Account Microservice
-- CalowinFriends:      Friends Microservice
-- CalowinNotification: Notification Microservice
-- CalowinSpringNode:   API Gateway Microservice
-- CalowinTrip:         Trip Microservice
-- CalowinWellnessZone: WellnessZone Microservice
-- calowin_ui:          Flutter Frontend Application
-- HF_setup_obsolete:   Obsoleted initial non-CI/CD deployment setup structure (Record Keeping Purpose)
-- atomikos-logs:       Backend Microservice logging destination for local development
+- **CalowinAcount:**       Account Microservice
+- **CalowinFriends:**      Friends Microservice
+- **CalowinNotification:** Notification Microservice
+- **CalowinSpringNode:**   API Gateway Microservice
+- **CalowinTrip:**         Trip Microservice
+- **CalowinWellnessZone:** WellnessZone Microservice
+- **calowin_ui:**          Flutter Frontend Application
+- **HF_setup_obsolete:**   Obsoleted initial non-CI/CD deployment setup structure (Record Keeping Purpose)
+- **atomikos-logs:**       Backend Microservice logging destination for local development
 
 ## Calowin Application DEMO Video
