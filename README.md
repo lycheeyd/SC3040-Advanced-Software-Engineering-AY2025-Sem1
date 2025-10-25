@@ -2,30 +2,32 @@
 
 ## About
 **Calowin** is a mobile application designed to promote personal fitness and environmental sustainability by integrating active travel tracking with carbon savings quantification.
+
 We decided to create Calowin to fill a critical gap in the market. While existing navigation apps ignore environmental impact and fitness apps do not include navigation capabilities, there is no single platform that connects them. Hence, Calowin bridges this gap by empowering users to track both the calories they burn and the carbon emissions they save during their trips. 
+
 Ultimately, the app aims to motivate individuals to make healthier, more eco-friendly choices, turning everyday travel into a rewarding experience for both personal well-being and the environment. 
 
-### Calowin Application DEMO Video
+### Calowin Application Demo Video
 
-<details markdown="1"><summary>Click to open video</summary>
-  INSERT VIDEO EMBED AWAITING YUPEI
+<details markdown="1"><summary>Demo Video</summary>
+
+https://youtu.be/u8qhtj0_VHI
+  
 </details>
 
 ## Contributors
 | Name | GitHub Account |
-| :---         |     :---:      |
+| :---:         |     :---:      |
 | Anthony Chua Yong Tai   | anthonycyt     |
 | Liu Cong     | liuconggg       |
 | Yi Da     | lycheeyd       |
 | Ali   | ali-adi     |
-| Yu Pei     |   FAN0020     |
-| Yu Jia     |        |
-
-GUYS FILL IN YOUR DETAILS
+| Fan Yu Pei     |   FAN0020     |
+| Yu Jia     |  jiahuiyue      |
 
 ## Repository Layout
 
-<details markdown="1"><summary>click to open</summary>
+<details markdown="1"><summary>Repository Layout</summary>
   
 - **CalowinAcount:**       Account Microservice
 - **CalowinFriends:**      Friends Microservice
@@ -47,15 +49,22 @@ GUYS FILL IN YOUR DETAILS
 - Flutter SDK 3.0+
 - HuggingFace Space (HF) [Docker Build]
 - Git
+- Microsoft SQL Server 2022
+- SQL Server Management Studio
 
 ## Architecture
 - **Backend**: 5 Spring Boot microservices + 1 Spring Boot API Gateway (Hosted on HuggingFace)
 - **Frontend**: Flutter Based Mobile & Web application
 - **Database**: Microsoft SQL Server 2022 (Hosted on NTU's Virtual Machine behind a VPN)
 
+## Frontend Setup
+- **Manual:** Emulator (Android / IOS)
+- **Recommended:** Direct installation
+  - Download and Install Calowin using the APK or IPA file provided
+
 ## Backend Setup
 
-<details markdown="1"><summary>Click to open</summary>
+<details markdown="1"><summary>Backend Setup</summary>
 
 ### 1. HuggingFace Requirements
 **IMPORTANT**: 
@@ -92,13 +101,13 @@ Create a HF space following the specified **naming convention** with the followi
 
 ### 6. Extra notes
 - Email generation uses Google OAuth + Gmail API instead of Gmail SMTP, while both are available due to SMTP port restriction by HuggingFace.
-- A Bastlion Server is setup to bypass VPN wall for establishing connection to the Virtual Machine hosting the database
+- A Bastlion Server is setup to bypass VPN wall by SSH tunneling for establishing connection to the Virtual Machine hosting the database
 
 </details>
 
 ## GitHub Deployment Setup
 
-<details markdown="1"><summary>click to open</summary>
+<details markdown="1"><summary>GitHub Deployment Setup</summary>
   
 ### 1. GitHub Secrets
 - Github fine grained PAT:
@@ -136,7 +145,103 @@ Create a HF space following the specified **naming convention** with the followi
 
 </details>
 
-## Frontend Setup
-- Emulator (Android / IOS)
-- Direct installation
+## Database Setup
 
+### 1. Databases
+- **CalowinDB:** Stores application level data
+  
+  <details markdown="1"><summary>Tables(s)</summary>
+    
+  - **UserInfo:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    user_id	| nchar(8)
+    name | nvarchar(50)
+    weight | float
+    bio	| nvarchar(250)
+	
+  - **Trips:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    trip_id | nvarchar(10)
+    start_location | nvarchar(255)
+    end_location | nvarchar(255)
+    start_longitude | decimal(18, 7)
+    start_latitude | decimal(18, 7)
+    end_longitude | decimal(18, 7)
+    end_latitude | decimal(18, 7)
+    distance | decimal(5, 3)
+    calories_burnt | int
+    carbon_saved | int
+    trip_time | datetime2(7)
+    travel_method | nvarchar(20)
+    status | nvarchar(20)
+    user_id | nchar(8)
+
+  - **Achievement:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    user_id	| nchar(8)
+    total_carbon_saved	| int
+    total_calorie_burnt	| int
+    carbon_medal	| nvarchar(50)
+    calorie_medal	| nvarchar(50)
+	
+  - **FriendRelationship:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    Unique_ID	| nvarchar(8)
+    Friend_Unique_ID	| nvarchar(8)
+    [Friended On]	| datetime2(7)
+    status	| varchar(20)
+	
+  </details>
+    
+- **CalowinSecureDB:** Stores user and system confidential data with security implementations
+
+  <details markdown="1"><summary>Tables(s)</summary>
+    
+  - **OTPRegister:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    email	| nchar(255)
+    otp_code	| nchar(6)
+    expires_at	| datetime2(7)
+    otp_type	| nchar(20)
+    
+  - **SecureUserInfo:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    user_id	| nchar(8)
+    email_address	| nchar(255)
+    password	| nvarchar(255)
+	
+  - **ApiKeys:**
+    | Column Name | Data Type |
+    | :---:       |     :---:      |
+    KeyId	| int
+    KeyName	| nvarchar(100)
+    ApiKey	| nvarchar(MAX)
+	
+  </details>
+
+## External API(s)
+
+<details markdown="1"><summary>External API(s)</summary>
+  
+- **Googl Cloud API(s):**
+  - Google OAuth2
+  - Gmail API
+  - Gmail SMTP
+  - Google Maps JavaScript API
+  - Google Maps SDK for Android
+  - Google Maps SDK for IOS
+  - Directions API
+  - Places API
+  - Places API (New)
+
+- **data.gov.sg API(s):**
+  - NEA Weather API (https://data.gov.sg/collections/1459/view)
+  - NPARKS Parks API (https://data.gov.sg/datasets/d_0542d48f0991541706b58059381a6eca/view)
+
+</details>
