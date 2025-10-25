@@ -21,8 +21,6 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 | Fan Yu Pei     |   FAN0020     |
 | Yu Jia     |  jiahuiyue      |
 
-GUYS FILL IN YOUR DETAILS
-
 ## Repository Layout
 
 <details markdown="1"><summary>click to open</summary>
