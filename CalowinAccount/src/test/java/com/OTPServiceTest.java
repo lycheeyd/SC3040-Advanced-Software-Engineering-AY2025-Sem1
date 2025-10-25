@@ -13,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,19 +41,34 @@ class OTPServiceTest {
     @DisplayName("sendOtpCode should generate, save, and send an OTP")
     void sendOtpCode_shouldGenerateSaveAndSendOtp() throws Exception {
         // Arrange
-        // Mock the repository save operation to do nothing
         when(otpRepository.save(any(OTPEntry.class))).thenReturn(null);
-        // Mock the email service to do nothing
         doNothing().when(emailService).sendEmail(anyString(), anyString(), anyString());
 
         // Act
         otpService.sendOtpCode(email, type);
 
         // Assert
-        // Verify that a new OTP was saved to the repository
         verify(otpRepository, times(1)).save(any(OTPEntry.class));
-        // Verify that the email service was called to send the email
         verify(emailService, times(1)).sendEmail(eq(email), eq(type.getSubject()), anyString());
+    }
+
+    @Test
+    @DisplayName("sendOtpCode should delete existing OTP of a user and type")
+    void sendOtpCode_shouldDeleteExistingOtp() throws Exception {
+        // Arrange
+        OTPEntry existingOtp = new OTPEntry(email, "old-otp", LocalDateTime.now(), type);
+        when(otpRepository.findByEmailAndOtpType(email, type)).thenReturn(Optional.of(existingOtp));
+
+        // Act
+        otpService.sendOtpCode(email, type);
+
+        // Assert
+        // Verify the existing OTP was deleted
+        verify(otpRepository, times(1)).delete(existingOtp);
+        // Verify a new one was saved
+        verify(otpRepository, times(1)).save(any(OTPEntry.class));
+        // Verify the email was sent
+        verify(emailService, times(1)).sendEmail(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -66,7 +83,6 @@ class OTPServiceTest {
 
         // Assert
         assertThat(result).isTrue();
-        // Verify that the OTP is deleted after successful verification
         verify(otpRepository, times(1)).deleteByEmailAndOtpType(email, type);
     }
 
@@ -82,7 +98,6 @@ class OTPServiceTest {
 
         // Assert
         assertThat(result).isFalse();
-        // Verify that the expired OTP is cleaned up
         verify(otpRepository, times(1)).deleteByEmailAndOtpType(email, type);
     }
 
@@ -99,7 +114,6 @@ class OTPServiceTest {
 
         // Assert
         assertThat(result).isFalse();
-        // Verify that the OTP is NOT deleted if the code is wrong
         verify(otpRepository, never()).deleteByEmailAndOtpType(anyString(), any());
     }
 
@@ -115,5 +129,27 @@ class OTPServiceTest {
         // Assert
         assertThat(result).isFalse();
         verify(otpRepository, never()).deleteByEmailAndOtpType(anyString(), any());
+    }
+
+    // --- NEWLY GENERATED SCHEDULED TEST ---
+
+    @Test
+    @DisplayName("cleanUpExpiredOTPs should delete expired but not valid OTPs")
+    void cleanUpExpiredOTPs_shouldDeleteExpiredButNotValid() {
+        // Arrange
+        OTPEntry expiredOtp = new OTPEntry("expired@test.com", "111", LocalDateTime.now().minusDays(1), type);
+        OTPEntry validOtp = new OTPEntry("valid@test.com", "222", LocalDateTime.now().plusDays(1), type);
+        List<OTPEntry> otpList = Arrays.asList(expiredOtp, validOtp);
+
+        when(otpRepository.findAll()).thenReturn(otpList);
+
+        // Act
+        otpService.cleanUpExpiredOTPs();
+
+        // Assert
+        // Verify that delete was called exactly once, with the expired OTP
+        verify(otpRepository, times(1)).delete(expiredOtp);
+        // Verify that delete was NOT called with the valid OTP
+        verify(otpRepository, never()).delete(validOtp);
     }
 }
