@@ -156,8 +156,8 @@ Create a HF space following the specified **naming convention** with the followi
   - Places API
   - Places API (New)
 
-**data.gov.sg API(s):**
-- NEA Weather API (https://data.gov.sg/collections/1459/view)
-- NPARKS Parks API (https://data.gov.sg/datasets/d_0542d48f0991541706b58059381a6eca/view)
+- **data.gov.sg API(s):**
+  - NEA Weather API (https://data.gov.sg/collections/1459/view)
+  - NPARKS Parks API (https://data.gov.sg/datasets/d_0542d48f0991541706b58059381a6eca/view)
 
 </details>
