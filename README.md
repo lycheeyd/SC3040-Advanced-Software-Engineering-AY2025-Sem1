@@ -64,22 +64,22 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
   - Download and Install Calowin using the APK or IPA file provided
 
 ### 2. Manual
-  - **Prerequisites for Manual Setup:**
-    - Flutter SDK 3.0+ (see Prerequisites section)
-    - Android Studio with Android SDK Tools
-    - For iOS: Xcode and iOS SDK (macOS only)
-    - Google Maps API key (for location features)
 
-  - **Android Emulator:** 
-    - Android Studio's Android Emulator (latest stable version)
-    - Minimum Android API Level 21 (Android 5.0 Lollipop) or higher
-    - Recommended: API Level 30+ for optimal performance
-    - Ensure Google Play Services are available for Maps functionality
+#### 1. Prerequisites for Manual Setup
+- Flutter SDK 3.0+ (see Prerequisites section)
+- **Android:** Studio with Android SDK Tools
+- **iOS:** Xcode and iOS SDK (macOS only)
+
+#### 2. Android Emulator
+- Android Studio's Android Emulator (latest stable version)
+- Minimum Android API Level 21 (Android 5.0 Lollipop) or higher
+- Recommended: API Level 30+ for optimal performance
+- Ensure Google Play Services are available for Maps functionality
       
-  - **iOS Simulator:** 
-    - Xcode iOS Simulator (latest stable version)
-    - Minimum iOS 15.6 or higher
-    - Requires macOS with Xcode installed
+#### 3. iOS Simulator
+- Xcode iOS Simulator (latest stable version)
+- Minimum iOS 15.6 or higher
+- Requires macOS with Xcode installed
 
 </details>
 
