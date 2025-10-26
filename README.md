@@ -7,13 +7,9 @@ We decided to create Calowin to fill a critical gap in the market. While existin
 
 Ultimately, the app aims to motivate individuals to make healthier, more eco-friendly choices, turning everyday travel into a rewarding experience for both personal well-being and the environment. 
 
-### Calowin Application Demo Video
+#### For Calowin Application Demo Video, see [Video](https://youtu.be/u8qhtj0_VHI)
 
-<details markdown="1"><summary>Demo Video</summary>
-
-https://youtu.be/u8qhtj0_VHI
-  
-</details>
+<br/>
 
 ## Contributors
 | Name | GitHub Account |
@@ -41,16 +37,19 @@ https://youtu.be/u8qhtj0_VHI
 
 </details>
 
+<br/>
+
 # System Overview and Setup Details
 
-## Prerequisites
-- Java 21
-- Maven 3.6+
-- Flutter SDK 3.0+
-- HuggingFace Space (HF) [Docker Build]
-- Git
-- Microsoft SQL Server 2022
-- SQL Server Management Studio
+> [!NOTE]
+> ### Prerequisites
+> - Java 21
+> - Maven 3.6+
+> - Flutter SDK 3.0+
+> - HuggingFace Space (HF) [Docker Build]
+> - Git
+> - Microsoft SQL Server 2022
+> - SQL Server Management Studio
 
 ## Architecture
 - **Backend**: 5 Spring Boot microservices + 1 Spring Boot API Gateway (Hosted on HuggingFace)
@@ -58,16 +57,39 @@ https://youtu.be/u8qhtj0_VHI
 - **Database**: Microsoft SQL Server 2022 (Hosted on NTU's Virtual Machine behind a VPN)
 
 ## Frontend Setup
-- **Manual:** Emulator (Android / IOS)
-- **Recommended:** Direct installation
+
+<details markdown="1"><summary>Frontend Setup</summary>
+
+### 1. Direct installation (Recommended)
   - Download and Install Calowin using the APK or IPA file provided
+
+### 2. Manual
+
+#### 1. Prerequisites for Manual Setup
+- Flutter SDK 3.0+ (see Prerequisites section)
+- **Android:** Studio with Android SDK Tools
+- **iOS:** Xcode and iOS SDK (macOS only)
+
+#### 2. Android Emulator
+- Android Studio's Android Emulator (latest stable version)
+- Minimum Android API Level 21 (Android 5.0 Lollipop) or higher
+- Recommended: API Level 30+ for optimal performance
+- Ensure Google Play Services are available for Maps functionality
+      
+#### 3. iOS Simulator
+- Xcode iOS Simulator (latest stable version)
+- Minimum iOS 15.6 or higher
+- Requires macOS with Xcode installed
+
+</details>
+
+<br/>
 
 ## Backend Setup
 
 <details markdown="1"><summary>Backend Setup</summary>
 
 ### 1. HuggingFace Requirements
-**IMPORTANT**: 
 - All backend services are configured to use port 7860 as mandated by HuggingFace
 - All service must await and respond to "/" Get request from HuggingFace to complete container startup
 - HuggingFace adopts Readme.md file as configuration file for Space's metadata
@@ -104,6 +126,8 @@ Create a HF space following the specified **naming convention** with the followi
 - A Bastlion Server is setup to bypass VPN wall by SSH tunneling for establishing connection to the Virtual Machine hosting the database
 
 </details>
+
+<br/>
 
 ## GitHub Deployment Setup
 
@@ -145,7 +169,11 @@ Create a HF space following the specified **naming convention** with the followi
 
 </details>
 
+<br/>
+
 ## Database Setup
+
+<details markdown="1"><summary>Database Setup</summary>
 
 ### 1. Databases
 - **CalowinDB:** Stores application level data
@@ -222,8 +250,13 @@ Create a HF space following the specified **naming convention** with the followi
     KeyId	| int
     KeyName	| nvarchar(100)
     ApiKey	| nvarchar(MAX)
-	
+
+### 2. Bastion SSH Tunneling
+NTU Virtual machine hosting the SQL database server will SSH into Azure Bastion, creating a reverse SSH tunnel to route read/write requests from HuggingFace backend services to the respective databases.
+
   </details>
+
+<br/>
 
 ## External API(s)
 
@@ -245,3 +278,5 @@ Create a HF space following the specified **naming convention** with the followi
   - NPARKS Parks API (https://data.gov.sg/datasets/d_0542d48f0991541706b58059381a6eca/view)
 
 </details>
+
+<br/>
