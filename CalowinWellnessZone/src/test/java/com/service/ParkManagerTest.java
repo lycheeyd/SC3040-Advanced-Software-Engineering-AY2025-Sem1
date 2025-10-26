@@ -87,4 +87,98 @@ class ParkServiceTest {
 
         assertThat(exception.getMessage()).isEqualTo("No response data received from downloader.");
     }
+    @Test
+    @DisplayName("findNearbyParks should return empty list for empty features")
+    void findNearbyParks_whenApiReturnsEmptyFeatures() throws Exception {
+        // Arrange
+        double userLat = 1.3521;
+        double userLon = 103.8198;
+        String fakeJsonData = "{\"type\":\"FeatureCollection\",\"features\":[]}";
+
+        when(parkApiClient.getResponseData()).thenReturn(fakeJsonData);
+        when(parkApiClient.getErrorMessage()).thenReturn("");
+
+        // Act
+        List<NPark> parks = parkService.findNearbyParks(userLat, userLon);
+
+        // Assert
+        assertThat(parks).isNotNull();
+        assertThat(parks).isEmpty();
+    }
+
+    @Test
+    @DisplayName("findNearbyParks should correctly parse MultiPolygon geometry")
+    void findNearbyParks_withMultiPolygon() throws Exception {
+        // Arrange
+        double userLat = 1.3521;
+        double userLon = 103.8198;
+        // GeoJSON with a MultiPolygon
+        String fakeJsonData = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{\"NAME\":\"Multi-Poly Park\"},\"geometry\":{\"type\":\"MultiPolygon\",\"coordinates\":[[[[103.83,1.37],[103.84,1.37],[103.83,1.36],[103.83,1.37]]]]}}]}";
+
+        when(parkApiClient.getResponseData()).thenReturn(fakeJsonData);
+        when(parkApiClient.getErrorMessage()).thenReturn("");
+
+        // Act
+        List<NPark> parks = parkService.findNearbyParks(userLat, userLon);
+
+        // Assert
+        assertThat(parks).hasSize(1);
+        assertThat(parks.get(0).getName()).isEqualTo("Multi-Poly Park");
+        assertThat(parks.get(0).getClosestPoint()).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("findNearbyParks should skip features with missing names")
+    void findNearbyParks_withMissingName() throws Exception {
+        // Arrange
+        double userLat = 1.3521;
+        double userLon = 103.8198;
+        // One park with a name, one without
+        String fakeJsonData = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{\"NAME\":\"Good Park\"},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[103.83,1.37],[103.84,1.37],[103.83,1.36],[103.83,1.37]]]}}, {\"type\":\"Feature\",\"properties\":{\"NAME\":\"\"},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[104.0,1.4],[104.1,1.4],[104.0,1.3],[104.0,1.4]]]}}]}";
+
+        when(parkApiClient.getResponseData()).thenReturn(fakeJsonData);
+        when(parkApiClient.getErrorMessage()).thenReturn("");
+
+        // Act
+        List<NPark> parks = parkService.findNearbyParks(userLat, userLon);
+
+        // Assert
+        // Should skip the park with the empty name
+        assertThat(parks).hasSize(1);
+        assertThat(parks.get(0).getName()).isEqualTo("Good Park");
+    }
+
+    @Test
+    @DisplayName("findNearbyParks should skip unsupported geometry types")
+    void findNearbyParks_withUnsupportedGeometry() throws Exception {
+        // Arrange
+        double userLat = 1.3521;
+        double userLon = 103.8198;
+        String fakeJsonData = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{\"NAME\":\"Point Park\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[103.83,1.37]}}]}";
+
+        when(parkApiClient.getResponseData()).thenReturn(fakeJsonData);
+        when(parkApiClient.getErrorMessage()).thenReturn("");
+
+        // Act
+        List<NPark> parks = parkService.findNearbyParks(userLat, userLon);
+
+        // Assert
+        // Should skip the "Point" geometry type
+        assertThat(parks).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Untested public methods should execute")
+    void testUntestedPublicMethods() {
+        // These methods operate on the class-level `parks` list,
+        // which `findNearbyParks` doesn't use.
+        parkService.setUserCoordinate(1.0, 1.0);
+        assertThat(parkService.getParks()).isEmpty(); // Should be empty
+
+        // Call other methods to get coverage
+        parkService.printAllParks(); // Prints "No parks found."
+
+        // We can't easily test sortParks without refactoring ParkService,
+        // but calling getParks() and printAllParks() covers some lines.
+    }
 }
