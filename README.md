@@ -7,13 +7,8 @@ We decided to create Calowin to fill a critical gap in the market. While existin
 
 Ultimately, the app aims to motivate individuals to make healthier, more eco-friendly choices, turning everyday travel into a rewarding experience for both personal well-being and the environment. 
 
-### Calowin Application Demo Video
-
-<details markdown="1"><summary>Demo Video</summary>
-
-https://youtu.be/u8qhtj0_VHI
-  
-</details>
+#### For Calowin Application Demo Video, see [Video](https://youtu.be/u8qhtj0_VHI)
+<br/>
 
 ## Contributors
 | Name | GitHub Account |
@@ -43,14 +38,15 @@ https://youtu.be/u8qhtj0_VHI
 
 # System Overview and Setup Details
 
-## Prerequisites
-- Java 21
-- Maven 3.6+
-- Flutter SDK 3.0+
-- HuggingFace Space (HF) [Docker Build]
-- Git
-- Microsoft SQL Server 2022
-- SQL Server Management Studio
+> [!NOTE]
+> ### Prerequisites
+> - Java 21
+> - Maven 3.6+
+> - Flutter SDK 3.0+
+> - HuggingFace Space (HF) [Docker Build]
+> - Git
+> - Microsoft SQL Server 2022
+> - SQL Server Management Studio
 
 ## Architecture
 - **Backend**: 5 Spring Boot microservices + 1 Spring Boot API Gateway (Hosted on HuggingFace)
@@ -67,7 +63,6 @@ https://youtu.be/u8qhtj0_VHI
 <details markdown="1"><summary>Backend Setup</summary>
 
 ### 1. HuggingFace Requirements
-**IMPORTANT**: 
 - All backend services are configured to use port 7860 as mandated by HuggingFace
 - All service must await and respond to "/" Get request from HuggingFace to complete container startup
 - HuggingFace adopts Readme.md file as configuration file for Space's metadata
