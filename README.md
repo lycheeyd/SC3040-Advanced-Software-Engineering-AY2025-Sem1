@@ -164,6 +164,8 @@ Create a HF space following the specified **naming convention** with the followi
 
 ## Database Setup
 
+<details markdown="1"><summary>Database Setup</summary>
+
 ### 1. Databases
 - **CalowinDB:** Stores application level data
   
@@ -239,7 +241,10 @@ Create a HF space following the specified **naming convention** with the followi
     KeyId	| int
     KeyName	| nvarchar(100)
     ApiKey	| nvarchar(MAX)
-	
+
+### 2. Bastlion SSH Tunneling
+- INSERT HERE
+
   </details>
 
 ## External API(s)
