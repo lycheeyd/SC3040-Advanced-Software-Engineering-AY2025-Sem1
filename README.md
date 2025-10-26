@@ -61,8 +61,8 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 <details markdown="1"><summary>Frontend Setup</summary>
 
 ### 1. Direct installation (Recommended)
-  - Android: Download and install Calowin using the APK file provided. It can be found in the CalowinUI Installation Files folder. 
-  - iOS: An .ipa file for direct installation on iOS devices cannot be provided. Generating and distributing .ipa files requires an Apple Developer Program subscription, which is a paid service. iOS users who wish to test the application must build it manually using Xcode 
+  - **Android:** Download and install Calowin using the APK file provided. It can be found in the CalowinUI Installation Files folder. 
+  - **iOS:** An .ipa file for direct installation on iOS devices cannot be provided. Generating and distributing .ipa files requires an Apple Developer Program subscription, which is a paid service. iOS users who wish to test the application must build it manually using Xcode 
 
 ### 2. Manual
 
@@ -124,7 +124,7 @@ Create a HF space following the specified **naming convention** with the followi
 
 ### 7. Extra notes
 - Email generation uses Google OAuth + Gmail API instead of Gmail SMTP, while both are available due to SMTP port restriction by HuggingFace.
-- A Bastlion Server is setup to bypass VPN wall by SSH tunneling for establishing connection to the Virtual Machine hosting the database
+- A Bastion Server is setup to bypass VPN wall by SSH tunneling for establishing connection to the Virtual Machine hosting the database
 
 </details>
 
@@ -263,7 +263,7 @@ NTU Virtual machine hosting the SQL database server will SSH into Azure Bastion,
 
 <details markdown="1"><summary>External API(s)</summary>
   
-- **Googl Cloud API(s):**
+- **Google Cloud API(s):**
   - Google OAuth2
   - Gmail API
   - Gmail SMTP
