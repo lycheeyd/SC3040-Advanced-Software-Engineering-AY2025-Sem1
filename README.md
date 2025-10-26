@@ -8,6 +8,7 @@ We decided to create Calowin to fill a critical gap in the market. While existin
 Ultimately, the app aims to motivate individuals to make healthier, more eco-friendly choices, turning everyday travel into a rewarding experience for both personal well-being and the environment. 
 
 #### For Calowin Application Demo Video, see [Video](https://youtu.be/u8qhtj0_VHI)
+
 <br/>
 
 ## Contributors
@@ -35,6 +36,8 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 - **atomikos-logs:**       Backend Microservice logging destination for local development
 
 </details>
+
+<br/>
 
 # System Overview and Setup Details
 
@@ -80,6 +83,8 @@ Ultimately, the app aims to motivate individuals to make healthier, more eco-fri
 
 </details>
 
+<br/>
+
 ## Backend Setup
 
 <details markdown="1"><summary>Backend Setup</summary>
@@ -122,6 +127,8 @@ Create a HF space following the specified **naming convention** with the followi
 
 </details>
 
+<br/>
+
 ## GitHub Deployment Setup
 
 <details markdown="1"><summary>GitHub Deployment Setup</summary>
@@ -161,6 +168,8 @@ Create a HF space following the specified **naming convention** with the followi
 <img width="1026" height="428" alt="image" src="https://github.com/user-attachments/assets/1b513921-dfae-429c-8f23-d2ac215bc253" />
 
 </details>
+
+<br/>
 
 ## Database Setup
 
@@ -242,10 +251,12 @@ Create a HF space following the specified **naming convention** with the followi
     KeyName	| nvarchar(100)
     ApiKey	| nvarchar(MAX)
 
-### 2. Bastlion SSH Tunneling
-- INSERT HERE
+### 2. Bastion SSH Tunneling
+NTU Virtual machine hosting the SQL database server will SSH into Azure Bastion, creating a reverse SSH tunnel to route read/write requests from HuggingFace backend services to the respective databases.
 
   </details>
+
+<br/>
 
 ## External API(s)
 
@@ -267,3 +278,5 @@ Create a HF space following the specified **naming convention** with the followi
   - NPARKS Parks API (https://data.gov.sg/datasets/d_0542d48f0991541706b58059381a6eca/view)
 
 </details>
+
+<br/>
