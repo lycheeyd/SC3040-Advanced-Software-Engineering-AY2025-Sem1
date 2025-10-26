@@ -1,6 +1,7 @@
 package com.Services;
 
 
+
 import com.ENUM.TravelMethod;
 import com.model.CurrentLocation;
 import com.model.Location;
@@ -79,6 +80,7 @@ class TripRepositoryTest {
         verify(preparedStatement).setString(13, "ONGOING");
         verify(preparedStatement).setString(14, "user123");
 
+        verify(preparedStatement, times(1)).executeUpdate();
         verify(preparedStatement, times(1)).executeUpdate();
     }
 
